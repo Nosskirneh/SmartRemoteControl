@@ -1,18 +1,10 @@
-// Smart Remote Control Sketch
-// Copyright 2014 Tony DiCola
-// Released under an MIT license: http://opensource.org/licenses/MIT
-
-// Based on examples from the IR remote library at: https://github.com/shirriff/Arduino-IRremote
-// Depends on a fork of the library to fix a file name conflict in recent Arduino IDE releases.
-// Download forked library from: https://github.com/tdicola/Arduino_IRremote
-
+#include <RCSwitch.h>
 #include <ctype.h>
-#include <Console.h>
 #include "IRremote_library.h"
 #include "IRremoteInt_library.h"
 
 // Pin connected to the IR receiver.
-#define RECV_PIN 11
+#define IR_RECV_PIN 11
 
 // Length of time to delay between codes.
 #define REPEAT_DELAY_MS 40
@@ -27,35 +19,67 @@ decode_results command;
 unsigned int rawbuf[RAWBUF] = {0};
 
 // Remote code types.
-#define TYPE_COUNT 9
-char* type_names[TYPE_COUNT] = { "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "RAW" };
-int type_values[TYPE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, -1 };
+#define TYPE_COUNT 10
+String type_names[TYPE_COUNT] = { "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "MHZ433", "RAW" };
+int type_values[TYPE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 };
+
+long int mhz_codes[4][2] = {
+  {5510485, 5510484},
+  {5522773, 5522772},
+  {5525845, 5525844},
+  {5526613, 5526612},
+};
 
 // IR send and receive class.
 IRsend irsend;
-IRrecv irrecv(RECV_PIN);
+IRrecv irrecv(IR_RECV_PIN);
+
+// 433 MHz class and init
+RCSwitch MHZ = RCSwitch();
+
 
 // Setup function called once at bootup.
 void setup() {
-  // Initialize bridge, console, and IR receiver.
-  Bridge.begin();
-  Console.begin();
+  // Initialize Serial and IR receiver.
+  Serial.begin(9600);
   irrecv.enableIRIn();
+
+  
+  // Transmitter is connected to Arduino Pin #10
+  MHZ.enableTransmit(10);
+  // Optional set pulse length.
+  MHZ.setPulseLength(420);
+  // Optional set protocol (default is 1, will work for most outlets)
+  MHZ.setProtocol(1);
+  // Optional set number of transmission repetitions.
+  MHZ.setRepeatTransmit(4);
 }
 
 // Loop function called continuously.
 void loop() {
   // Check if any data is available and parse it.
-  if (Console.available() > 0) {
+  if (Serial.available() > 0) {
     // Read a character at a time.
-    char c = Console.read();
+    char c = Serial.read();
     if (c == ':') {
       // Parse remote code type as current buffer value when colon is found.
-      char* type = current_word();
+      String type = current_word();
       for (int i = 0; i < TYPE_COUNT; ++i) {
-        if (strcmp(type, type_names[i]) == 0) {
+        if (type == type_names[i]) {
           command.decode_type = type_values[i];
         }
+      }
+    }
+    else if (c == ' ' && command.decode_type == MHZ433) {
+      char* c = current_word();
+      //Serial.println(c);
+      //Serial.println(sizeof(c));
+      if (strcmp(c, "ON") == 0) {
+        //Serial.println("Received on");
+        command.powerCMD = "ON";
+      } else if (strcmp(c, "OFF") == 0) {
+        //Serial.println("Received off");
+        command.powerCMD = "OFF";
       }
     }
     else if (c == ' ' && command.decode_type == PANASONIC && command.panasonicAddress == 0 && index > 0) {
@@ -73,7 +97,7 @@ void loop() {
         command.rawlen++;
       }
     }
-    else if (c == '\n') {
+    else if (c == '\n' || c == ';') {
       // Finish parsing command when end of line received.
       // Parse remaining data in buffer.
       if (index > 0) {
@@ -87,20 +111,25 @@ void loop() {
         }
       }
       // Print code to be sent.
-      Console.println("Sending remote code:");
+      Serial.println("Sending remote code:");
       int type_index = command.decode_type > 0 ? command.decode_type - 1 : TYPE_COUNT - 1;
-      Console.print("Type: "); Console.println(type_names[type_index]);
-      Console.print("Address: "); Console.println(command.panasonicAddress, HEX);
-      Console.print("Value: "); Console.println(command.value, HEX);
-      if (command.rawlen > 0) {
-        Console.println("Raw value: ");
-        for (int i = 0; i < command.rawlen; ++i) {
-          Console.print(rawbuf[i], HEX);
-          Console.print(" ");
-        }
-        Console.println("");
+      Serial.print("Type: "); Serial.println(type_names[type_index]);
+      if (command.panasonicAddress != 0) {
+        Serial.print("Address: "); Serial.println(command.panasonicAddress, HEX);
       }
-      Console.println("--------------------");
+      if (command.powerCMD) {
+        Serial.print("Command: "); Serial.println(command.powerCMD);
+      }
+      Serial.print("Value: "); Serial.println(command.value, HEX);
+      if (command.rawlen > 0) {
+        Serial.println("Raw value: ");
+        for (int i = 0; i < command.rawlen; ++i) {
+          Serial.print(rawbuf[i], HEX);
+          Serial.print(" ");
+        }
+        Serial.println("");
+      }
+      Serial.println("--------------------");
       // Send code.
       send_command();
       // Enable IR receiver again.
@@ -117,13 +146,13 @@ void loop() {
   // Check if an IR code has been received and print it.
   decode_results results;
   if (irrecv.decode(&results)) {
-    Console.println("Decoded remote code:");
+    Serial.println("Decoded remote code:");
     print_code(&results);
-    Console.println("--------------------");
+    Serial.println("--------------------");
     delay(20);
     irrecv.resume();
   }
-  // Wait a small amount so the Bridge library is not overwhelmed with requests to read the console.
+  // Wait a small amount so the Bridge library is not overwhelmed with requests to read the Serial.
   delay(10);
 }
 
@@ -139,6 +168,9 @@ void send_command() {
       irsend.sendSony(command.value, command.bits);
       delay(REPEAT_DELAY_MS);
     }
+  }
+  else if (command.decode_type == MHZ433) {
+    sendMHZ(command.value, command.powerCMD);
   }
   else if (command.decode_type == RC5) {
     // RC5 codes are sent 3 times as a part of their protocol.
@@ -172,46 +204,52 @@ void send_command() {
   }
 }
 
-// Print received code to the Console.
+// Print received code to the Serial.
 void print_code(decode_results *results) {
   if (results->decode_type == NEC) {
-    Console.print("NEC: ");
-    Console.print(results->bits, HEX);
-    Console.print(" ");
-    Console.println(results->value, HEX);
-  } 
+    Serial.print("NEC: ");
+    Serial.print(results->bits, HEX);
+    Serial.print(" ");
+    Serial.println(results->value, HEX);
+  }
   else if (results->decode_type == SONY) {
-    Console.print("SONY: ");
-    Console.print(results->bits, HEX);
-    Console.print(" ");
-    Console.println(results->value, HEX);
-  } 
+    Serial.print("SONY: ");
+    Serial.print(results->bits, HEX);
+    Serial.print(" ");
+    Serial.println(results->value, HEX);
+  }
   else if (results->decode_type == RC5) {
-    Console.print("RC5: ");
-    Console.print(results->bits, HEX);
-    Console.print(" ");
-    Console.println(results->value, HEX);
-  } 
+    Serial.print("RC5: ");
+    Serial.print(results->bits, HEX);
+    Serial.print(" ");
+    Serial.println(results->value, HEX);
+  }
   else if (results->decode_type == RC6) {
-    Console.print("RC6: ");
-    Console.print(results->bits, HEX);
-    Console.print(" ");
-    Console.println(results->value, HEX);
+    Serial.print("RC6: ");
+    Serial.print(results->bits, HEX);
+    Serial.print(" ");
+    Serial.println(results->value, HEX);
   }
   else if (results->decode_type == PANASONIC) {	
-    Console.print("PANASONIC: ");
-    Console.print(results->panasonicAddress,HEX);
-    Console.print(" ");
-    Console.println(results->value, HEX);
+    Serial.print("PANASONIC: ");
+    Serial.print(results->panasonicAddress,HEX);
+    Serial.print(" ");
+    Serial.println(results->value, HEX);
   }
   else if (results->decode_type == JVC) {
-     Console.print("JVC: ");
-    Console.print(results->bits, HEX);
-    Console.print(" ");
-     Console.println(results->value, HEX);
+     Serial.print("JVC: ");
+     Serial.print(results->bits, HEX);
+     Serial.print(" ");
+     Serial.println(results->value, HEX);
   }
+  else if (results->decode_type == MHZ433) {
+    Serial.print("MHZ433: ");
+    Serial.print(results->value);
+    Serial.print(" ");
+    Serial.println(results->powerCMD);
+  } 
   else {
-    Console.print("RAW: ");
+    Serial.print("RAW: ");
     for (int i = 1; i < results->rawlen; i++) {
       // Scale length to microseconds.
       unsigned int value = results->rawbuf[i]*USECPERTICK;
@@ -223,10 +261,10 @@ void print_code(decode_results *results) {
         value += MARK_EXCESS;
       }
       // Print mark/space length.
-      Console.print(value, HEX);
-      Console.print(" ");
+      Serial.print(value, HEX);
+      Serial.print(" ");
     }
-    Console.println("");
+    Serial.println("");
   }
 }
 
@@ -234,7 +272,15 @@ void print_code(decode_results *results) {
 char* current_word() {
   buffer[index] = 0;
   index = 0;
+  //Serial.println(buffer);
   return buffer;
 }
 
+void sendMHZ(unsigned long device, char* power) {
+  if (strcmp(power, "ON") == 0) {
+    MHZ.send(mhz_codes[device-1][0], 24);
+  } else if (strcmp(power, "OFF") == 0) {
+    MHZ.send(mhz_codes[device-1][1], 24);
+  }
+}
 

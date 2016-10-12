@@ -1,0 +1,28 @@
+IR:
+Sender:
+1. Black cable (S) (right) - Ground
+2. Brown cable (no symbol) (middle) - 5V
+3. Gray cable (-) (left) - Data pin 3
+
+Receiver (lamp facing towards):
+1. Red cable (right) - 5V
+2. Purple cable (middle) - Ground
+3. Blue cable (left) - Data pin 11
+
+
+433 MHz:
+Sender:
+1. Left - gray - GND
+2. Midleft - brown - D10
+3. Midright - black - 3,3 V
+4. Right - Gray - ANT (cable into air)
+
+Receiver:
+1. Empty
+2. Empty
+3. Yellow - GND
+4. Orange - 5
+5. Empty
+6. Empty
+7. Brown - D2
+8. Empty

@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<activities>
+	<!-- Configure each activity below.  Create an activity node with name
+	     which will be displayed on the activity button.  Add a codes node
+	     which includes a code element for each remote control code to
+	     send in order. -->
+	<activity>
+		<name>PLEX ON</name>
+		<codes>
+			<LED>
+				<LEDcode>CLEAR</LEDcode>
+			</LED>
+
+			<IR>
+				<IRcode>SONY: C A90</IRcode>
+			</IR>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>PLEX OFF</name>
+		<codes>
+			<LED>
+				<LEDcode>BLACK</LEDcode>
+			</LED>
+
+			<IR>
+				<IRcode>SONY: C A90</IRcode>
+			</IR>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>TV</name>
+		<codes>
+			<IR>
+				<IRcode>SONY: C A90</IRcode>
+			</IR>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>LED OFF</name>
+		<codes>
+			<LED>
+				<LEDcode>BLACK</LEDcode>
+			</LED>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>LED MOVIE</name>
+		<codes>
+			<LED>
+				<LEDcode>CLEAR</LEDcode>
+			</LED>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>PC ON</name>
+		<codes>
+			<WOL>
+				<WOLcode>ON</WOLcode>
+			</WOL>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>1 ON</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: ON 1</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>1 OFF</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: OFF 1</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>SPEAKERS ON</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: ON 2</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>SPEAKERS OFF</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: OFF 2</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>Charger ON</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: ON 3</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>Charger OFF</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: OFF 3</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>4 ON</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: ON 4</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+
+
+	<activity>
+		<name>4 OFF</name>
+		<codes>
+			<MHZ>
+				<MHZcode>MHZ433: OFF 4</MHZcode>
+			</MHZ>
+		</codes>
+	</activity>
+</activities>

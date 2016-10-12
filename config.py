@@ -14,6 +14,9 @@ def get_activities():
 	for child in et.parse(FILE_NAME).iter('activity'):
 		# Create a dictionary with the name and code list for each activity.
 		config.append({'name': child.find('name').text,
-					   'codes': [x.text for x in child.iter('code')]
+					   'IR': [x.text for x in child.iter('IRcode')],
+					   'MHZ': [x.text for x in child.iter('MHZcode')],
+					   'LED': [x.text for x in child.iter('LEDcode')],
+					   'WOL': [x.text for x in child.iter('WOLcode')]
 					   })
 	return config
