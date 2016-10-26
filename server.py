@@ -10,6 +10,13 @@ import config
 import requests
 from wakeonlan import wol
 
+import threading
+from datetime import datetime, date
+import schedule
+import time
+from astral import Astral
+import pytz
+
 
 # Create flask application.
 app = Flask(__name__)
@@ -17,38 +24,43 @@ app = Flask(__name__)
 # Get activity configuration.
 activities = config.get_activities()
 
+def lights_on():
+	while isitdark is False:
+		sleep(1)
+	ser.write("MHZ433: ON 4;")
 
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-	REQ_ADDR = "http://192.168.0.20:1234"
-	MAC_ADDR = "08-2E-5F-0E-81-56"
+def lights_off():
+	ser.write("MHZ433: OFF 4;")
 
-	tv_IsOn = False
-
-	# Find the right COM port
-	matches = []
-
-	for root, dirnames, filenames in os.walk('/dev'):
-	    for filename in fnmatch.filter(filenames, 'ttyUSB*'):
-	        matches.append(os.path.join(root, filename))
-
-	ser = serial.Serial()
-	ser.port = matches[0]
-	ser.baudrate = 9600
-	ser.timeout = 0
-	ser.xonxoff = False     #disable software flow control
-	ser.rtscts = False     #disable hardware (RTS/CTS) flow control
-	ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-
-	if ser.isOpen():
-		print "### Serial conenction already open!"
+def isitdark():
+	city_name = "Stockholm"
+	a = Astral()
+	city = a[city_name]
+	today_date = date.today()
+	sun = city.sun(date=today_date, local=True)
+	utc = pytz.UTC
+	if sun['sunrise'] <= utc.localize(datetime.utcnow()) <= sun['sunset']:
+		if sun['sunset'] >= utc.localize(datetime.utcnow()):
+			event = "sunset"
+			timediff = sun['sunset'] - utc.localize(datetime.utcnow())
+		if sun['sunset'] <= utc.localize(datetime.utcnow()):
+			event = "sunrise"
+			timediff = utc.localize(datetime.utcnow()) - sun['sunrise']
+		print("It's sunny outside: not trigerring (%s in %s)" % (event, timediff))
+		return False
 	else:
-		try:
-			ser.open()
-			print "### Serial connection open!"
-		except Exception, e:
-			print "### Error open serial port: " + str(e)
+		print("It's dark outside: triggering")
+		return True
 
-	print ser
+def run_schedule():
+	""" Method that runs forever """
+	# Turn on/off lights
+	schedule.every().day.at("16:30").do(lights_on)
+	schedule.every().day.at("23:00").do(lights_off)
+
+	while True:
+	    schedule.run_pending()
+	    time.sleep(1)
 
 
 
@@ -103,9 +115,46 @@ def activity(index):
 	for WOLcode in activities[index].get('WOL', []):
 		wol.send_magic_packet(MAC_ADDR)
 
-
-
 	return 'OK'
+
+
+
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+	REQ_ADDR = "http://192.168.0.20:1234"
+	MAC_ADDR = "08-2E-5F-0E-81-56"
+
+	tv_IsOn = False
+
+	# Find the right COM port
+	matches = []
+
+	for root, dirnames, filenames in os.walk('/dev'):
+	    for filename in fnmatch.filter(filenames, 'ttyUSB*'):
+	        matches.append(os.path.join(root, filename))
+
+	ser = serial.Serial()
+	ser.port = matches[0]
+	ser.baudrate = 9600
+	ser.timeout = 0
+	ser.xonxoff = False      # disable software flow control
+	ser.rtscts = False       # disable hardware (RTS/CTS) flow control
+	ser.dsrdtr = False       # disable hardware (DSR/DTR) flow control
+
+	if ser.isOpen():
+		print "### Serial conenction already open!"
+	else:
+		try:
+			ser.open()
+			print "### Serial connection open!"
+		except Exception, e:
+			print "### Error open serial port: " + str(e)
+	print ser
+
+	#run_schedule()
+	# Scheduler thread
+	thread = threading.Thread(target=run_schedule, args=())
+	thread.daemon = True # Daemonize thread
+	thread.start()       # Start the execution
 
 
 if __name__ == '__main__':
