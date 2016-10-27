@@ -43,6 +43,17 @@
 
 
 	<activity>
+		<name>HD BOX</name>
+		<codes>
+			<IR>
+				<IRcode>NEC: 20 F06148B7</IRcode>
+				<IRcode>NEC: 0 FFFFFFFF</IRcode>
+			</IR>
+		</codes>
+	</activity>
+
+
+	<activity>
 		<name>LED OFF</name>
 		<codes>
 			<LED>

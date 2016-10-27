@@ -1,3 +1,4 @@
+#include <NexaCtrl.h>
 #include <RCSwitch.h>
 #include <ctype.h>
 #include "IRremote_library.h"
@@ -19,9 +20,9 @@ decode_results command;
 unsigned int rawbuf[RAWBUF] = {0};
 
 // Remote code types.
-#define TYPE_COUNT 10
-String type_names[TYPE_COUNT] = { "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "MHZ433", "RAW" };
-int type_values[TYPE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, -1 };
+#define TYPE_COUNT 11
+String type_names[TYPE_COUNT] = { "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "MHZ433", "NEXA", "RAW" };
+int type_values[TYPE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1 };
 
 long int mhz_codes[4][2] = {
   {5510485, 5510484},
@@ -36,6 +37,12 @@ IRrecv irrecv(IR_RECV_PIN);
 
 // 433 MHz class and init
 RCSwitch MHZ = RCSwitch();
+
+// NEXA 433 MHz class
+#define NEXA_TX_PIN 10
+#define NEXA_RX_PIN 12
+const static unsigned long controller_id = 14664926;
+NexaCtrl nexaCtrl(NEXA_TX_PIN, NEXA_RX_PIN);
 
 
 // Setup function called once at bootup.
@@ -67,19 +74,24 @@ void loop() {
       for (int i = 0; i < TYPE_COUNT; ++i) {
         if (type == type_names[i]) {
           command.decode_type = type_values[i];
+          command.powerCMD = -1;
         }
       }
     }
     else if (c == ' ' && command.decode_type == MHZ433) {
       char* c = current_word();
-      //Serial.println(c);
-      //Serial.println(sizeof(c));
       if (strcmp(c, "ON") == 0) {
-        //Serial.println("Received on");
-        command.powerCMD = "ON";
+        command.powerCMD = 0;
       } else if (strcmp(c, "OFF") == 0) {
-        //Serial.println("Received off");
-        command.powerCMD = "OFF";
+        command.powerCMD = 1;
+      }
+    }
+    else if (c == ' ' && command.decode_type == NEXA) {
+      char* c = current_word();
+      if (strcmp(c, "ON") == 0) {
+        command.powerCMD = 0;
+      } else if (strcmp(c, "OFF") == 0) {
+        command.powerCMD = 1;
       }
     }
     else if (c == ' ' && command.decode_type == PANASONIC && command.panasonicAddress == 0 && index > 0) {
@@ -117,8 +129,14 @@ void loop() {
       if (command.panasonicAddress != 0) {
         Serial.print("Address: "); Serial.println(command.panasonicAddress, HEX);
       }
-      if (command.powerCMD) {
-        Serial.print("Command: "); Serial.println(command.powerCMD);
+      if (command.powerCMD != -1) {
+        String c;
+        if (command.powerCMD == 0) {
+          c = "ON";
+        } else {
+          c = "OFF";
+        }
+        Serial.print("Command: "); Serial.println(c);
       }
       Serial.print("Value: "); Serial.println(command.value, HEX);
       if (command.rawlen > 0) {
@@ -171,6 +189,13 @@ void send_command() {
   }
   else if (command.decode_type == MHZ433) {
     sendMHZ(command.value, command.powerCMD);
+  }
+  else if (command.decode_type == NEXA) {
+    if (command.powerCMD == 0) {
+      nexaCtrl.DeviceOn(controller_id, command.value-1);
+    } else if (command.powerCMD == 1) {
+      nexaCtrl.DeviceOff(controller_id, command.value-1);
+    }
   }
   else if (command.decode_type == RC5) {
     // RC5 codes are sent 3 times as a part of their protocol.
@@ -276,11 +301,7 @@ char* current_word() {
   return buffer;
 }
 
-void sendMHZ(unsigned long device, char* power) {
-  if (strcmp(power, "ON") == 0) {
-    MHZ.send(mhz_codes[device-1][0], 24);
-  } else if (strcmp(power, "OFF") == 0) {
-    MHZ.send(mhz_codes[device-1][1], 24);
-  }
+void sendMHZ(unsigned long device, unsigned int power) {
+  MHZ.send(mhz_codes[device-1][power], 24);
 }
 
