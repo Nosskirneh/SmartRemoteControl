@@ -10,7 +10,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
         <!--[if lt IE 9]>
@@ -36,20 +36,53 @@
             </div>
           </div>
         </p>
-        <div class="row">
-          {% for activity in activities %}
-          <div class="col-sm-2">
-            <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ loop.index - 1 }});">{{ activity.name }}</button>
+        <div id="groupContainer">
+          {% for activity, info in activities %}
+          <div class="col-sm-2 {{ info }} button">
+            <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ loop.index - 1 }});">{{ activity.keys()[0] }}</button>
           </div>
           {% endfor %}
         </div>
       </div>
       <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
       <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+      <script> // Script that groups together activities
+      var groups={};
+
+      $('#groupContainer >div.col-sm-2').each(function() {
+          var cls = (this.className);
+          
+          var group = groups[cls];
+          if(!group)
+          {
+              group = $('<div/>').appendTo('#groupContainer');
+              group.addClass('group ' + cls.split(' ')[1]);
+              
+              groups[cls] = group;
+          }
+          
+          $(this).appendTo(group);
+          $(this).removeClass(cls.split(' ')[1]);
+      });
+      </script>
+
+
+      <script> // Script that adds headlines
+        $('#groupContainer >div.group').each(function() {
+          var grpName = (this.className).split(' ')[1];
+          var h2 = document.createElement("H2");           // Create a <h2> element
+          var text = document.createTextNode(grpName);     // Create a text node
+          h2.appendChild(text);
+          $(this).prepend(h2);
+        });
+      </script>
+
+
       <script>
       var activityList = [
       {% for activity in activities %}
-        { name: '{{ activity.name }}', index: {{ loop.index - 1 }} } {{ ',' if not loop.last }}
+        { name: '{{ activity }}', index: {{ loop.index - 1 }} } {{ ',' if not loop.last }}
       {% endfor %}
       ];
 

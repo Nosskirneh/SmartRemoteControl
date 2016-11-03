@@ -1,164 +1,164 @@
 <?xml version="1.0"?>
 <activities>
-	<!-- Configure each activity below.  Create an activity node with name
-	     which will be displayed on the activity button.  Add a codes node
-	     which includes a code element for each remote control code to
-	     send in order. -->
-	<activity>
-		<name>PLEX ON</name>
-		<codes>
-			<LED>
-				<LEDcode>CLEAR</LEDcode>
-			</LED>
+    <!-- MHZ433 -->
+        <!-- 1 -->
+        <section name="mhz433">
+            <activity name="1 ON">
+                <code type="MHZ433">ON 1</code>
+            </activity>
+        </section>
 
-			<IR>
-				<IRcode>SONY: C A90</IRcode>
-			</IR>
-		</codes>
-	</activity>
+        <section name="mhz433">
+            <activity name="1 OFF">
+                <code type="MHZ433">OFF 1</code>
+            </activity>
+        </section>
 
+        <!-- 2 -->
+        <section name="mhz433">
+            <activity name="2 ON">
+                <code type="MHZ433">ON 2</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>PLEX OFF</name>
-		<codes>
-			<LED>
-				<LEDcode>BLACK</LEDcode>
-			</LED>
+        <section name="mhz433">
+            <activity name="2 OFF">
+                <code type="MHZ433">OFF 2</code>
+            </activity>
+        </section>
 
-			<IR>
-				<IRcode>SONY: C A90</IRcode>
-			</IR>
-		</codes>
-	</activity>
+        <!-- 3 -->
+        <section name="mhz433">
+            <activity name="3 ON">
+                <code type="MHZ433">ON 3</code>
+            </activity>
+        </section>
 
+        <section name="mhz433">
+            <activity name="3 OFF">
+                <code type="MHZ433">OFF 3</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>TV</name>
-		<codes>
-			<IR>
-				<IRcode>SONY: C A90</IRcode>
-			</IR>
-		</codes>
-	</activity>
+        <!-- 4 -->
+        <section name="mhz433">
+            <activity name="4 ON">
+                <code type="MHZ433">ON 4</code>
+            </activity>
+        </section>
 
-
-	<activity>
-		<name>HD BOX</name>
-		<codes>
-			<IR>
-				<IRcode>NEC: 20 F06148B7</IRcode>
-				<IRcode>NEC: 0 FFFFFFFF</IRcode>
-			</IR>
-		</codes>
-	</activity>
-
-
-	<activity>
-		<name>LED OFF</name>
-		<codes>
-			<LED>
-				<LEDcode>BLACK</LEDcode>
-			</LED>
-		</codes>
-	</activity>
+        <section name="mhz433">
+            <activity name="4 OFF">
+                <code type="MHZ433">OFF 4</code>
+            </activity>
+        </section>
+    <!-- -->
 
 
-	<activity>
-		<name>LED MOVIE</name>
-		<codes>
-			<LED>
-				<LEDcode>CLEAR</LEDcode>
-			</LED>
-		</codes>
-	</activity>
+    <!-- NEXA -->
+        <!-- 1 -->
+        <section name="nexa">
+            <activity name="1 ON">
+                <code type="NEXA">ON 1</code>
+            </activity>
+        </section>
 
+        <section name="nexa">
+            <activity name="1 OFF">
+                <code type="NEXA">OFF 1</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>PC ON</name>
-		<codes>
-			<WOL>
-				<WOLcode>ON</WOLcode>
-			</WOL>
-		</codes>
-	</activity>
+        <!-- 2 -->
+        <section name="nexa">
+            <activity name="2 ON">
+                <code type="NEXA">ON 2</code>
+            </activity>
+        </section>
 
+        <section name="nexa">
+            <activity name="2 OFF">
+                <code type="NEXA">OFF 2</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>1 ON</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: ON 1</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+        <!-- 3 -->
+        <section name="nexa">
+            <activity name="3 ON">
+                <code type="NEXA">ON 3</code>
+            </activity>
+        </section>
 
+        <section name="nexa">
+            <activity name="3 OFF">
+                <code type="NEXA">OFF 3</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>1 OFF</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: OFF 1</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+        <!-- 4 -->
+        <section name="nexa">
+            <activity name="4 ON">
+                <code type="NEXA">ON 4</code>
+            </activity>
+        </section>
 
+        <section name="nexa">
+            <activity name="4 OFF">
+                <code type="NEXA">OFF 4</code>
+            </activity>
+        </section>
+    <!-- -->
 
-	<activity>
-		<name>SPEAKERS ON</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: ON 2</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+    <!-- OTHER -->
+        <!-- MEDIA -->
+        <section name="other">
+            <activity name="TV">
+                <code type="IR">SONY: C A90</code>
+            </activity>
+        </section>
 
+        <section name="other">
+            <activity name="HD BOX">
+                <code type="IR">NEC: 20 F06148B7</code>
+                <code type="IR">NEC: 0 FFFFFFFF</code>
+            </activity>
+        </section>
 
-	<activity>
-		<name>SPEAKERS OFF</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: OFF 2</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+        <section name="other">
+            <activity name="PLEX ON">
+                <code type="LED">CLEAR</code>
+                <code type="IR">SONY: C A90</code>
+            </activity>
+        </section>
 
+        <section name="other">
+            <activity name="PLEX OFF">
+                <code type="LED">BLACK</code>
+                <code type="IR">SONY: C A90</code>
+            </activity>
+        </section>
+        <!-- -->
 
-	<activity>
-		<name>Charger ON</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: ON 3</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+        <!-- LED -->
+        <section name="other">
+            <activity name="LED OFF">
+                <code type="LED">BLACK</code>
+            </activity>
+        </section>
 
+        <section name="other">
+            <activity name="LED CLEAR">
+                <code type="LED">CLEAR</code>
+            </activity>
+        </section>
+        <!-- -->
 
-	<activity>
-		<name>Charger OFF</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: OFF 3</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
-
-
-	<activity>
-		<name>4 ON</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: ON 4</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
-
-
-	<activity>
-		<name>4 OFF</name>
-		<codes>
-			<MHZ>
-				<MHZcode>MHZ433: OFF 4</MHZcode>
-			</MHZ>
-		</codes>
-	</activity>
+        <!-- WOL -->
+        <section name="other">
+            <activity name="PC ON">
+                <code type="WOL">ON</code>
+            </activity>
+        </section>
+        <!-- -->
+    <!-- -->
 </activities>

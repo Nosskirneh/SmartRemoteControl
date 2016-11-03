@@ -1,5 +1,5 @@
 import os
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ET
 
 # Change to directory of script so relative file references work.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -7,16 +7,26 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # Name of configuration file.
 FILE_NAME = 'activities.xml'
 
+act = []
+codeList = {}
+
+def reset_codeList():
+    global codeList
+    codeList = {}
+
 
 def get_activities():
-	# Open the config XML file and parse all the activities.
-	config = []
-	for child in et.parse(FILE_NAME).iter('activity'):
-		# Create a dictionary with the name and code list for each activity.
-		config.append({'name': child.find('name').text,
-					   'IR': [x.text for x in child.iter('IRcode')],
-					   'MHZ': [x.text for x in child.iter('MHZcode')],
-					   'LED': [x.text for x in child.iter('LEDcode')],
-					   'WOL': [x.text for x in child.iter('WOLcode')]
-					   })
-	return config
+    root = ET.parse(FILE_NAME)
+    sections = root.findall('section')
+    for s in sections:
+        activities = s.findall('activity')
+        for a in activities:
+            codes = a.findall('code')
+            reset_codeList()
+            for c in codes:
+                codeList[c.attrib['type']] = []           # create list from code type
+                codeList[c.attrib['type']].append(c.text) # add instruction to the corresponding group in codeList
+        d = dict([(a.attrib['name'], codeList)])          # make a dict from the activity name and corresponding codes
+        f = [d, s.attrib['name']]                         # make a list of the dict and group name
+        act.append(f)                                     # add the list to the activity list
+    return act
