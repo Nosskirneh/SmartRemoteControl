@@ -23,6 +23,7 @@ import pytz
 # Create flask application.
 app = Flask(__name__)
 
+### APP ROUTES ###
 @app.route('/')
 def root():
     return render_template('index.html', activities=activities)
@@ -42,18 +43,18 @@ def activity(index):
     if index == -1:
         return
 
+    # Check authorization
     auth = request.headers['Authorization'].split()[1]
     user, pw = base64.b64decode(auth).split(":")
     if not (user == username and pw == password):
-        print user, pw
         return 'Not authorized!', 401
 
     for activity, groups in activities[index][0].iteritems():
         for group, codes in groups.iteritems():
             for code in codes:
-                if group == "IR": # IR section
-                    # don't switch power when already on/off
+                if group == "IR":           # IR section
                     if (code == "SONY: C A90" and tv_IsOn == True and activity == "PLEX ON"):
+                        # don't switch power when already on/off
                         print "TV is already on."
                         break
                     elif (code == "SONY: C A90" and tv_IsOn == False and \
@@ -67,19 +68,19 @@ def activity(index):
                         (activity == "PLEX OFF" or activity == "TV ON/OFF")):
                         tv_IsOn = False
 
-                    ser.write(code + ";") # Send IR code to Arduino
+                    ser.write(code + ";")   # Send IR code to Arduino
                     print ser.readlines()
 
-                    if (code != codes[-1]): # Don't delay on last item
-                        time.sleep(0.3) # Wait ~300 milliseconds between codes.
+                    if (code != codes[-1]): # Don't delay after last item
+                        time.sleep(0.3)     # Wait ~300 milliseconds between codes.
 
-                elif (group == "MHZ433"): # MHZ433 section
+                elif (group == "MHZ433"):   # MHZ433 section
                     ser.write("MHZ433: " + code + ";")
 
-                elif (group == "NEXA"): # NEXA section
+                elif (group == "NEXA"):     # NEXA section
                     ser.write("NEXA: " + code + ";")
 
-                elif (group == "LED"): # HyperionWeb
+                elif (group == "LED"):      # HyperionWeb
                     if (code == "CLEAR"):
                         r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
                         r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'30'})
@@ -87,12 +88,13 @@ def activity(index):
                         r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
                         r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
 
-                elif (group == "WOL"): # Wake on LAN
+                elif (group == "WOL"):      # Wake on LAN
                     wol.send_magic_packet(MAC_ADDR)
 
     return 'OK'
 
 
+### METHODS ###
 def run_command(commands):
     for cmd in commands:
         sleep(1)
@@ -133,6 +135,9 @@ def run_schedule():
     # Turn on/off lights
     schedule.every().day.at("16:00").do(lights_on)
     schedule.every().day.at("23:00").do(lights_off)
+
+    schedule.every().day.at("06:00").do(lights_on)
+    schedule.every().day.at("07:30").do(lights_off)
 
     while True:
         schedule.run_pending()
