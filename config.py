@@ -8,12 +8,6 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 FILE_NAME = 'activities.xml'
 
 act = []
-codeList = {}
-
-def reset_codeList():
-    global codeList
-    codeList = {}
-
 
 def get_activities():
     root = ET.parse(FILE_NAME)
@@ -22,7 +16,7 @@ def get_activities():
         activities = s.findall('activity')
         for a in activities:
             codes = a.findall('code')
-            reset_codeList()
+            codeList = {}
             for c in codes:
                 codeList[c.attrib['type']] = []           # create list from code type
                 codeList[c.attrib['type']].append(c.text) # add instruction to the corresponding group in codeList
