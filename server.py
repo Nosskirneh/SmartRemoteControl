@@ -43,11 +43,12 @@ def activity(index):
     if index == -1:
         return
 
-    # Check authorization
-    auth = request.headers['Authorization'].split()[1]
-    user, pw = base64.b64decode(auth).split(":")
-    if not (user == username and pw == password):
-        return 'Not authorized!', 401
+	if request.method == 'POST': # Must have received a POST-request, otherwise local function
+	    # Check authorization
+	    auth = request.headers['Authorization'].split()[1]
+	    user, pw = base64.b64decode(auth).split(":")
+	    if not (user == username and pw == password):
+	        return 'Not authorized!', 401
 
     for activity, groups in activities[index][0].iteritems():
         for group, codes in groups.iteritems():
