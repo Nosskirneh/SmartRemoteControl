@@ -120,8 +120,8 @@
 
       <script>
       var activityList = [
-      {% for activity in activities %}
-        { name: '{{ activity }}', index: {{ loop.index - 1 }} } {{ ',' if not loop.last }}
+      {% for activity, info in activities %}
+        { name: '{{ activity.keys()[0] }}', index: {{ loop.index - 1 }} } {{ ',' if not loop.last }}
       {% endfor %}
       ];
 
@@ -152,7 +152,7 @@
 
       function speak() {
         $('#speech-status').text('Speak activity name...');
-        // Run speech recognition. 
+        // Run speech recognition.
         var recognition = new webkitSpeechRecognition();
         recognition.onresult = function(event) {
           // When a result is available, first grab the transcript.

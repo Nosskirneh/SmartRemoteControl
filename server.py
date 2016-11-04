@@ -35,20 +35,19 @@ def command():
     print return_index(name, group)
     activity(return_index(name, group))
 
-    return 'OK'
-
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
     global tv_IsOn
     if index == -1:
         return
 
-	if request.method == 'POST': # Must have received a POST-request, otherwise local function
-	    # Check authorization
-	    auth = request.headers['Authorization'].split()[1]
-	    user, pw = base64.b64decode(auth).split(":")
-	    if not (user == username and pw == password):
-	        return 'Not authorized!', 401
+    # Must have received a POST-request, otherwise local function
+    if request.method == 'POST':
+        # Check authorization
+        auth = request.headers['Authorization'].split()[1]
+        user, pw = base64.b64decode(auth).split(":")
+        if not (user == username and pw == password):
+            return 'Unauthorized', 401
 
     for activity, groups in activities[index][0].iteritems():
         for group, codes in groups.iteritems():
@@ -83,16 +82,22 @@ def activity(index):
 
                 elif (group == "LED"):      # HyperionWeb
                     if (code == "CLEAR"):
-                        r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
-                        r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'30'})
+                        try:
+                            r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
+                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'30'})
+                        except requests.ConnectionError:
+                            return 'Service Unavailable', 503
                     if (code == "BLACK"):
-                        r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
-                        r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
+                        try:
+                            r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
+                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
+                        except requests.ConnectionError:
+                            return 'Service Unavailable', 503
 
                 elif (group == "WOL"):      # Wake on LAN
                     wol.send_magic_packet(MAC_ADDR)
 
-    return 'OK'
+    return 'OK', 200
 
 
 ### METHODS ###
