@@ -205,4 +205,4 @@ if __name__ == '__main__':
     # reloading of the server on changes.  Also make the server threaded
     # so multiple connections can be processed at once (very important
     # for using server sent events).
-    app.run(host='0.0.0.0', debug=True, threaded=True) 
+    app.run(host='0.0.0.0', port=3000, debug=True, threaded=True) 
