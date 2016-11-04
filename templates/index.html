@@ -44,7 +44,12 @@
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-        <![endif]--> 
+        <![endif]-->
+
+      <div id="result" class="alert alert-success" style="display: none;">Success!</div>
+      <div id="error" class="alert alert-danger" style="display: none;">Error!</div>
+
+
       <div class="container">
         <div class="jumbotron">
           <h1>Smart Remote Control</h1>
@@ -74,7 +79,6 @@
         </p>
 
         
-
         <div id="groupContainer">
           {% for activity, info in activities %}
           <div class="col-sm-2 {{ info }} button">
@@ -141,13 +145,26 @@
 
       function sendActivity(index) {
         $("#submit_button").click()
-        $.ajax({
+        var request = $.ajax({
           url: '/activity/' + index,
           beforeSend: function (xhr){ 
             xhr.setRequestHeader('Authorization', make_base_auth(username, password)); 
           },
           method: 'POST'
         });
+
+        request.done(
+          function( response ){
+            $('#result').fadeIn(0).delay(2000).fadeOut("fast");
+          }
+        );
+
+        request.fail(
+          function( response ){
+            $('#error').text(response.responseText);
+            $('#error').fadeIn(0).delay(2000).fadeOut("fast");
+          }
+        );
       }
 
       function speak() {
