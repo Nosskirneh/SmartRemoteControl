@@ -7,7 +7,9 @@ import serial
 from time import sleep
 from flask import *
 import config
+from credentials import *
 import requests
+import base64
 from wakeonlan import wol
 
 import threading
@@ -39,6 +41,13 @@ def activity(index):
     global tv_IsOn
     if index == -1:
         return
+
+    auth = request.headers['Authorization'].split()[1]
+    user, pw = base64.b64decode(auth).split(":")
+    if not (user == username and pw == password):
+        print user, pw
+        return 'Not authorized!', 401
+
     for activity, groups in activities[index][0].iteritems():
         for group, codes in groups.iteritems():
             for code in codes:
@@ -158,10 +167,10 @@ def init_comport():
     else:
         try:
             ser.open()
-            print "### Serial connection open!"
+            print " * Serial connection open!"
         except Exception, e:
-            print "### Error open serial port: " + str(e)
-    print ser
+            print " * Error open serial port: " + str(e)
+    return ser
 
 
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true": # This will only run once, not twice
@@ -171,7 +180,7 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true": # This will only run once, not
     MAC_ADDR = "08-2E-5F-0E-81-56"
     tv_IsOn = False
 
-    init_comport()
+    ser = init_comport()
 
     # Scheduler thread - run_schedule()
     thread = threading.Thread(target=run_schedule, args=())

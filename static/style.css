@@ -3,6 +3,24 @@ body {
   padding-bottom: 20px;
 }
 
+.form-group {
+    margin-bottom: 15px;
+    display: inline-block;
+    margin: 0px 10px;
+}
+
+.btn-speak {
+    width: 100%;
+}
+
+.row {
+    text-align: center;
+}
+
+.row div {
+    display: inline-block;
+}
+
 .button {
     height: 46px;
     margin-bottom: 10px;
@@ -30,6 +48,17 @@ body {
 }
 
 @media only screen and (max-device-width: 1000px) {
+    .row div {
+        width: 100%;
+        display: inline-block;
+        margin: 4px 0;
+    }
+
+    .form-group {
+        display: initial;
+        margin: auto;
+    }
+
     #groupContainer {
         display: initial;
     }
