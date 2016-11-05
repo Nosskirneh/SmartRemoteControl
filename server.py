@@ -32,7 +32,6 @@ def root():
 def command():
     name  = request.args.get('name')
     group = request.args.get('group')
-    print return_index(name, group)
     activity(return_index(name, group))
 
 @app.route('/activity/<int:index>', methods=['POST'])
@@ -41,13 +40,11 @@ def activity(index):
     if index == -1:
         return
 
-    # Must have received a POST-request, otherwise local function
-    if request.method == 'POST':
-        # Check authorization
-        auth = request.headers['Authorization'].split()[1]
-        user, pw = base64.b64decode(auth).split(":")
-        if not (user == username and pw == password):
-            return 'Unauthorized', 401
+    # Check authorization
+    auth = request.headers['Authorization'].split()[1]
+    user, pw = base64.b64decode(auth).split(":")
+    if not (user == username and pw == password):
+       return 'Unauthorized', 401
 
     for activity, groups in activities[index][0].iteritems():
         for group, codes in groups.iteritems():
@@ -74,17 +71,14 @@ def activity(index):
                     if (code != codes[-1]): # Don't delay after last item
                         time.sleep(0.3)     # Wait ~300 milliseconds between codes.
 
-                elif (group == "MHZ433"):   # MHZ433 section
-                    ser.write("MHZ433: " + code + ";")
-
-                elif (group == "NEXA"):     # NEXA section
-                    ser.write("NEXA: " + code + ";")
+                elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
+                    ser.write(group + ": " + code + ";")
 
                 elif (group == "LED"):      # HyperionWeb
                     if (code == "CLEAR"):
                         try:
                             r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
-                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'30'})
+                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'20'})
                         except requests.ConnectionError:
                             return 'Service Unavailable', 503
                     if (code == "BLACK"):
@@ -102,9 +96,12 @@ def activity(index):
 
 ### METHODS ###
 def run_command(commands):
-    for cmd in commands:
-        sleep(1)
-        activity(return_index(cmd[0], cmd[1]))
+    auth = base64.b64encode(username + ":" + password)
+    with app.test_client() as client:
+        for cmd in commands:
+            sleep(1)
+            client.post('/activity/' + str(return_index(cmd[0], cmd[1])),
+                headers={'Authorization': "Basic " + auth});
 
 def lights_on():
     while isitdark() is False:
@@ -139,8 +136,8 @@ def isitdark():
 def run_schedule():
     """ Method that runs forever """
     # Turn on/off lights
-    schedule.every().day.at("16:00").do(lights_on)
-    schedule.every().day.at("23:00").do(lights_off)
+    schedule.every().day.at("15:00").do(lights_on)
+    schedule.every().day.at("02:00").do(lights_off)
 
     schedule.every().day.at("06:00").do(lights_on)
     schedule.every().day.at("07:30").do(lights_off)
@@ -165,13 +162,13 @@ def init_comport():
         for filename in fnmatch.filter(filenames, 'ttyUSB*'):
             matches.append(os.path.join(root, filename))
 
-    ser = serial.Serial()
-    ser.port = matches[0]
+    ser          = serial.Serial()
+    ser.port     = matches[0]
     ser.baudrate = 9600
-    ser.timeout = 0
-    ser.xonxoff = False      # disable software flow control
-    ser.rtscts = False       # disable hardware (RTS/CTS) flow control
-    ser.dsrdtr = False       # disable hardware (DSR/DTR) flow control
+    ser.timeout  = 0
+    ser.xonxoff  = False      # disable software flow control
+    ser.rtscts   = False       # disable hardware (RTS/CTS) flow control
+    ser.dsrdtr   = False       # disable hardware (DSR/DTR) flow control
 
     if ser.isOpen():
         print "### Serial conenction already open!"
@@ -191,6 +188,7 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true": # This will only run once, not
     MAC_ADDR = "08-2E-5F-0E-81-56"
     tv_IsOn = False
 
+    # Initialize COM-port 
     ser = init_comport()
 
     # Scheduler thread - run_schedule()
@@ -200,9 +198,4 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true": # This will only run once, not
 
 
 if __name__ == '__main__':
-    # Create a server listening for external connections on the default
-    # port 5000.  Enable debug mode for better error messages and live
-    # reloading of the server on changes.  Also make the server threaded
-    # so multiple connections can be processed at once (very important
-    # for using server sent events).
     app.run(host='0.0.0.0', port=3000, debug=True, threaded=True) 

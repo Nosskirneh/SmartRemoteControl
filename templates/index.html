@@ -14,7 +14,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
         <!-- favicons -->
-        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
         <link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
         <link rel="icon" type="image/png" sizes="196x196" href="{{ url_for('static', filename='favicon/favicon-192.png') }}">
         <link rel="icon" type="image/png" sizes="160x160" href="{{ url_for('static', filename='favicon/favicon-160.png') }}">
@@ -145,10 +145,15 @@
 
       function sendActivity(index) {
         $("#submit_button").click()
+
+        $.ajaxSetup({
+            headers: { "CustomHeader": "myValue" }
+        });
+
         var request = $.ajax({
           url: '/activity/' + index,
           beforeSend: function (xhr){ 
-            xhr.setRequestHeader('Authorization', make_base_auth(username, password)); 
+            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
           },
           method: 'POST'
         });
