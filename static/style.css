@@ -74,14 +74,30 @@ body {
     font-weight: bold;
 }
 
-@media (max-device-width: 1200px) {
+@media screen and (max-width: 1200px) and (min-width: 768px) {
 	#creds {
 		margin-top: 15px;
 	}
 }
 
+@media screen and (max-width: 585px) {
+    .row > div {
+        display: block;
+    }
+
+    #creds {
+        margin-top: 15px;
+        display: flex;
+    }
+
+    .form-group {
+        margin: auto;
+        width: 45%;
+    }
+}
+
 @media only screen and (max-device-width: 1000px) {
-    .row div {
+    .row > div {
         width: 100%;
         display: inline-block;
         margin: 4px 0;
