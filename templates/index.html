@@ -53,6 +53,7 @@
       <div class="container">
         <div class="jumbotron">
           <h1>Smart Remote Control</h1>
+          <div id=logo></div>
         </div>
         <p>
           <div class="row">
@@ -62,7 +63,7 @@
             <div class="col-sm-2">
               <!-- iframe below is used to trigger browser 'save password' dialog -->
               <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
-              <form target="temp" onsubmit="getCredentials();">
+              <form id="creds" target="temp" onsubmit="getCredentials();">
                 <div class="form-group">
                   <input id="usr" class="form-control" name="user" placeholder="user">
                 </div>

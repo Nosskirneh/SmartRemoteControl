@@ -3,6 +3,18 @@ body {
   padding-bottom: 20px;
 }
 
+.jumbotron {
+	display: flex;
+}
+
+#logo {
+	background-image: url("favicon/favicon-310.png");
+	background-repeat: no-repeat;
+	width: 200px;
+    height: 200px;
+    background-size: 200px 200px;
+}
+
 .form-group {
     margin-bottom: 15px;
     display: inline-block;
@@ -62,6 +74,12 @@ body {
     font-weight: bold;
 }
 
+@media (max-device-width: 1200px) {
+	#creds {
+		margin-top: 15px;
+	}
+}
+
 @media only screen and (max-device-width: 1000px) {
     .row div {
         width: 100%;
@@ -92,5 +110,9 @@ body {
         display: flex;
         width: auto;
         height: auto;
+    }
+
+    #logo {
+    	display: none;
     }
 }

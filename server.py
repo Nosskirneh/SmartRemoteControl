@@ -32,13 +32,13 @@ def root():
 def command():
     name  = request.args.get('name')
     group = request.args.get('group')
-    activity(return_index(name, group))
+    return activity(return_index(name, group))
 
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
     global tv_IsOn
     if index == -1:
-        return
+        return 'Not Implemented', 501
 
     # Check authorization
     auth = request.headers['Authorization'].split()[1]
@@ -103,10 +103,17 @@ def run_command(commands):
             client.post('/activity/' + str(return_index(cmd[0], cmd[1])),
                 headers={'Authorization': "Basic " + auth});
 
-def lights_on():
+def morning():
+    commands = [["1 ON", "mhz433"]]
+    lights_on(commands)
+
+def evening():
+    commands = [["4 ON", "mhz433"], ["1 ON", "mhz433"], ["2 ON", "nexa"], ["3 ON", "nexa"]]
+    lights_on(commands)
+
+def lights_on(commands):
     while isitdark() is False:
         sleep(1)
-    commands = [["4 ON", "mhz433"], ["1 ON", "mhz433"], ["2 ON", "nexa"], ["3 ON", "nexa"]]
     run_command(commands)
 
 def lights_off():
@@ -136,10 +143,10 @@ def isitdark():
 def run_schedule():
     """ Method that runs forever """
     # Turn on/off lights
-    schedule.every().day.at("15:00").do(lights_on)
+    schedule.every().day.at("15:00").do(evening)
     schedule.every().day.at("02:00").do(lights_off)
 
-    schedule.every().day.at("06:00").do(lights_on)
+    schedule.every().day.at("06:00").do(morning)
     schedule.every().day.at("07:30").do(lights_off)
 
     while True:
