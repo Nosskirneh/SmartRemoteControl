@@ -23,6 +23,11 @@ body {
 
 .btn-speak {
     width: 100%;
+    margin-bottom: 5px;
+}
+
+#creds {
+    margin: 5px 0;
 }
 
 .row {
@@ -34,9 +39,9 @@ body {
 }
 
 .button {
-    height: 46px;
     margin-bottom: 10px;
     margin: 5px auto;
+    max-width: 170px;
 }
 
 #groupContainer {
@@ -48,15 +53,14 @@ body {
     display: flex;
     flex-wrap: wrap;
     padding-bottom: 30px;
-    height: 0;
     max-width: 500px;
     width: 440px;
+    height: 100%;
 }
 
-.group h2 {
+h2 {
     width: 100%;
     text-align: center;
-    margin-bottom: 20px;
 }
 
 #result, #error {
