@@ -34,6 +34,13 @@ def command():
     group = request.args.get('group')
     return activity(return_index(name, group))
 
+@app.route('/getCommands', methods=['GET'])
+def getCommands():
+    # Check authorization
+    if not isAuthOK():
+       return 'Unauthorized', 401
+    return jsonify(activities)
+
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
     global tv_IsOn
@@ -41,9 +48,7 @@ def activity(index):
         return 'Not Implemented', 501
 
     # Check authorization
-    auth = request.headers['Authorization'].split()[1]
-    user, pw = base64.b64decode(auth).split(":")
-    if not (user == username and pw == password):
+    if not isAuthOK():
        return 'Unauthorized', 401
 
     for activity, groups in activities[index][0].iteritems():
@@ -95,6 +100,13 @@ def activity(index):
 
 
 ### METHODS ###
+def isAuthOK():
+    auth = request.headers['Authorization'].split()[1]
+    user, pw = base64.b64decode(auth).split(":")
+    if not (user == username and pw == password):
+        return False
+    return True
+
 def run_command(commands):
     auth = base64.b64encode(username + ":" + password)
     with app.test_client() as client:
