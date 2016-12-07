@@ -94,19 +94,6 @@
                 <code type="NEXA">OFF 3</code>
             </activity>
         </section>
-
-        <!-- 4 -->
-        <section name="nexa">
-            <activity name="4 ON">
-                <code type="NEXA">ON 4</code>
-            </activity>
-        </section>
-
-        <section name="nexa">
-            <activity name="4 OFF">
-                <code type="NEXA">OFF 4</code>
-            </activity>
-        </section>
     <!-- -->
 
     <!-- OTHER -->

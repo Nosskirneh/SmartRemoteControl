@@ -119,17 +119,23 @@ def morning():
     commands = [["1 ON", "mhz433"]]
     lights_on(commands)
 
-def evening():
-    commands = [["4 ON", "mhz433"], ["1 ON", "mhz433"], ["2 ON", "nexa"], ["3 ON", "nexa"]]
+def morning_off():
+    while isitdark() is True:
+        sleep(1)
+    commands = [["1 OFF", "mhz433"]]
     lights_on(commands)
+
+def evening():
+    commands = [["4 ON", "mhz433"], ["1 ON", "mhz433"], ["1 ON", "nexa"], ["2 ON", "nexa"], ["3 ON", "nexa"]]
+    lights_on(commands)
+
+def evening_off():
+    commands = [["4 OFF", "mhz433"], ["1 OFF", "mhz433"], ["1 ON", "nexa"], ["2 OFF", "nexa"], ["3 OFF", "nexa"]]
+    run_command(commands)
 
 def lights_on(commands):
     while isitdark() is False:
         sleep(1)
-    run_command(commands)
-
-def lights_off():
-    commands = [["4 OFF", "mhz433"], ["1 OFF", "mhz433"], ["2 OFF", "nexa"], ["3 OFF", "nexa"]]
     run_command(commands)
 
 def isitdark():
@@ -185,7 +191,7 @@ def init_comport():
     ser.port     = matches[0]
     ser.baudrate = 9600
     ser.timeout  = 0
-    ser.xonxoff  = False      # disable software flow control
+    ser.xonxoff  = False       # disable software flow control
     ser.rtscts   = False       # disable hardware (RTS/CTS) flow control
     ser.dsrdtr   = False       # disable hardware (DSR/DTR) flow control
 
@@ -199,8 +205,8 @@ def init_comport():
             print " * Error open serial port: " + str(e)
     return ser
 
-
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true": # This will only run once, not twice
+# This will only run once, not twice
+if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     # Load variables
     activities = config.get_activities() # Parse activity configuration.
     REQ_ADDR = "http://192.168.0.20:1234"
