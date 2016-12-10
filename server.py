@@ -34,6 +34,10 @@ def command():
     group = request.args.get('group')
     return activity(return_index(name, group))
 
+@app.route('/status', methods=['GET'])
+def returnOnline():
+    return 'OK', 200
+
 @app.route('/getCommands', methods=['GET'])
 def getCommands():
     # Check authorization
