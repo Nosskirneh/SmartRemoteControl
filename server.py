@@ -166,10 +166,10 @@ def run_schedule():
     """ Method that runs forever """
     # Turn on/off lights
     schedule.every().day.at("15:00").do(evening)
-    schedule.every().day.at("02:00").do(lights_off)
+    schedule.every().day.at("02:00").do(evening_off)
 
     schedule.every().day.at("06:00").do(morning)
-    schedule.every().day.at("07:30").do(lights_off)
+    schedule.every().day.at("07:30").do(morning_off)
 
     while True:
         schedule.run_pending()
