@@ -34,6 +34,12 @@ def command():
     group = request.args.get('group')
     return activity(return_index(name, group))
 
+@app.route('/checkAuth', methods=['GET'])
+def checkAuth():
+    if isAuthOK():
+        return 'OK', 200
+    return 'Unauthorized', 401
+
 @app.route('/status', methods=['GET'])
 def returnOnline():
     return 'OK', 200
@@ -105,11 +111,14 @@ def activity(index):
 
 ### METHODS ###
 def isAuthOK():
-    auth = request.headers['Authorization'].split()[1]
-    user, pw = base64.b64decode(auth).split(":")
-    if not (user == username and pw == password):
+    try:
+        auth = request.headers['Authorization'].split()[1]
+        user, pw = base64.b64decode(auth).split(":")
+        if not (user == username and pw == password):
+            return False
+        return True
+    except KeyError:
         return False
-    return True
 
 def run_command(commands):
     auth = base64.b64encode(username + ":" + password)
