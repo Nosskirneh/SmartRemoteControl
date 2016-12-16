@@ -44,12 +44,12 @@ def checkAuth():
 def returnOnline():
     return 'OK', 200
 
-@app.route('/getCommands', methods=['GET'])
+@app.route('/commands', methods=['GET'])
 def getCommands():
     # Check authorization
     if not isAuthOK():
        return 'Unauthorized', 401
-    return jsonify(activities)
+    return jsonify(config.get_acts_simple())
 
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
