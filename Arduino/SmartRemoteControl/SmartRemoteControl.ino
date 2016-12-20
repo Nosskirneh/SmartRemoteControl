@@ -24,11 +24,23 @@ unsigned int rawbuf[RAWBUF] = {0};
 String type_names[TYPE_COUNT] = { "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP", "PANASONIC", "JVC", "MHZ433", "NEXA", "RAW" };
 int type_values[TYPE_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1 };
 
-long int mhz_codes[4][2] = {
-  {5510485, 5510484},
-  {5522773, 5522772},
-  {5525845, 5525844},
-  {5526613, 5526612},
+long int mhz_codes[16][2] = {
+  {1381717, 1381716}, // 1-1
+  {1394005, 1394004}, // 1-2
+  {1397077, 1397076}, // 1-3
+  {1397845, 1397844}, // 1-4
+  {4527445, 4527444}, // 2-1
+  {4539733, 4539732}, // 2-2
+  {4542805, 4542804}, // 2-3
+  {4543573, 4543572}, // 2-4
+  {5313877, 5313876}, // 3-1
+  {5326165, 5326164}, // 3-2
+  {5329237, 5329236}, // 3-3
+  {5330005, 5330004}, // 3-4
+  {5510485, 5510484}, // 4-1
+  {5522773, 5522772}, // 4-2
+  {5525845, 5525844}, // 4-3
+  {5526613, 5526612}, // 4-4
 };
 
 // IR send and receive class.
@@ -78,15 +90,7 @@ void loop() {
         }
       }
     }
-    else if (c == ' ' && command.decode_type == MHZ433) {
-      char* c = current_word();
-      if (strcmp(c, "ON") == 0) {
-        command.powerCMD = 0;
-      } else if (strcmp(c, "OFF") == 0) {
-        command.powerCMD = 1;
-      }
-    }
-    else if (c == ' ' && command.decode_type == NEXA) {
+    else if (c == ' ' && (command.decode_type == NEXA || command.decode_type == MHZ433)) {
       char* c = current_word();
       if (strcmp(c, "ON") == 0) {
         command.powerCMD = 0;
@@ -269,7 +273,7 @@ void print_code(decode_results *results) {
   }
   else if (results->decode_type == MHZ433) {
     Serial.print("MHZ433: ");
-    Serial.print(results->value);
+    Serial.print(results->value, DEC);
     Serial.print(" ");
     Serial.println(results->powerCMD);
   } 
@@ -302,6 +306,7 @@ char* current_word() {
 }
 
 void sendMHZ(unsigned long device, unsigned int power) {
-  MHZ.send(mhz_codes[device-1][power], 24);
+  int index = String(device, HEX).toInt();
+  MHZ.send(mhz_codes[index-1][power], 24);
 }
 

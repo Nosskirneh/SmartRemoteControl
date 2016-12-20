@@ -69,7 +69,6 @@ private:
   long decodeRC6(decode_results *results);
   long decodePanasonic(decode_results *results);
   long decodeJVC(decode_results *results);
-  long decodeMHZ433(decode_results *results);
   long decodeNEXA(decode_results *results);
   long decodeHash(decode_results *results);
   int compare(unsigned int oldval, unsigned int newval);
