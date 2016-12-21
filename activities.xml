@@ -52,6 +52,19 @@
                 <code type="MHZ433">OFF 4</code>
             </activity>
         </section>
+
+        <!-- 15 -->
+        <section name="mhz433">
+            <activity name="15 ON">
+                <code type="MHZ433">ON 15</code>
+            </activity>
+        </section>
+
+        <section name="mhz433">
+            <activity name="15 OFF">
+                <code type="MHZ433">OFF 15</code>
+            </activity>
+        </section>
     <!-- -->
 
 
