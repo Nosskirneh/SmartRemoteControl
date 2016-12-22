@@ -87,7 +87,7 @@
               <div class="col-sm-2 {{ activity["group"] }} button">
                 <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
               </div>
-              {% if count.append(count.pop() + 1) %}{% endif %} //increment count by 1
+              {% if count.append(count.pop() + 1) %}{% endif %}
             {% endfor %}
           {% endfor %}
         </div>
@@ -134,7 +134,7 @@
         {% set outer_loop = loop %}
         {% for act in activity["activities"] %}
           { name: '{{ act["name"] }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
-          {% if count.append(count.pop() + 1) %}{% endif %} //increment count by 1
+          {% if count.append(count.pop() + 1) %}{% endif %}
         {% endfor %}
       {% endfor %}
       ];
