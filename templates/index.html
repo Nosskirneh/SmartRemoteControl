@@ -81,10 +81,14 @@
 
         
         <div id="groupContainer">
-          {% for activity, info in activities %}
-          <div class="col-sm-2 {{ info }} button">
-            <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ loop.index - 1 }});">{{ activity.keys()[0] }}</button>
-          </div>
+          {% set count = [0] %}
+          {% for activity in activities %}
+            {% for act in activity["activities"] %}
+              <div class="col-sm-2 {{ activity["group"] }} button">
+                <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
+              </div>
+              {% if count.append(count.pop() + 1) %}{% endif %} //increment count by 1
+            {% endfor %}
           {% endfor %}
         </div>
       </div>
@@ -125,8 +129,13 @@
 
       <script>
       var activityList = [
-      {% for activity, info in activities %}
-        { name: '{{ activity.keys()[0] }}', index: {{ loop.index - 1 }} } {{ ',' if not loop.last }}
+      {% set count = [0] %}
+      {% for activity in activities %}
+        {% set outer_loop = loop %}
+        {% for act in activity["activities"] %}
+          { name: '{{ act["name"] }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+          {% if count.append(count.pop() + 1) %}{% endif %} //increment count by 1
+        {% endfor %}
       {% endfor %}
       ];
 
@@ -147,13 +156,9 @@
       function sendActivity(index) {
         $("#submit_button").click()
 
-        $.ajaxSetup({
-            headers: { "CustomHeader": "myValue" }
-        });
-
         var request = $.ajax({
           url: '/activity/' + index,
-          beforeSend: function (xhr){ 
+          beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', make_base_auth(username, password));
           },
           method: 'POST'

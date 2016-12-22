@@ -1,0 +1,236 @@
+[
+    {
+        "group": "mhz433",
+        "activities": [
+            {
+                "name": "1 ON",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "ON 1"
+                    }
+                ]
+            },
+            {
+                "name": "1 OFF",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "OFF 1"
+                    }
+                ]
+            },
+            {
+                "name": "2 ON",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "ON 2"
+                    }
+                ]
+            },
+            {
+                "name": "2 OFF",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "OFF 2"
+                    }
+                ]
+            },
+            {
+                "name": "3 ON",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "ON 3"
+                    }
+                ]
+            },
+            {
+                "name": "3 OFF",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "OFF 3"
+                    }
+                ]
+            },
+            {
+                "name": "4 ON",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "ON 4"
+                    }
+                ]
+            },
+            {
+                "name": "4 OFF",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "OFF 4"
+                    }
+                ]
+            },
+            {
+                "name": "15 ON",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "ON 15"
+                    }
+                ]
+            },
+            {
+                "name": "15 OFF",
+                "codes": [
+                    {
+                        "channel": "MHZ433",
+                        "data": "OFF 15"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "group": "nexa",
+        "activities": [
+            {
+                "name": "1 ON",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "ON 1"
+                    }
+                ]
+            },
+            {
+                "name": "1 OFF",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "OFF 1"
+                    }
+                ]
+            },
+            {
+                "name": "2 ON",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "ON 2"
+                    }
+                ]
+            },
+            {
+                "name": "2 OFF",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "OFF 2"
+                    }
+                ]
+            },
+            {
+                "name": "3 ON",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "ON 3"
+                    }
+                ]
+            },
+            {
+                "name": "3 OFF",
+                "codes": [
+                    {
+                        "channel": "NEXA",
+                        "data": "OFF 3"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "group": "other",
+        "activities": [
+            {
+                "name": "TV",
+                "codes": [
+                    {
+                        "channel": "IR",
+                        "data": "SONY: C A90"
+                    }
+                ]
+            },
+            {
+                "name": "HD BOX",
+                "codes": [
+                    {
+                        "channel": "IR",
+                        "data": "NEC: 20 F06148B7"
+                    },
+                    {
+                        "channel": "IR",
+                        "data": "NEC: 0 FFFFFFFF"
+                    }
+                ]
+            },
+            {
+                "name": "PLEX ON",
+                "codes": [
+                    {
+                        "channel": "LED",
+                        "data": "CLEAR"
+                    },
+                    {
+                        "channel": "IR",
+                        "data": "SONY: C A90"
+                    }
+                ]
+            },
+            {
+                "name": "PLEX OFF",
+                "codes": [
+                    {
+                        "channel": "LED",
+                        "data": "BLACK"
+                    },
+                    {
+                        "channel": "IR",
+                        "data": "SONY: C A90"
+                    }
+                ]
+            },
+            {
+                "name": "LED OFF",
+                "codes": [
+                    {
+                        "channel": "LED",
+                        "data": "BLACK"
+                    }
+                ]
+            },
+            {
+                "name": "LED CLEAR",
+                "codes": [
+                    {
+                        "channel": "LED",
+                        "data": "CLEAR"
+                    }
+                ]
+            },
+            {
+                "name": "PC ON",
+                "codes": [
+                    {
+                        "channel": "WOL",
+                        "data": "ON"
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -49,7 +49,8 @@ def getCommands():
     # Check authorization
     if not isAuthOK():
        return 'Unauthorized', 401
-    return jsonify(config.get_acts_simple())
+    return jsonify(activities)
+    #return jsonify(config.get_acts_simple())
 
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
@@ -61,50 +62,57 @@ def activity(index):
     if not isAuthOK():
        return 'Unauthorized', 401
 
-    for activity, groups in activities[index][0].iteritems():
-        for group, codes in groups.iteritems():
-            for code in codes:
-                if group == "IR":           # IR section
-                    if (code == "SONY: C A90" and tv_IsOn == True and activity == "PLEX ON"):
-                        # don't switch power when already on/off
-                        print "TV is already on."
-                        break
-                    elif (code == "SONY: C A90" and tv_IsOn == False and \
-                        (activity == "PLEX ON" or activity == "TV ON/OFF")):
-                        tv_IsOn = True
+    count = 0
+    for activity in activities:
+        for act in activity["activities"]:
+            for i, codes in enumerate(act["codes"]):
+                code = codes["data"].encode()
+                group = codes["channel"].encode()
+                if count is index:
+                    if group == "IR":           # IR section
+                        if (code == "SONY: C A90" and tv_IsOn == True and act["name"] == "PLEX ON"):
+                            # don't switch power when already on/off
+                            print "TV is already on."
+                            break
+                        elif (code == "SONY: C A90" and tv_IsOn == False and \
+                            (act["name"] == "PLEX ON" or act["name"] == "TV ON/OFF")):
+                            tv_IsOn = True
 
-                    if (code == "SONY: C A90" and tv_IsOn == False and activity == "PLEX OFF"):
-                        print "TV is already off."
-                        break
-                    elif (code == "SONY: C A90" and tv_IsOn == True and \
-                        (activity == "PLEX OFF" or activity == "TV ON/OFF")):
-                        tv_IsOn = False
+                        if (code == "SONY: C A90" and tv_IsOn == False and act["name"] == "PLEX OFF"):
+                            print "TV is already off."
+                            break
+                        elif (code == "SONY: C A90" and tv_IsOn == True and \
+                            (act["name"] == "PLEX OFF" or act["name"] == "TV ON/OFF")):
+                            tv_IsOn = False
 
-                    ser.write(code + ";")   # Send IR code to Arduino
-                    print ser.readlines()
+                        ser.write(code + ";")   # Send IR code to Arduino
+                        print ser.readlines()
 
-                    if (code != codes[-1]): # Don't delay after last item
-                        time.sleep(0.3)     # Wait ~300 milliseconds between codes.
+                        if (i != len(codes) - 1): # Don't delay after last item
+                            time.sleep(0.3)     # Wait ~300 milliseconds between codes.
 
-                elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
-                    ser.write(group + ": " + code + ";")
+                    elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
+                        ser.write(group + ": " + code + ";")
 
-                elif (group == "LED"):      # HyperionWeb
-                    if (code == "CLEAR"):
-                        try:
-                            r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
-                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'20'})
-                        except requests.ConnectionError:
-                            return 'Service Unavailable', 503
-                    if (code == "BLACK"):
-                        try:
-                            r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
-                            r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
-                        except requests.ConnectionError:
-                            return 'Service Unavailable', 503
 
-                elif (group == "WOL"):      # Wake on LAN
-                    wol.send_magic_packet(MAC_ADDR)
+                    elif (group == "LED"):      # HyperionWeb
+                        if (code == "CLEAR"):
+                            try:
+                                r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
+                                r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'20'})
+                            except requests.ConnectionError:
+                                return 'Service Unavailable', 503
+                        if (code == "BLACK"):
+                            try:
+                                r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
+                                r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
+                            except requests.ConnectionError:
+                                return 'Service Unavailable', 503
+
+                    elif (group == "WOL"):      # Wake on LAN
+                        wol.send_magic_packet(MAC_ADDR)
+
+            count = count + 1
 
     return 'OK', 200
 
