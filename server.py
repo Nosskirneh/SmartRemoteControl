@@ -50,7 +50,6 @@ def getCommands():
     if not isAuthOK():
        return 'Unauthorized', 401
     return jsonify(activities)
-    #return jsonify(config.get_acts_simple())
 
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
@@ -93,7 +92,6 @@ def activity(index):
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
-
 
                     elif (group == "LED"):      # HyperionWeb
                         if (code == "CLEAR"):
@@ -193,11 +191,14 @@ def run_schedule():
         sleep(1)
 
 def return_index(cmd, grp):
-    for index, act in enumerate(activities):
-        n = act[0].keys()[0] # name
-        g = act[1]           # group
-        if n == cmd and g == grp:
-            return index
+    count = 0
+    for activity in activities:
+        g = activity["group"]
+        for act in activity["activities"]:
+            n = act["name"]
+            if n == cmd and g == grp:
+                return count
+            count = count + 1
     return -1
 
 def init_comport():
