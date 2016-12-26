@@ -62,7 +62,7 @@ def activity(index):
        return 'Unauthorized', 401
 
     count = 0
-    for activity in activities:
+    for activity in activities[0]["groups"]:
         for act in activity["activities"]:
             for i, codes in enumerate(act["codes"]):
                 code = codes["data"].encode()
@@ -84,16 +84,16 @@ def activity(index):
                             (act["name"] == "PLEX OFF" or act["name"] == "TV ON/OFF")):
                             tv_IsOn = False
 
-                        ser.write(code + ";")   # Send IR code to Arduino
+                        ser.write(code + ";")     # Send IR code to Arduino
                         print ser.readlines()
 
                         if (i != len(codes) - 1): # Don't delay after last item
-                            time.sleep(0.3)     # Wait ~300 milliseconds between codes.
+                            time.sleep(0.3)       # Wait ~300 milliseconds between codes.
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
 
-                    elif (group == "LED"):      # HyperionWeb
+                    elif (group == "LED"):        # HyperionWeb
                         if (code == "CLEAR"):
                             try:
                                 r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
@@ -107,7 +107,7 @@ def activity(index):
                             except requests.ConnectionError:
                                 return 'Service Unavailable', 503
 
-                    elif (group == "WOL"):      # Wake on LAN
+                    elif (group == "WOL"):        # Wake on LAN
                         wol.send_magic_packet(MAC_ADDR)
 
             count = count + 1
@@ -192,8 +192,8 @@ def run_schedule():
 
 def return_index(cmd, grp):
     count = 0
-    for activity in activities:
-        g = activity["group"]
+    for activity in activities[0]["groups"]:
+        g = activity["name"]
         for act in activity["activities"]:
             n = act["name"]
             if n == cmd and g == grp:
