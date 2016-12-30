@@ -30,8 +30,8 @@ def root():
 
 @app.route('/command', methods=['POST'])
 def command():
-    name  = request.args.get('name')
-    group = request.args.get('group')
+    name  = request.form.get('name')
+    group = request.form.get('group')
     return activity(return_index(name, group))
 
 @app.route('/checkAuth', methods=['GET'])
