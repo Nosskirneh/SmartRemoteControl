@@ -82,7 +82,7 @@
         
         <div id="groupContainer">
           {% set count = [0] %}
-          {% for activity in activities[0]["groups"] %}
+          {% for activity in activities["groups"] %}
             {% for act in activity["activities"] %}
               <div class="col-sm-2 {{ activity["name"] }} button">
                 <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
@@ -130,7 +130,7 @@
       <script>
       var activityList = [
       {% set count = [0] %}
-      {% for activity in activities[0]["groups"] %}
+      {% for activity in activities["groups"] %}
         {% set outer_loop = loop %}
         {% for act in activity["activities"] %}
           { name: '{{ act["name"] }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}

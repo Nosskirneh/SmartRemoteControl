@@ -62,7 +62,7 @@ def activity(index):
        return 'Unauthorized', 401
 
     count = 0
-    for activity in activities[0]["groups"]:
+    for activity in activities["groups"]:
         for act in activity["activities"]:
             for i, codes in enumerate(act["codes"]):
                 code = codes["data"].encode()
@@ -192,7 +192,7 @@ def run_schedule():
 
 def return_index(cmd, grp):
     count = 0
-    for activity in activities[0]["groups"]:
+    for activity in activities["groups"]:
         g = activity["name"]
         for act in activity["activities"]:
             n = act["name"]
