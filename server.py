@@ -136,7 +136,7 @@ def run_command(commands):
 
 def morning():
     commands = [["1 ON", "mhz433"]]
-    lights_on(commands)
+    while_dark(commands)
 
 def morning_off():
     while isitdark() is True:
@@ -145,14 +145,14 @@ def morning_off():
     run_command(commands)
 
 def evening():
-    commands = [["4 ON", "mhz433"], ["1 ON", "mhz433"], ["1 ON", "nexa"], ["2 ON", "nexa"], ["3 ON", "nexa"]]
-    lights_on(commands)
+    commands = [["LIGHTS ON", "other"]]
+    while_dark(commands)
 
 def evening_off():
-    commands = [["4 OFF", "mhz433"], ["1 OFF", "mhz433"], ["1 OFF", "nexa"], ["2 OFF", "nexa"], ["3 OFF", "nexa"]]
+    commands = [["LATE NIGHT", "other"]]
     run_command(commands)
 
-def lights_on(commands):
+def while_dark(commands):
     while isitdark() is False:
         sleep(1)
     run_command(commands)

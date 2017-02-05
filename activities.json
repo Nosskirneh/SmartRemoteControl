@@ -119,6 +119,87 @@
 				"data": "NEC: 0 FFFFFFFF"
 			}]
 		}, {
+			"name": "MEDIA ON",
+			"codes": [{
+				"channel": "IR",
+				"data": "SONY: C A90"
+			}, {
+                "channel": "MHZ433",
+                "data": "ON 2"
+            }]
+		}, {
+			"name": "MEDIA OFF",
+			"codes": [{
+				"channel": "IR",
+				"data": "SONY: C A90"
+			}, {
+                "channel": "MHZ433",
+                "data": "OFF 2"
+            }]
+		}, {
+            "name": "LIGHTS ON",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "ON 1"
+            }, {
+                "channel": "MHZ433",
+                "data": "ON 4"
+            }, {
+                "channel": "NEXA",
+                "data": "ON 1"
+            }, {
+                "channel": "NEXA",
+                "data": "ON 2"
+            }, {
+                "channel": "NEXA",
+                "data": "ON 3"
+            }]
+        }, {
+            "name": "LIGHTS OFF",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "OFF 1"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 4"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 1"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 2"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 3"
+            }]
+        }, {
+            "name": "LATE NIGHT",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "OFF 1"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 2"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 4"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 15"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 1"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 2"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 3"
+            }]
+        }, {
 			"name": "PLEX ON",
 			"codes": [{
 				"channel": "LED",
