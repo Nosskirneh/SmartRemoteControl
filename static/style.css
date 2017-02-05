@@ -77,6 +77,16 @@ body {
     letter-spacing: 1px;
     font-weight: bold;
 }
+/* iPad Pro */
+@media only screen 
+and (min-device-width : 1024px) 
+and (max-device-width : 1366px) {
+    .group {
+        padding: 0;
+        max-width: initial;
+        width: initial;
+    }
+}
 
 @media screen and (max-width: 1200px) and (min-width: 768px) {
 	#creds {
@@ -112,10 +122,6 @@ body {
         margin: auto;
     }
 
-    #groupContainer {
-        display: initial;
-    }
-
     .group {
         display: initial;
     }
@@ -130,6 +136,10 @@ body {
         display: flex;
         width: auto;
         height: auto;
+    }
+
+    #groupContainer {
+        display: initial;
     }
 
     #logo {

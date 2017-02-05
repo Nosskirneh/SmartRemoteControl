@@ -137,6 +137,51 @@
                 "data": "OFF 2"
             }]
 		}, {
+			"name": "LED OFF",
+			"codes": [{
+				"channel": "LED",
+				"data": "BLACK"
+			}]
+		}, {
+			"name": "LED CLEAR",
+			"codes": [{
+				"channel": "LED",
+				"data": "CLEAR"
+			}]
+		}, {
+			"name": "PC ON",
+			"codes": [{
+				"channel": "WOL",
+				"data": "ON"
+			}]
+		}, {
+            "name": "LATE NIGHT",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "OFF 1"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 2"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 4"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 15"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 1"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 2"
+            }, {
+                "channel": "NEXA",
+                "data": "OFF 3"
+            }]
+        }, {
             "name": "LIGHTS ON",
             "codes": [{
                 "channel": "MHZ433",
@@ -172,69 +217,6 @@
                 "channel": "NEXA",
                 "data": "OFF 3"
             }]
-        }, {
-            "name": "LATE NIGHT",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "OFF 1"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 2"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 4"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 15"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 1"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 2"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 3"
-            }]
-        }, {
-			"name": "PLEX ON",
-			"codes": [{
-				"channel": "LED",
-				"data": "CLEAR"
-			}, {
-				"channel": "IR",
-				"data": "SONY: C A90"
-			}]
-		}, {
-			"name": "PLEX OFF",
-			"codes": [{
-				"channel": "LED",
-				"data": "BLACK"
-			}, {
-				"channel": "IR",
-				"data": "SONY: C A90"
-			}]
-		}, {
-			"name": "LED OFF",
-			"codes": [{
-				"channel": "LED",
-				"data": "BLACK"
-			}]
-		}, {
-			"name": "LED CLEAR",
-			"codes": [{
-				"channel": "LED",
-				"data": "CLEAR"
-			}]
-		}, {
-			"name": "PC ON",
-			"codes": [{
-				"channel": "WOL",
-				"data": "ON"
-			}]
-		}]
+        }]
 	}]
 }
