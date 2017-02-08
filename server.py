@@ -134,21 +134,21 @@ def run_command(commands):
                 headers={'Authorization': "Basic " + auth});
 
 def morning():
-    commands = [["1 ON", "mhz433"]]
+    commands = [("1 ON", "mhz433")]
     when_dark(commands)
 
 def morning_off():
     while isitdark() is True:
         sleep(1)
-    commands = [["1 OFF", "mhz433"]]
+    commands = [("1 OFF", "mhz433")]
     run_command(commands)
 
 def evening():
-    commands = [["LIGHTS ON", "other"]]
+    commands = [("LIGHTS ON", "other")]
     when_dark(commands)
 
 def evening_off():
-    commands = [["LATE NIGHT", "other"]]
+    commands = [("LATE NIGHT", "other")]
     run_command(commands)
 
 def when_dark(commands):
