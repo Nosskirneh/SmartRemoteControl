@@ -87,9 +87,6 @@ def activity(index):
                         ser.write(code + ";")     # Send IR code to Arduino
                         print ser.readlines()
 
-                        if (i != len(codes) - 1): # Don't delay after last item
-                            time.sleep(0.3)       # Wait ~300 milliseconds between codes.
-
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
 
@@ -110,6 +107,8 @@ def activity(index):
                     elif (group == "WOL"):        # Wake on LAN
                         wol.send_magic_packet(MAC_ADDR)
 
+                    if (i != len(codes) - 1): # Don't delay after last item
+                        time.sleep(0.3)       # Wait ~300 milliseconds between codes.
             count = count + 1
 
     return 'OK', 200
