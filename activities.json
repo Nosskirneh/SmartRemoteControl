@@ -61,7 +61,19 @@
 				"channel": "MHZ433",
 				"data": "OFF 15"
 			}]
-		}]
+		}, {
+            "name": "16 ON",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "ON 16"
+            }]
+        }, {
+            "name": "16 OFF",
+            "codes": [{
+                "channel": "MHZ433",
+                "data": "OFF 16"
+            }]
+        }]
 	}, {
 		"name": "nexa",
 		"activities": [{
@@ -167,10 +179,19 @@
                 "data": "OFF 3"
             }, {
                 "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
                 "data": "OFF 4"
             }, {
                 "channel": "MHZ433",
                 "data": "OFF 15"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 16"
             }, {
                 "channel": "NEXA",
                 "data": "OFF 1"
@@ -188,7 +209,19 @@
                 "data": "ON 1"
             }, {
                 "channel": "MHZ433",
+                "data": "ON 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "ON 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "ON 3"
+            }, {
+                "channel": "MHZ433",
                 "data": "ON 4"
+            }, {
+                "channel": "MHZ433",
+                "data": "ON 16"
             }, {
                 "channel": "NEXA",
                 "data": "ON 1"
@@ -206,7 +239,19 @@
                 "data": "OFF 1"
             }, {
                 "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 3"
+            }, {
+                "channel": "MHZ433",
                 "data": "OFF 4"
+            }, {
+                "channel": "MHZ433",
+                "data": "OFF 16"
             }, {
                 "channel": "NEXA",
                 "data": "OFF 1"
