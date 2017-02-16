@@ -257,9 +257,6 @@
                 "data": "OFF 1"
             }, {
                 "channel": "NEXA",
-                "data": "OFF 2"
-            }, {
-                "channel": "NEXA",
                 "data": "OFF 3"
             }]
         }]
