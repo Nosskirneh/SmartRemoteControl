@@ -228,9 +228,6 @@
             }, {
                 "channel": "NEXA",
                 "data": "ON 2"
-            }, {
-                "channel": "NEXA",
-                "data": "ON 3"
             }]
         }, {
             "name": "LIGHTS OFF",
