@@ -68,29 +68,14 @@ def activity(index):
                 code = codes["data"].encode()
                 group = codes["channel"].encode()
                 if count is index:
-                    if group == "IR":           # IR section
-                        if (code == "SONY: C A90" and tv_IsOn == True and act["name"] == "PLEX ON"):
-                            # don't switch power when already on/off
-                            print "TV is already on."
-                            break
-                        elif (code == "SONY: C A90" and tv_IsOn == False and \
-                            (act["name"] == "PLEX ON" or act["name"] == "TV ON/OFF")):
-                            tv_IsOn = True
-
-                        if (code == "SONY: C A90" and tv_IsOn == False and act["name"] == "PLEX OFF"):
-                            print "TV is already off."
-                            break
-                        elif (code == "SONY: C A90" and tv_IsOn == True and \
-                            (act["name"] == "PLEX OFF" or act["name"] == "TV ON/OFF")):
-                            tv_IsOn = False
-
-                        ser.write(code + ";")     # Send IR code to Arduino
+                    if group == "IR":         # IR section
+                        ser.write(code + ";") # Send IR code to Arduino
                         print ser.readlines()
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
 
-                    elif (group == "LED"):        # HyperionWeb
+                    elif (group == "LED"):    # HyperionWeb
                         if (code == "CLEAR"):
                             try:
                                 r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
@@ -104,7 +89,7 @@ def activity(index):
                             except requests.ConnectionError:
                                 return 'Service Unavailable', 503
 
-                    elif (group == "WOL"):        # Wake on LAN
+                    elif (group == "WOL"):    # Wake on LAN
                         wol.send_magic_packet(MAC_ADDR)
 
                     if (i != len(codes) - 1): # Don't delay after last item
