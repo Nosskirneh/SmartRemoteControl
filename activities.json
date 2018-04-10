@@ -1,261 +1,409 @@
 {
-	"groups": [{
-		"name": "mhz433",
-		"activities": [{
-			"name": "1 ON",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "ON 1"
-			}]
-		}, {
-			"name": "1 OFF",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "OFF 1"
-			}]
-		}, {
-			"name": "2 ON",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "ON 2"
-			}]
-		}, {
-			"name": "2 OFF",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "OFF 2"
-			}]
-		}, {
-			"name": "3 ON",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "ON 3"
-			}]
-		}, {
-			"name": "3 OFF",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "OFF 3"
-			}]
-		}, {
-			"name": "4 ON",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "ON 4"
-			}]
-		}, {
-			"name": "4 OFF",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "OFF 4"
-			}]
-		}, {
-			"name": "15 ON",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "ON 15"
-			}]
-		}, {
-			"name": "15 OFF",
-			"codes": [{
-				"channel": "MHZ433",
-				"data": "OFF 15"
-			}]
-		}, {
-            "name": "16 ON",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "ON 16"
-            }]
-        }, {
-            "name": "16 OFF",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "OFF 16"
-            }]
-        }]
-	}, {
-		"name": "nexa",
-		"activities": [{
-			"name": "1 ON",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "ON 1"
-			}]
-		}, {
-			"name": "1 OFF",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "OFF 1"
-			}]
-		}, {
-			"name": "2 ON",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "ON 2"
-			}]
-		}, {
-			"name": "2 OFF",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "OFF 2"
-			}]
-		}, {
-			"name": "3 ON",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "ON 3"
-			}]
-		}, {
-			"name": "3 OFF",
-			"codes": [{
-				"channel": "NEXA",
-				"data": "OFF 3"
-			}]
-		}]
-	}, {
-		"name": "other",
-		"activities": [{
-			"name": "TV",
-			"codes": [{
-				"channel": "IR",
-				"data": "SONY: C A90"
-			}]
-		}, {
-			"name": "HD BOX",
-			"codes": [{
-				"channel": "IR",
-				"data": "NEC: 20 F06148B7"
-			}, {
-				"channel": "IR",
-				"data": "NEC: 0 FFFFFFFF"
-			}]
-		}, {
-			"name": "MEDIA ON",
-			"codes": [{
-				"channel": "IR",
-				"data": "SONY: C A90"
-			}, {
-                "channel": "MHZ433",
-                "data": "ON 2"
-            }]
-		}, {
-			"name": "MEDIA OFF",
-			"codes": [{
-				"channel": "IR",
-				"data": "SONY: C A90"
-			}, {
-                "channel": "MHZ433",
-                "data": "OFF 2"
-            }]
-		}, {
-			"name": "LED OFF",
-			"codes": [{
-				"channel": "LED",
-				"data": "BLACK"
-			}]
-		}, {
-			"name": "LED CLEAR",
-			"codes": [{
-				"channel": "LED",
-				"data": "CLEAR"
-			}]
-		}, {
-			"name": "PC ON",
-			"codes": [{
-				"channel": "WOL",
-				"data": "ON"
-			}]
-		}, {
-            "name": "LATE NIGHT",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "OFF 1"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 2"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 4"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 15"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 16"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 1"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 2"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 3"
-            }]
-        }, {
-            "name": "LIGHTS ON",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "ON 1"
-            }, {
-                "channel": "MHZ433",
-                "data": "ON 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "ON 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "ON 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "ON 4"
-            }, {
-                "channel": "MHZ433",
-                "data": "ON 16"
-            }, {
-                "channel": "NEXA",
-                "data": "ON 1"
-            }, {
-                "channel": "NEXA",
-                "data": "ON 2"
-            }]
-        }, {
-            "name": "LIGHTS OFF",
-            "codes": [{
-                "channel": "MHZ433",
-                "data": "OFF 1"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 3"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 4"
-            }, {
-                "channel": "MHZ433",
-                "data": "OFF 16"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 1"
-            }, {
-                "channel": "NEXA",
-                "data": "OFF 3"
-            }]
-        }]
-	}]
+  "groups": [
+    {
+      "name": "mhz433",
+      "activities": [
+        {
+          "name": "1 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 1"
+            }
+          ]
+        },
+        {
+          "name": "1 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 1"
+            }
+          ]
+        },
+        {
+          "name": "2 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 2"
+            }
+          ]
+        },
+        {
+          "name": "2 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 2"
+            }
+          ]
+        },
+        {
+          "name": "3 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 3"
+            }
+          ]
+        },
+        {
+          "name": "3 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            }
+          ]
+        },
+        {
+          "name": "4 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 4"
+            }
+          ]
+        },
+        {
+          "name": "4 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 4"
+            }
+          ]
+        },
+        {
+          "name": "15 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 15"
+            }
+          ]
+        },
+        {
+          "name": "15 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 15"
+            }
+          ]
+        },
+        {
+          "name": "16 ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 16"
+            }
+          ]
+        },
+        {
+          "name": "16 OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 16"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "nexa",
+      "activities": [
+        {
+          "name": "1 ON",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "ON 1"
+            }
+          ]
+        },
+        {
+          "name": "1 OFF",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "OFF 1"
+            }
+          ]
+        },
+        {
+          "name": "2 ON",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "ON 2"
+            }
+          ]
+        },
+        {
+          "name": "2 OFF",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "OFF 2"
+            }
+          ]
+        },
+        {
+          "name": "3 ON",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "ON 3"
+            }
+          ]
+        },
+        {
+          "name": "3 OFF",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "OFF 3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "other",
+      "activities": [
+        {
+          "name": "TV",
+          "codes": [
+            {
+              "channel": "IR",
+              "data": "SONY: C A90"
+            }
+          ]
+        },
+        {
+          "name": "HD BOX",
+          "codes": [
+            {
+              "channel": "IR",
+              "data": "NEC: 20 F06148B7"
+            },
+            {
+              "channel": "IR",
+              "data": "NEC: 0 FFFFFFFF"
+            }
+          ]
+        },
+        {
+          "name": "MEDIA ON",
+          "codes": [
+            {
+              "channel": "IR",
+              "data": "SONY: C A90"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 2"
+            }
+          ]
+        },
+        {
+          "name": "MEDIA OFF",
+          "codes": [
+            {
+              "channel": "IR",
+              "data": "SONY: C A90"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 2"
+            }
+          ]
+        },
+        {
+          "name": "LED OFF",
+          "codes": [
+            {
+              "channel": "LED",
+              "data": "BLACK"
+            }
+          ]
+        },
+        {
+          "name": "LED CLEAR",
+          "codes": [
+            {
+              "channel": "LED",
+              "data": "CLEAR"
+            }
+          ]
+        },
+        {
+          "name": "PC ON",
+          "codes": [
+            {
+              "channel": "WOL",
+              "data": "08-2E-5F-0E-81-56"
+            }
+          ]
+        },
+        {
+          "name": "LATE NIGHT",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 1"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 2"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 4"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 15"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 16"
+            },
+            {
+              "channel": "NEXA",
+              "data": "OFF 1"
+            },
+            {
+              "channel": "NEXA",
+              "data": "OFF 2"
+            },
+            {
+              "channel": "NEXA",
+              "data": "OFF 3"
+            }
+          ]
+        },
+        {
+          "name": "LIGHTS ON",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "ON 1"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 4"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "ON 16"
+            },
+            {
+              "channel": "NEXA",
+              "data": "ON 1"
+            },
+            {
+              "channel": "NEXA",
+              "data": "ON 2"
+            }
+          ]
+        },
+        {
+          "name": "LIGHTS OFF",
+          "codes": [
+            {
+              "channel": "MHZ433",
+              "data": "OFF 1"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 3"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 4"
+            },
+            {
+              "channel": "MHZ433",
+              "data": "OFF 16"
+            },
+            {
+              "channel": "NEXA",
+              "data": "OFF 1"
+            },
+            {
+              "channel": "NEXA",
+              "data": "OFF 3"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "scheduled": [
+    {
+      "id": "evening",
+      "time": "19:00",
+      "commands": [
+        ["LIGHTS ON", "other"]
+      ]
+    },
+    {
+      "id": "evening_off",
+      "time": "02:00",
+      "commands": [
+        ["LATE NIGHT", "other"]
+      ]
+    },
+    {
+      "id": "morning",
+      "time": "06:00",
+      "commands": [
+        ["1 ON", "mhz433"]
+      ]
+    },
+    {
+      "id": "morning_off",
+      "time": "07:30",
+      "commands": [
+        ["1 OFF", "mhz433"]
+      ]
+    }
+  ]
 }

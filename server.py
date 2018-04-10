@@ -18,6 +18,7 @@ import schedule
 import time
 from astral import Astral
 import pytz
+import logging
 
 
 # Create flask application.
@@ -53,7 +54,6 @@ def getCommands():
 
 @app.route('/activity/<int:index>', methods=['POST'])
 def activity(index):
-    global tv_IsOn
     if index == -1:
         return 'Not Implemented', 501
 
@@ -90,7 +90,7 @@ def activity(index):
                                 return 'Service Unavailable', 503
 
                     elif (group == "WOL"):    # Wake on LAN
-                        wol.send_magic_packet(MAC_ADDR)
+                        wol.send_magic_packet(code)
 
                     if (i != len(codes) - 1): # Don't delay after last item
                         time.sleep(0.3)       # Wait ~300 milliseconds between codes.
@@ -104,75 +104,17 @@ def isAuthOK():
     try:
         auth = request.headers['Authorization'].split()[1]
         user, pw = base64.b64decode(auth).split(":")
-        if not (user == username and pw == password):
-            return False
-        return True
+        return (user == username and pw == password)
     except KeyError:
         return False
 
-def run_command(commands):
+def run_commands(commands):
     auth = base64.b64encode(username + ":" + password)
     with app.test_client() as client:
         for cmd in commands:
             sleep(1)
             client.post('/activity/' + str(return_index(cmd[0], cmd[1])),
-                headers={'Authorization': "Basic " + auth});
-
-def morning():
-    commands = [("1 ON", "mhz433")]
-    when_dark(commands)
-
-def morning_off():
-    while isitdark() is True:
-        sleep(1)
-    commands = [("1 OFF", "mhz433")]
-    run_command(commands)
-
-def evening():
-    commands = [("LIGHTS ON", "other")]
-    when_dark(commands)
-
-def evening_off():
-    commands = [("LATE NIGHT", "other")]
-    run_command(commands)
-
-def when_dark(commands):
-    while isitdark() is False:
-        sleep(1)
-    run_command(commands)
-
-def isitdark():
-    city_name = "Stockholm"
-    a = Astral()
-    city = a[city_name]
-    today_date = date.today()
-    sun = city.sun(date=today_date, local=True)
-    utc = pytz.UTC
-    if sun['sunrise'] <= utc.localize(datetime.utcnow()) <= sun['sunset']:
-        if sun['sunset'] >= utc.localize(datetime.utcnow()):
-            event = "sunset"
-            timediff = sun['sunset'] - utc.localize(datetime.utcnow())
-        if sun['sunset'] <= utc.localize(datetime.utcnow()):
-            event = "sunrise"
-            timediff = utc.localize(datetime.utcnow()) - sun['sunrise']
-        print("It's sunny outside: not trigerring (%s in %s)" % (event, timediff))
-        return False
-    else:
-        print("It's dark outside: triggering")
-        return True
-
-def run_schedule():
-    """ Method that runs forever """
-    # Turn on/off lights
-    schedule.every().day.at("15:00").do(evening)
-    schedule.every().day.at("02:00").do(evening_off)
-
-    schedule.every().day.at("06:00").do(morning)
-    schedule.every().day.at("07:30").do(morning_off)
-
-    while True:
-        schedule.run_pending()
-        sleep(1)
+                        headers = {'Authorization': "Basic " + auth})
 
 def return_index(cmd, grp):
     count = 0
@@ -184,6 +126,103 @@ def return_index(cmd, grp):
                 return count
             count = count + 1
     return -1
+
+### Scheduling ###
+def run_schedule():
+    lastEvent = None
+    events = activities["scheduled"]
+    didTurnOnMorningLights = False
+
+    while True:
+        time = datetime.now()
+
+        for event in events:
+            [hour, minute] = [int(x) for x in event["time"].split(':')]
+            # Evening
+            if event["id"] == "evening":
+                # If it's already dark by the time specified in the events dict, fire the commands.
+                # Otherwise, schedule the commands to be executed on this date + timediff.
+                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                    lastEvent = event["id"]
+                    sunEvent = timeUntilSunEvent()
+                    if sunEvent[0]:
+                        run_commands(event["commands"])
+                    else:
+                        # TODO: Perhaphs replace the generic execute_once to a custom
+                        #       method that reschedules with cloud data.
+                        timeStr = (time + sunEvent[1]).strftime("%H:%M")
+                        print("Should schedule for %s" % (timeStr))
+                        schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
+
+            # Morning
+            elif event["id"] == "morning":
+                # If it is dark by the time specified in the events dict, simply fire the commands.
+                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                    lastEvent = event["id"]
+                    sunEvent = timeUntilSunEvent()
+                    if sunEvent[0]:
+                        didTurnOnMorningLights = True
+                        run_commands(event["commands"])
+
+            # Morning off
+            elif event["id"] == "morning_off":
+                # If it is light by the time specified in the events dict, simply fire the commands.
+                # Otherwise, schedule the commands to be executed on this date + timediff.
+                # Only fire this if `morning` was executed.
+                if time.hour == hour and time.minute == minute and \
+                   didTurnOnMorningLights and lastEvent != event["id"]:
+                    lastEvent = event["id"]
+                    sunEvent = timeUntilSunEvent()
+                    if not sunEvent[0]:
+                        run_commands(event["commands"])
+                    else:
+                        timeStr = (time + sunEvent[1]).strftime("%H:%M")
+                        print("Should schedule for %s" % (timeStr))
+                        schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
+
+            # Events that don't need any custom rules, like evening off
+            else:
+                # If the time match with the specified in the events dict, simply fire the commands.
+                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                    lastEvent = event["id"]
+                    run_commands(event["commands"])
+
+
+        schedule.run_pending()
+        sleep(1)
+
+# There is no other way to schedule only once other than doing this.
+def execute_once(commands='cmds'):
+    run_commands(commands)
+    return schedule.CancelJob
+
+# Returns if it is dark or light, and the time until the next sunrise/sunset
+# True means it is dark, False means it is sunny
+def timeUntilSunEvent():
+    city_name = "Stockholm"
+    a = Astral()
+    city = a[city_name]
+    today = date.today()
+    sun = city.sun(date=today, local=True)
+    utc = pytz.UTC
+    currentTime = utc.localize(datetime.utcnow())
+    # Is it between sunrise and sunset?
+    if sun['sunrise'] <= currentTime <= sun['sunset']:
+        if sun['sunset'] >= currentTime:
+            event = "sunset"
+            timediff = sun['sunset'] - currentTime
+        if sun['sunset'] <= currentTime:
+            event = "sunrise"
+            timediff = currentTime - sun['sunrise']
+        logging.debug("It's sunny outside, %s in %s" % (event, timediff))
+        print("It's sunny outside, %s in %s" % (event, timediff))
+        return (False, timediff)
+    else:
+        timediff = sun['sunrise'] - currentTime
+        logging.debug("It's dark outside, %s until sunrise" % (timediff))
+        print("It's dark outside, %s until sunrise" % (timediff))
+        return (True, timediff)
+
 
 def init_comport():
     # Find the right USB port
@@ -211,22 +250,24 @@ def init_comport():
             print " * Error open serial port: " + str(e)
     return ser
 
+
 # This will only run once, not twice
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    # Setup logging to file
+    logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s %(message)s')
+
     # Load variables
     activities = config.get_activities() # Parse activity configuration.
     REQ_ADDR = "http://192.168.0.20:1234"
-    MAC_ADDR = "08-2E-5F-0E-81-56"
-    tv_IsOn = False
 
     # Initialize COM-port 
     ser = init_comport()
 
-    # Scheduler thread - run_schedule()
     thread = threading.Thread(target=run_schedule, args=())
-    thread.daemon = True # Daemonize thread
-    thread.start()       # Start the execution
+    thread.daemon = True
+    thread.start()
 
+    logging.debug("Server started")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True, threaded=True) 
