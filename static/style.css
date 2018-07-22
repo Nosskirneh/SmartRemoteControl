@@ -1,16 +1,16 @@
 body {
-  padding-top: 50px;
-  padding-bottom: 20px;
+    padding-top: 50px;
+    padding-bottom: 20px;
 }
 
 .jumbotron {
-	display: flex;
+    display: flex;
 }
 
 #logo {
-	background-image: url("favicon/favicon-310.png");
-	background-repeat: no-repeat;
-	width: 200px;
+    background-image: url("favicon/favicon-310.png");
+    background-repeat: no-repeat;
+    width: 200px;
     height: 200px;
     background-size: 200px 200px;
 }
@@ -89,9 +89,9 @@ and (max-device-width : 1366px) {
 }
 
 @media screen and (max-width: 1200px) and (min-width: 768px) {
-	#creds {
-		margin-top: 15px;
-	}
+    #creds {
+        margin-top: 15px;
+    }
 }
 
 @media screen and (max-width: 585px) {
@@ -143,6 +143,6 @@ and (max-device-width : 1366px) {
     }
 
     #logo {
-    	display: none;
+        display: none;
     }
 }

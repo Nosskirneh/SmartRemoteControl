@@ -1,0 +1,9 @@
+body, .form-control, .btn-default {
+    background-color: #2d2d2d;
+    color: #f3f3f3;
+}
+
+.jumbotron, .btn-default:hover {
+    background-color: #1e1e1e;
+    color: #f3f3f3;
+}

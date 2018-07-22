@@ -13,6 +13,16 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
+        <script>
+        function getStylesheet() {
+          var currentTime = new Date().getHours();
+          if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
+            document.write("<link rel='stylesheet' href={{ url_for('static', filename='night.css') }} type='text/css'>");
+        }
+
+        getStylesheet();
+        </script>
+
         <!-- favicons -->
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
         <link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
@@ -165,13 +175,13 @@
         });
 
         request.done(
-          function( response ){
+          function(response) {
             $('#result').fadeIn(0).delay(2000).fadeOut("fast");
           }
         );
 
         request.fail(
-          function( response ){
+          function(response) {
             $('#error').text(response.responseText);
             $('#error').fadeIn(0).delay(2000).fadeOut("fast");
           }
