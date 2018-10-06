@@ -379,7 +379,7 @@
   "scheduled": [
     {
       "id": "evening",
-      "time": "19:00",
+      "time": "16:00",
       "commands": [
         ["LIGHTS ON", "other"]
       ]
