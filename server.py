@@ -29,11 +29,13 @@ app = Flask(__name__)
 def root():
     return render_template("index.html", activities=activities)
 
+
 @app.route("/command", methods=["POST"])
 def command():
     name  = request.form.get("name")
     group = request.form.get("group")
     return activity(return_index(name, group))
+
 
 @app.route("/checkAuth", methods=["GET"])
 def checkAuth():
@@ -41,9 +43,11 @@ def checkAuth():
         return "OK", 200
     return "Unauthorized", 401
 
+
 @app.route("/status", methods=["GET"])
 def returnOnline():
     return "OK", 200
+
 
 @app.route("/commands", methods=["GET"])
 def getCommands():
@@ -51,6 +55,7 @@ def getCommands():
     if not isAuthOK():
        return "Unauthorized", 401
     return jsonify(activities)
+
 
 @app.route("/activity/<int:index>", methods=["POST"])
 def activity(index):
@@ -108,6 +113,7 @@ def isAuthOK():
     except KeyError:
         return False
 
+
 def run_commands(commands):
     auth = base64.b64encode(username + ":" + password)
     with app.test_client() as client:
@@ -115,6 +121,7 @@ def run_commands(commands):
             sleep(1)
             client.post("/activity/" + str(return_index(cmd[0], cmd[1])),
                         headers = {"Authorization": "Basic " + auth})
+
 
 def return_index(cmd, grp):
     count = 0
@@ -126,6 +133,7 @@ def return_index(cmd, grp):
                 return count
             count = count + 1
     return -1
+
 
 ### Scheduling ###
 def run_schedule():
@@ -206,10 +214,12 @@ def run_schedule():
         schedule.run_pending()
         sleep(1)
 
+
 # There is no other way to schedule only once other than doing this.
 def execute_once(commands="cmds"):
     run_commands(commands)
     return schedule.CancelJob
+
 
 # Returns if it is dark or light, and the time until the next sunrise/sunset
 # True means it is dark, False means it is sunny
@@ -285,4 +295,4 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     logging.debug("Server started")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True, threaded=True) 
+    app.run(host="0.0.0.0", port=3000, debug=True, threaded=True)
