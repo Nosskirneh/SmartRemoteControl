@@ -25,41 +25,41 @@ import logging
 app = Flask(__name__)
 
 ### APP ROUTES ###
-@app.route('/')
+@app.route("/")
 def root():
-    return render_template('index.html', activities=activities)
+    return render_template("index.html", activities=activities)
 
-@app.route('/command', methods=['POST'])
+@app.route("/command", methods=["POST"])
 def command():
-    name  = request.form.get('name')
-    group = request.form.get('group')
+    name  = request.form.get("name")
+    group = request.form.get("group")
     return activity(return_index(name, group))
 
-@app.route('/checkAuth', methods=['GET'])
+@app.route("/checkAuth", methods=["GET"])
 def checkAuth():
     if isAuthOK():
-        return 'OK', 200
-    return 'Unauthorized', 401
+        return "OK", 200
+    return "Unauthorized", 401
 
-@app.route('/status', methods=['GET'])
+@app.route("/status", methods=["GET"])
 def returnOnline():
-    return 'OK', 200
+    return "OK", 200
 
-@app.route('/commands', methods=['GET'])
+@app.route("/commands", methods=["GET"])
 def getCommands():
     # Check authorization
     if not isAuthOK():
-       return 'Unauthorized', 401
+       return "Unauthorized", 401
     return jsonify(activities)
 
-@app.route('/activity/<int:index>', methods=['POST'])
+@app.route("/activity/<int:index>", methods=["POST"])
 def activity(index):
     if index == -1:
-        return 'Not Implemented', 501
+        return "Not Implemented", 501
 
     # Check authorization
     if not isAuthOK():
-       return 'Unauthorized', 401
+       return "Unauthorized", 401
 
     count = 0
     for activity in activities["groups"]:
@@ -78,16 +78,16 @@ def activity(index):
                     elif (group == "LED"):    # HyperionWeb
                         if (code == "CLEAR"):
                             try:
-                                r = requests.post(REQ_ADDR + "/do_clear", data={'clear':'clear'})
-                                r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'20'})
+                                r = requests.post(REQ_ADDR + "/do_clear", data={"clear":"clear"})
+                                r = requests.post(REQ_ADDR + "/set_value_gain", data={"valueGain":"20"})
                             except requests.ConnectionError:
-                                return 'Service Unavailable', 503
+                                return "Service Unavailable", 503
                         if (code == "BLACK"):
                             try:
-                                r = requests.post(REQ_ADDR + "/set_color_name", data={'colorName':'black'})
-                                r = requests.post(REQ_ADDR + "/set_value_gain", data={'valueGain':'100'})
+                                r = requests.post(REQ_ADDR + "/set_color_name", data={"colorName":"black"})
+                                r = requests.post(REQ_ADDR + "/set_value_gain", data={"valueGain":"100"})
                             except requests.ConnectionError:
-                                return 'Service Unavailable', 503
+                                return "Service Unavailable", 503
 
                     elif (group == "WOL"):    # Wake on LAN
                         wol.send_magic_packet(code)
@@ -96,13 +96,13 @@ def activity(index):
                         time.sleep(0.3)       # Wait ~300 milliseconds between codes.
             count = count + 1
 
-    return 'OK', 200
+    return "OK", 200
 
 
 ### METHODS ###
 def isAuthOK():
     try:
-        auth = request.headers['Authorization'].split()[1]
+        auth = request.headers["Authorization"].split()[1]
         user, pw = base64.b64decode(auth).split(":")
         return (user == username and pw == password)
     except KeyError:
@@ -113,8 +113,8 @@ def run_commands(commands):
     with app.test_client() as client:
         for cmd in commands:
             sleep(1)
-            client.post('/activity/' + str(return_index(cmd[0], cmd[1])),
-                        headers = {'Authorization': "Basic " + auth})
+            client.post("/activity/" + str(return_index(cmd[0], cmd[1])),
+                        headers = {"Authorization": "Basic " + auth})
 
 def return_index(cmd, grp):
     count = 0
@@ -132,17 +132,32 @@ def run_schedule():
     lastEvent = None
     events = activities["scheduled"]
     didTurnOnMorningLights = False
+    hasClearedLastEventToday = False
+
+    allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+    def isValidTimeAndDay():
+        return time.hour == hour and time.minute == minute and \
+               ("days" not in event or currentDay in event["days"])
 
     while True:
         time = datetime.now()
+        dayIndex = datetime.today().weekday()
+        currentDay = allDays[dayIndex]
+
+        # Reset in case the same event is only one event being fired 
+        if len(events) == 1 and time.hour == "0" and time.minute == "0" and not hasClearedLastEventToday:
+            hasClearedLastEventToday = True
+            lastEvent = None
 
         for event in events:
-            [hour, minute] = [int(x) for x in event["time"].split(':')]
+            [hour, minute] = [int(x) for x in event["time"].split(":")]
+
             # Evening
             if event["id"] == "evening":
                 # If it's already dark by the time specified in the events dict, fire the commands.
                 # Otherwise, schedule the commands to be executed on this date + timediff.
-                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                if lastEvent != event["id"] and isValidTimeAndDay():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
@@ -157,7 +172,7 @@ def run_schedule():
             # Morning
             elif event["id"] == "morning":
                 # If it is dark by the time specified in the events dict, simply fire the commands.
-                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                if lastEvent != event["id"] and isValidTimeAndDay():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
@@ -169,8 +184,8 @@ def run_schedule():
                 # If it is light by the time specified in the events dict, simply fire the commands.
                 # Otherwise, schedule the commands to be executed on this date + timediff.
                 # Only fire this if `morning` was executed.
-                if time.hour == hour and time.minute == minute and \
-                   didTurnOnMorningLights and lastEvent != event["id"]:
+                if lastEvent != event["id"] and didTurnOnMorningLights and \
+                   isValidTimeAndDay():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if not sunEvent[0]:
@@ -183,7 +198,7 @@ def run_schedule():
             # Events that don't need any custom rules, like evening off
             else:
                 # If the time match with the specified in the events dict, simply fire the commands.
-                if time.hour == hour and time.minute == minute and lastEvent != event["id"]:
+                if lastEvent != event["id"] and isValidTimeAndDay():
                     lastEvent = event["id"]
                     run_commands(event["commands"])
 
@@ -192,7 +207,7 @@ def run_schedule():
         sleep(1)
 
 # There is no other way to schedule only once other than doing this.
-def execute_once(commands='cmds'):
+def execute_once(commands="cmds"):
     run_commands(commands)
     return schedule.CancelJob
 
@@ -207,18 +222,18 @@ def timeUntilSunEvent():
     utc = pytz.UTC
     currentTime = utc.localize(datetime.utcnow())
     # Is it between sunrise and sunset?
-    if sun['sunrise'] <= currentTime <= sun['sunset']:
-        if sun['sunset'] >= currentTime:
+    if sun["sunrise"] <= currentTime <= sun["sunset"]:
+        if sun["sunset"] >= currentTime:
             event = "sunset"
-            timediff = sun['sunset'] - currentTime
-        if sun['sunset'] <= currentTime:
+            timediff = sun["sunset"] - currentTime
+        if sun["sunset"] <= currentTime:
             event = "sunrise"
-            timediff = currentTime - sun['sunrise']
+            timediff = currentTime - sun["sunrise"]
         logging.debug("It's sunny outside, %s in %s" % (event, timediff))
         print("It's sunny outside, %s in %s" % (event, timediff))
         return (False, timediff)
     else:
-        timediff = sun['sunrise'] - currentTime
+        timediff = sun["sunrise"] - currentTime
         logging.debug("It's dark outside, %s until sunrise" % (timediff))
         print("It's dark outside, %s until sunrise" % (timediff))
         return (True, timediff)
@@ -228,8 +243,8 @@ def init_comport():
     # Find the right USB port
     matches = []
 
-    for root, dirnames, filenames in os.walk('/dev'):
-        for filename in fnmatch.filter(filenames, 'ttyUSB*'):
+    for root, dirnames, filenames in os.walk("/dev"):
+        for filename in fnmatch.filter(filenames, "ttyUSB*"):
             matches.append(os.path.join(root, filename))
 
     ser          = serial.Serial()
@@ -254,7 +269,7 @@ def init_comport():
 # This will only run once, not twice
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     # Setup logging to file
-    logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.basicConfig(filename="log.txt", level=logging.DEBUG, format="%(asctime)s %(message)s")
 
     # Load variables
     activities = config.get_activities() # Parse activity configuration.
@@ -269,5 +284,5 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
 
     logging.debug("Server started")
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True, threaded=True) 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3000, debug=True, threaded=True) 

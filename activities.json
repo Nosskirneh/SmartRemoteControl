@@ -169,6 +169,24 @@
               "data": "OFF 3"
             }
           ]
+        },
+        {
+          "name": "4 ON",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "ON 4"
+            }
+          ]
+        },
+        {
+          "name": "4 OFF",
+          "codes": [
+            {
+              "channel": "NEXA",
+              "data": "OFF 4"
+            }
+          ]
         }
       ]
     },
@@ -378,8 +396,36 @@
   ],
   "scheduled": [
     {
+      "id": "engine_warmer",
+      "time": "05:45",
+      "commands": [
+        ["4 ON", "nexa"]
+      ],
+      "days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ]
+    },
+    {
+      "id": "engine_warmer_off",
+      "time": "06:45",
+      "commands": [
+        ["4 OFF", "nexa"]
+      ],
+      "days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ]
+    },
+    {
       "id": "evening",
-      "time": "16:00",
+      "time": "15:00",
       "commands": [
         ["LIGHTS ON", "other"]
       ]
@@ -395,14 +441,32 @@
       "id": "morning",
       "time": "06:00",
       "commands": [
-        ["1 ON", "mhz433"]
+        ["1 ON", "mhz433"],
+        ["3 ON", "mhz433"],
+        ["4 ON", "mhz433"]
+      ],
+      "days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
       ]
     },
     {
       "id": "morning_off",
       "time": "07:30",
       "commands": [
-        ["1 OFF", "mhz433"]
+        ["1 OFF", "mhz433"],
+        ["3 OFF", "mhz433"],
+        ["4 OFF", "mhz433"]
+      ],
+      "days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
       ]
     }
   ]
