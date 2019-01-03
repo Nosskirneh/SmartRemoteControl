@@ -407,6 +407,9 @@
         "Wednesday",
         "Thursday",
         "Friday"
+      ],
+      "exclude": [
+        "holidays"
       ]
     },
     {
@@ -421,6 +424,9 @@
         "Wednesday",
         "Thursday",
         "Friday"
+      ],
+      "exclude": [
+        "holidays"
       ]
     },
     {
@@ -435,6 +441,9 @@
       "time": "02:00",
       "commands": [
         ["LATE NIGHT", "other"]
+      ],
+      "exclude": [
+        "Nyårsdagen"
       ]
     },
     {
@@ -451,6 +460,9 @@
         "Wednesday",
         "Thursday",
         "Friday"
+      ],
+      "exclude": [
+        "holidays"
       ]
     },
     {
@@ -467,6 +479,9 @@
         "Wednesday",
         "Thursday",
         "Friday"
+      ],
+      "exclude": [
+        "holidays"
       ]
     }
   ]

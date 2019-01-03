@@ -15,6 +15,7 @@ from wakeonlan import wol
 import threading
 from datetime import datetime, date
 import schedule
+import holidays
 import time
 from astral import Astral
 import pytz
@@ -75,7 +76,7 @@ def activity(index):
                 if count is index:
                     if group == "IR":         # IR section
                         ser.write(code + ";") # Send IR code to Arduino
-                        print ser.readlines()
+                        print(ser.readlines())
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
@@ -98,7 +99,7 @@ def activity(index):
                         wol.send_magic_packet(code)
 
                     if (i != len(codes) - 1): # Don't delay after last item
-                        time.sleep(0.3)       # Wait ~300 milliseconds between codes.
+                        time.sleep(0.2)       # Wait ~200 milliseconds between codes.
             count = count + 1
 
     return "OK", 200
@@ -145,16 +146,24 @@ def run_schedule():
     allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     def isValidTimeAndDay():
-        return time.hour == hour and time.minute == minute and \
+        if "exclude" in event:
+            all_holidays = dict(holidays.SE().items())
+            if "holiday" in event["exclude"] == "holidays" and now in holidays.SE():
+                return False
+            # If today is a holiday and this holiday should be excluded
+            elif now.date() in all_holidays and all_holidays[now.date()] in event["exclude"]:
+                return False
+
+        return now.hour == hour and now.minute == minute and \
                ("days" not in event or currentDay in event["days"])
 
     while True:
-        time = datetime.now()
+        now = datetime.now()
         dayIndex = datetime.today().weekday()
         currentDay = allDays[dayIndex]
 
         # Reset in case the same event is only one event being fired 
-        if len(events) == 1 and time.hour == "0" and time.minute == "0" and not hasClearedLastEventToday:
+        if len(events) == 1 and now.hour == "0" and now.minute == "0" and not hasClearedLastEventToday:
             hasClearedLastEventToday = True
             lastEvent = None
 
@@ -173,7 +182,7 @@ def run_schedule():
                     else:
                         # TODO: Perhaphs replace the generic execute_once to a custom
                         #       method that reschedules with cloud data.
-                        timeStr = (time + sunEvent[1]).strftime("%H:%M")
+                        timeStr = (now + sunEvent[1]).strftime("%H:%M")
                         print("Should schedule for %s" % (timeStr))
                         schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
 
@@ -199,7 +208,7 @@ def run_schedule():
                     if not sunEvent[0]:
                         run_commands(event["commands"])
                     else:
-                        timeStr = (time + sunEvent[1]).strftime("%H:%M")
+                        timeStr = (now + sunEvent[1]).strftime("%H:%M")
                         print("Should schedule for %s" % (timeStr))
                         schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
 
@@ -266,13 +275,13 @@ def init_comport():
     ser.dsrdtr   = False       # disable hardware (DSR/DTR) flow control
 
     if ser.isOpen():
-        print "### Serial conenction already open!"
+        print("### Serial conenction already open!")
     else:
         try:
             ser.open()
-            print " * Serial connection open!"
+            print(" * Serial connection open!")
         except Exception, e:
-            print " * Error open serial port: " + str(e)
+            print(" * Error open serial port: " + str(e))
     return ser
 
 
