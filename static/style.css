@@ -40,7 +40,6 @@ body {
 
 .button {
     margin-bottom: 10px;
-    margin: 5px auto;
     max-width: 170px;
 }
 
@@ -52,6 +51,7 @@ body {
     padding: 0 20px 20px 20px;
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     max-width: 500px;
     width: 440px;
     height: 100%;
@@ -77,6 +77,29 @@ body {
     letter-spacing: 1px;
     font-weight: bold;
 }
+
+#pages {
+    font-family: sans-serif;
+    scroll-snap-type: mandatory;
+    scroll-snap-points-y: repeat(100vw);
+    scroll-snap-type: x mandatory;
+    display: flex;
+    overflow-x: scroll;
+}
+
+section {
+    border-right: 1px solid white;
+    min-width: 100%;
+    scroll-snap-align: start;
+    text-align: center;
+    position: relative;
+    padding: 0 12rem;
+}
+
+section > div {
+    justify-content: center;
+}
+
 /* iPad Pro */
 @media only screen 
 and (min-device-width : 1024px) 

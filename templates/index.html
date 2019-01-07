@@ -15,7 +15,7 @@
 
         <script>
         function getStylesheet() {
-          var currentTime = new Date().getHours();
+          let currentTime = new Date().getHours();
           if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
             document.write("<link rel='stylesheet' href={{ url_for('static', filename='night.css') }} type='text/css'>");
         }
@@ -88,30 +88,46 @@
             </div>
           </div>
         </p>
-
-        
-        <div id="groupContainer">
-          {% set count = [0] %}
-          {% for activity in activities["groups"] %}
-            {% for act in activity["activities"] %}
-              <div class="col-sm-2 {{ activity["name"] }} button">
-                <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
-              </div>
-              {% if count.append(count.pop() + 1) %}{% endif %}
-            {% endfor %}
-          {% endfor %}
-        </div>
       </div>
+
+      <div id="pages">
+        <section>
+          <div id="groupContainer">
+            {% set count = [0] %}
+            {% for activity in activities["groups"] %}
+              {% for act in activity["activities"] %}
+                <div class="col-sm-2 {{ activity["name"] }} button">
+                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
+                </div>
+                {% if count.append(count.pop() + 1) %}{% endif %}
+              {% endfor %}
+            {% endfor %}
+          </div>
+        </section>
+        <section>
+          <div id="scheduleContainer">
+            <h1>Scheduling</h1>
+          </div>
+        </section>
+
+      </div>
+
+
       <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
       <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+      <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
+
+      <script>
+        cssScrollSnapPolyfill()
+      </script>
 
       <script> // Script that groups together activities
-      var groups={};
+      let groups = {};
 
       $('#groupContainer >div.col-sm-2').each(function() {
-          var cls = (this.className);
+          let cls = (this.className);
           
-          var group = groups[cls];
+          let group = groups[cls];
           if(!group)
           {
               group = $('<div/>').appendTo('#groupContainer');
@@ -128,9 +144,9 @@
 
       <script> // Script that adds headlines
         $('#groupContainer >div.group').each(function() {
-          var grpName = (this.className).split(' ')[1];
-          var h2 = document.createElement("H2");           // Create a <h2> element
-          var text = document.createTextNode(grpName);     // Create a text node
+          let grpName = (this.className).split(' ')[1];
+          let h2 = document.createElement("H2");           // Create a <h2> element
+          let text = document.createTextNode(grpName);     // Create a text node
           h2.appendChild(text);
           $(this).prepend(h2);
         });
@@ -138,7 +154,7 @@
 
 
       <script>
-      var activityList = [
+      let activityList = [
       {% set count = [0] %}
       {% for activity in activities["groups"] %}
         {% set outer_loop = loop %}
@@ -149,26 +165,20 @@
       {% endfor %}
       ];
 
-      var username;
-      var password;
-
-      function getCredentials() {
-        username = $("input#usr").val();
-        password = $("input#pwd").val();
-      }
-
-      function make_base_auth(user, password) {
-        var tok = user + ':' + password;
-        var hash = btoa(tok);
+      function make_base_auth(username, password) {
+        let tok = username + ':' + password;
+        let hash = btoa(tok);
         return "Basic " + hash;
       }
 
       function sendActivity(index) {
         $("#submit_button").click()
 
-        var request = $.ajax({
+        let request = $.ajax({
           url: '/activity/' + index,
           beforeSend: function (xhr) {
+            let username = $("input#usr").val();
+            let password = $("input#pwd").val();
             xhr.setRequestHeader('Authorization', make_base_auth(username, password));
           },
           method: 'POST'
@@ -191,16 +201,16 @@
       function speak() {
         $('#speech-status').text('Speak activity name...');
         // Run speech recognition.
-        var recognition = new webkitSpeechRecognition();
+        let recognition = new webkitSpeechRecognition();
         recognition.onresult = function(event) {
           // When a result is available, first grab the transcript.
-          var result = '';
-          for (var i = event.resultIndex; i < event.results.length; ++i) {
+          let result = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
             result += event.results[i][0].transcript;
           }
           // Check if transcript matches an activity name.
-          for (var i = 0; i < activityList.length; ++i) {
-            var item = activityList[i];
+          for (let i = 0; i < activityList.length; ++i) {
+            let item = activityList[i];
             if (item.name.toLowerCase() == result.toLowerCase()) {
               // Found a match!
               $('#speech-status').text('Running activity: ' + item.name);
