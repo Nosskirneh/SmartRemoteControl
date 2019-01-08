@@ -25,10 +25,14 @@ import logging
 # Create flask application.
 app = Flask(__name__)
 
+def getCurrentDateAsString():
+    return datetime.now().strftime('%Y-%m-%dT%H:%M')
+
 ### APP ROUTES ###
 @app.route("/")
 def root():
-    return render_template("index.html", activities=activities)
+    template = render_template("index.html", activities=config.get_activities(), now=getCurrentDateAsString)
+    return template;
 
 
 @app.route("/command", methods=["POST"])

@@ -43,10 +43,6 @@ body {
     max-width: 170px;
 }
 
-#groupContainer {
-    display: flex;
-}
-
 .group {
     padding: 0 20px 20px 20px;
     display: flex;
@@ -97,7 +93,69 @@ section {
 }
 
 section > div {
+    display: flex;
     justify-content: center;
+}
+
+#scheduleContainer {
+    margin-left: 3rem;
+    margin-right: 3rem;
+    margin-top: 3rem;
+}
+
+.block {
+    margin: 0 20px 20px 0;
+    padding: 20px;
+    width: 200px;
+    height: 200px;
+    background-color: #eee;
+
+    position: relative;
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.block span {
+    white-space: nowrap;
+}
+
+.block:not(:first-of-type) {
+    margin: 0 20px 20px 20px;
+}
+
+.block > * {
+    width: 100%;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 50px;
+}
+
+.controls img {
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+}
+
+.clock {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    height: 40px;
+}
+
+.clock * {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.clock img {
+    width: 20px;
+    height: 20px;
 }
 
 /* iPad Pro */

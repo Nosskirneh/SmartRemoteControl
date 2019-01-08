@@ -12,6 +12,7 @@
 
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
 
         <script>
         function getStylesheet() {
@@ -94,10 +95,10 @@
         <section>
           <div id="groupContainer">
             {% set count = [0] %}
-            {% for activity in activities["groups"] %}
-              {% for act in activity["activities"] %}
-                <div class="col-sm-2 {{ activity["name"] }} button">
-                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act["name"] }}</button>
+            {% for activity in activities.groups %}
+              {% for act in activity.activities %}
+                <div class="col-sm-2 {{ activity.name }} button">
+                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
                 </div>
                 {% if count.append(count.pop() + 1) %}{% endif %}
               {% endfor %}
@@ -106,7 +107,30 @@
         </section>
         <section>
           <div id="scheduleContainer">
-            <h1>Scheduling</h1>
+            {% for scheduled in activities.scheduled %}
+              <div class="block btn-lg">
+                <span>{{ scheduled.id }}</span>
+                <div class="clock">
+                  <img src="{{ url_for('static', filename='clock-glyph-40.png') }}">
+                  <span>{{ scheduled.time }}</span>
+                </div>
+
+                {% if scheduled.commands|length > 1 %}
+                  <span>{{ scheduled.commands|length }} commands</span>
+                {% else %}
+                  <span>{{ scheduled.commands|length }} command</span>
+                {% endif %}
+
+                <div class="controls">
+                  {% if "disabledUntil" in scheduled and scheduled["disabledUntil"] + "T" + scheduled.time >= now() %}
+                    <input type="checkbox" class="uiswitch">
+                  {% else %}
+                    <input type="checkbox" class="uiswitch" checked>
+                  {% endif %}
+                  <img src="{{ url_for('static', filename='edit-glyph-60.png') }}">
+                </div>
+              </div>
+            {% endfor %}
           </div>
         </section>
 
@@ -156,10 +180,10 @@
       <script>
       let activityList = [
       {% set count = [0] %}
-      {% for activity in activities["groups"] %}
+      {% for activity in activities.groups %}
         {% set outer_loop = loop %}
-        {% for act in activity["activities"] %}
-          { name: '{{ act["name"] }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+        {% for act in activity.activities %}
+          { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
           {% if count.append(count.pop() + 1) %}{% endif %}
         {% endfor %}
       {% endfor %}
