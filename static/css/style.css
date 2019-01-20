@@ -15,8 +15,12 @@ body {
     background-size: 200px 200px;
 }
 
+#first-row {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
 .form-group {
-    margin-bottom: 15px;
     display: inline-block;
     margin: 0px 10px;
 }
@@ -29,6 +33,7 @@ body {
 #creds {
     margin: 5px 0;
     display: flex;
+    justify-content: flex-end;
 }
 
 #creds input {

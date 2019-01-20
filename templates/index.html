@@ -73,29 +73,29 @@
         <h1>Smart Remote Control</h1>
         <div id=logo></div>
       </div>
-      <p>
-        <div class="row">
-          <div class="col-sm-7">
-            <button type="button" class="btn btn-primary btn-speak btn-lg" onclick="speak();" >Speak</button>
-          </div>
-          <div class="col-sm-2">
-            <!-- iframe below is used to trigger browser 'save password' dialog -->
-            <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
-            <form id="creds" target="temp" onsubmit="getCredentials();">
-              <div class="form-group">
-                <input id="usr" class="form-control" name="user" placeholder="user">
-              </div>
-              <div class="form-group">
-                <input id="pwd" class="form-control" name="password" type="password" placeholder="password">
-              </div>
-              <input id="submit_button" style="display: none;" value="Login" type="submit">
-            </form>
-          </div>
-          <div class="col-sm-8">
-            <h3 id="speech-status"></h3>
-          </div>
+      <div id="first-row" class="row">
+        <div class="col-sm-7">
+          <button type="button" class="btn btn-primary btn-speak btn-lg" onclick="speak();" >Speak</button>
         </div>
-      </p>
+        <!-- iframe below is used to trigger browser 'save password' dialog -->
+        <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
+        <form id="creds" class="col-sm-5" target="temp" onsubmit="getCredentials();">
+          <div class="row">
+            <div class="form-group">
+              <input id="usr" class="form-control" name="user" placeholder="user">
+            </div>
+            <div class="form-group">
+              <input id="pwd" class="form-control" name="password" type="password" placeholder="password">
+            </div>
+          </div>
+          <input id="submit_button" style="display: none;" value="Login" type="submit">
+        </form>
+      </div>
+      <div class="row">
+        <div class="col-sm-7">
+          <h3 id="speech-status"></h3>
+        </div>
+      </div>
     </div>
 
     <div id="pages">
