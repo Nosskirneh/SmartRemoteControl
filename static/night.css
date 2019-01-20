@@ -7,3 +7,7 @@ body, .form-control, .btn-default {
     background-color: #1e1e1e;
     color: #f3f3f3;
 }
+
+.block {
+    background-color: #474747;
+}
