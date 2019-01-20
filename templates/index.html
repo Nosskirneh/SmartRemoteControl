@@ -3,253 +3,263 @@
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Smart Remote Control</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Smart Remote Control</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-        <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
 
-        <script>
-        function getStylesheet() {
-          let currentTime = new Date().getHours();
-          if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
-            document.write("<link rel='stylesheet' href={{ url_for('static', filename='night.css') }} type='text/css'>");
-        }
+    <script>
+    function getStylesheet() {
+      let currentTime = new Date().getHours();
+      if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
+        document.write("<link rel='stylesheet' href={{ url_for('static', filename='night.css') }} type='text/css'>");
+    }
 
-        getStylesheet();
-        </script>
+    getStylesheet();
+    </script>
 
-        <!-- favicons -->
-        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
-        <link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
-        <link rel="icon" type="image/png" sizes="196x196" href="{{ url_for('static', filename='favicon/favicon-192.png') }}">
-        <link rel="icon" type="image/png" sizes="160x160" href="{{ url_for('static', filename='favicon/favicon-160.png') }}">
-        <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96.png') }}">
-        <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='favicon/favicon-64.png') }}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32.png') }}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16.png') }}">
-        <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/favicon-57.png') }}">
-        <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='favicon/favicon-114.png') }}">
-        <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='favicon/favicon-72.png') }}">
-        <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='favicon/favicon-144.png') }}">
-        <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='favicon/favicon-60.png') }}">
-        <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='favicon/favicon-120.png') }}">
-        <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='favicon/favicon-76.png') }}">
-        <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='favicon/favicon-152.png') }}">
-        <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/favicon-180.png') }}">
-        <meta name="msapplication-TileColor" content="#FFFFFF">
-        <meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/favicon-144.png') }}">
-        <meta name="msapplication-config" content="{{ url_for('static', filename='favicon/browserconfig.xml') }}">
-        <!-- favicons -->
+    <!-- favicons -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
+    <link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="196x196" href="{{ url_for('static', filename='favicon/favicon-192.png') }}">
+    <link rel="icon" type="image/png" sizes="160x160" href="{{ url_for('static', filename='favicon/favicon-160.png') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96.png') }}">
+    <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='favicon/favicon-64.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/favicon-57.png') }}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='favicon/favicon-114.png') }}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='favicon/favicon-72.png') }}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='favicon/favicon-144.png') }}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='favicon/favicon-60.png') }}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='favicon/favicon-120.png') }}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='favicon/favicon-76.png') }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='favicon/favicon-152.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/favicon-180.png') }}">
+    <meta name="msapplication-TileColor" content="#FFFFFF">
+    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/favicon-144.png') }}">
+    <meta name="msapplication-config" content="{{ url_for('static', filename='favicon/browserconfig.xml') }}">
+    <!-- favicons -->
 
-        <!--[if lt IE 9]>
-            <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-            <script>window.html5 || document.write('<script src="js/vendor/html5shiv.js"><\/script>')</script>
-        <![endif]-->
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
+    <!--[if lt IE 9]>
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <script>window.html5 || document.write('<script src="js/vendor/html5shiv.js"><\/script>')</script>
+    <![endif]-->
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+        <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
 
-      <div id="result" class="alert alert-success" style="display: none;">Success!</div>
-      <div id="error" class="alert alert-danger" style="display: none;">Error!</div>
+    <div id="result" class="alert alert-success" style="display: none;">Success!</div>
+    <div id="error" class="alert alert-danger" style="display: none;">Error!</div>
 
 
-      <div class="container">
-        <div class="jumbotron">
-          <h1>Smart Remote Control</h1>
-          <div id=logo></div>
-        </div>
-        <p>
-          <div class="row">
-            <div class="col-sm-7">
-              <button type="button" class="btn btn-primary btn-speak btn-lg" onclick="speak();" >Speak</button>
-            </div>
-            <div class="col-sm-2">
-              <!-- iframe below is used to trigger browser 'save password' dialog -->
-              <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
-              <form id="creds" target="temp" onsubmit="getCredentials();">
-                <div class="form-group">
-                  <input id="usr" class="form-control" name="user" placeholder="user">
-                </div>
-                <div class="form-group">
-                  <input id="pwd" class="form-control" name="password" type="password" placeholder="password">
-                </div>
-                <input id="submit_button" style="display: none;" value="Login" type="submit">
-              </form>
-            </div>
-            <div class="col-sm-8">
-              <h3 id="speech-status"></h3>
-            </div>
-          </div>
-        </p>
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Smart Remote Control</h1>
+        <div id=logo></div>
       </div>
-
-      <div id="pages">
-        <section>
-          <div id="groupContainer">
-            {% set count = [0] %}
-            {% for activity in activities.groups %}
-              {% for act in activity.activities %}
-                <div class="col-sm-2 {{ activity.name }} button">
-                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
-                </div>
-                {% if count.append(count.pop() + 1) %}{% endif %}
-              {% endfor %}
-            {% endfor %}
+      <p>
+        <div class="row">
+          <div class="col-sm-7">
+            <button type="button" class="btn btn-primary btn-speak btn-lg" onclick="speak();" >Speak</button>
           </div>
-        </section>
-        <section>
-          <div id="scheduleContainer">
-            {% for scheduled in activities.scheduled %}
-              <div class="block btn-lg">
-                <span>{{ scheduled.id }}</span>
-                <div class="clock">
-                  <img src="{{ url_for('static', filename='clock-glyph-40.png') }}">
-                  <span>{{ scheduled.time }}</span>
-                </div>
-
-                {% if scheduled.commands|length > 1 %}
-                  <span>{{ scheduled.commands|length }} commands</span>
-                {% else %}
-                  <span>{{ scheduled.commands|length }} command</span>
-                {% endif %}
-
-                <div class="controls">
-                  {% if "disabledUntil" in scheduled and scheduled["disabledUntil"] + "T" + scheduled.time >= now() %}
-                    <input type="checkbox" class="uiswitch">
-                  {% else %}
-                    <input type="checkbox" class="uiswitch" checked>
-                  {% endif %}
-                  <img src="{{ url_for('static', filename='edit-glyph-60.png') }}">
-                </div>
+          <div class="col-sm-2">
+            <!-- iframe below is used to trigger browser 'save password' dialog -->
+            <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
+            <form id="creds" target="temp" onsubmit="getCredentials();">
+              <div class="form-group">
+                <input id="usr" class="form-control" name="user" placeholder="user">
               </div>
-            {% endfor %}
+              <div class="form-group">
+                <input id="pwd" class="form-control" name="password" type="password" placeholder="password">
+              </div>
+              <input id="submit_button" style="display: none;" value="Login" type="submit">
+            </form>
           </div>
-        </section>
+          <div class="col-sm-8">
+            <h3 id="speech-status"></h3>
+          </div>
+        </div>
+      </p>
+    </div>
 
-      </div>
+    <div id="pages">
+      <section>
+        <div id="groupContainer">
+          {% set count = [0] %}
+          {% for activity in activities.groups %}
+            {% for act in activity.activities %}
+              <div class="col-sm-2 {{ activity.name }} button">
+                <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
+              </div>
+              {% if count.append(count.pop() + 1) %}{% endif %}
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </section>
+      <section>
+        <div id="scheduleContainer">
+          {% for scheduled in activities.scheduled %}
+            <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
+              <span>{{ scheduled.id }}</span>
+              <div class="clock">
+                <img src="{{ url_for('static', filename='clock-glyph-40.png') }}">
+                <span>{{ scheduled.time }}</span>
+              </div>
+
+              {% if scheduled.commands|length > 1 %}
+                <span>{{ scheduled.commands|length }} commands</span>
+              {% else %}
+                <span>{{ scheduled.commands|length }} command</span>
+              {% endif %}
+
+              <div class="controls">
+                {% if "disabledUntil" in scheduled and scheduled["disabledUntil"] + "T" + scheduled.time >= now() %}
+                  <input type="checkbox" class="uiswitch">
+                {% else %}
+                  <input type="checkbox" class="uiswitch" checked>
+                {% endif %}
+                <img src="{{ url_for('static', filename='edit-glyph-60.png') }}">
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+
+    </div>
 
 
-      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-      <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-      <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
 
-      <script>
-        cssScrollSnapPolyfill()
-      </script>
+    <script>
+      cssScrollSnapPolyfill()
+    </script>
 
-      <script> // Script that groups together activities
-      let groups = {};
+    <script> // Script that groups together activities
+    let groups = {};
 
-      $('#groupContainer >div.col-sm-2').each(function() {
-          let cls = (this.className);
+    $('#groupContainer > div.col-sm-2').each(function() {
+        let cls = (this.className);
+        
+        let group = groups[cls];
+        if(!group)
+        {
+          group = $('<div/>').appendTo('#groupContainer');
+          group.addClass('group ' + cls.split(' ')[1]);
           
-          let group = groups[cls];
-          if(!group)
-          {
-              group = $('<div/>').appendTo('#groupContainer');
-              group.addClass('group ' + cls.split(' ')[1]);
-              
-              groups[cls] = group;
-          }
-          
-          $(this).appendTo(group);
-          $(this).removeClass(cls.split(' ')[1]);
+          groups[cls] = group;
+        }
+        
+        $(this).appendTo(group);
+        $(this).removeClass(cls.split(' ')[1]);
+    });
+    </script>
+
+
+    <script> // Script that adds headlines
+      $('#groupContainer >div.group').each(function() {
+        let grpName = (this.className).split(' ')[1];
+        let h2 = document.createElement("h2");           // Create a <h2> element
+        let text = document.createTextNode(grpName);     // Create a text node
+        h2.appendChild(text);
+        $(this).prepend(h2);
       });
-      </script>
+    </script>
 
 
-      <script> // Script that adds headlines
-        $('#groupContainer >div.group').each(function() {
-          let grpName = (this.className).split(' ')[1];
-          let h2 = document.createElement("H2");           // Create a <h2> element
-          let text = document.createTextNode(grpName);     // Create a text node
-          h2.appendChild(text);
-          $(this).prepend(h2);
-        });
-      </script>
+    <script>
+      $('.controls img').on('click', (e) => {
+        let block = $(e.currentTarget).closest('.block');
+        let identifier = block.attr('identifier');
+        console.log('click', identifier);
+        // I need to get the info from schedlued here but doesn't seem to be possible
+      });
+    </script>
 
 
-      <script>
-      let activityList = [
-      {% set count = [0] %}
-      {% for activity in activities.groups %}
-        {% set outer_loop = loop %}
-        {% for act in activity.activities %}
-          { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
-          {% if count.append(count.pop() + 1) %}{% endif %}
-        {% endfor %}
+    <script>
+    let activityList = [
+    {% set count = [0] %}
+    {% for activity in activities.groups %}
+      {% set outer_loop = loop %}
+      {% for act in activity.activities %}
+        { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+        {% if count.append(count.pop() + 1) %}{% endif %}
       {% endfor %}
-      ];
+    {% endfor %}
+    ];
 
-      function make_base_auth(username, password) {
-        let tok = username + ':' + password;
-        let hash = btoa(tok);
-        return "Basic " + hash;
-      }
+    function make_base_auth(username, password) {
+      let tok = username + ':' + password;
+      let hash = btoa(tok);
+      return "Basic " + hash;
+    }
 
-      function sendActivity(index) {
-        $("#submit_button").click()
+    function sendActivity(index) {
+      $("#submit_button").click()
 
-        let request = $.ajax({
-          url: '/activity/' + index,
-          beforeSend: function (xhr) {
-            let username = $("input#usr").val();
-            let password = $("input#pwd").val();
-            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-          },
-          method: 'POST'
-        });
+      let request = $.ajax({
+        url: '/activity/' + index,
+        beforeSend: function (xhr) {
+          let username = $("input#usr").val();
+          let password = $("input#pwd").val();
+          xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+        },
+        method: 'POST'
+      });
 
-        request.done(
-          function(response) {
-            $('#result').fadeIn(0).delay(2000).fadeOut("fast");
-          }
-        );
-
-        request.fail(
-          function(response) {
-            $('#error').text(response.responseText);
-            $('#error').fadeIn(0).delay(2000).fadeOut("fast");
-          }
-        );
-      }
-
-      function speak() {
-        $('#speech-status').text('Speak activity name...');
-        // Run speech recognition.
-        let recognition = new webkitSpeechRecognition();
-        recognition.onresult = function(event) {
-          // When a result is available, first grab the transcript.
-          let result = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            result += event.results[i][0].transcript;
-          }
-          // Check if transcript matches an activity name.
-          for (let i = 0; i < activityList.length; ++i) {
-            let item = activityList[i];
-            if (item.name.toLowerCase() == result.toLowerCase()) {
-              // Found a match!
-              $('#speech-status').text('Running activity: ' + item.name);
-              sendActivity(item.index);
-              return;
-            }
-          }
-          // Couldn't find a match, so display what was heard.
-          $('#speech-status').text('Heard: ' + result);
+      request.done(
+        function(response) {
+          $('#result').fadeIn(0).delay(2000).fadeOut("fast");
         }
-        recognition.onerror = function(event) {
-          $('#speech-status').text('Error recognizing speech!');
+      );
+
+      request.fail(
+        function(response) {
+          $('#error').text(response.responseText);
+          $('#error').fadeIn(0).delay(2000).fadeOut("fast");
         }
-        recognition.start();
+      );
+    }
+
+    function speak() {
+      $('#speech-status').text('Speak activity name...');
+      // Run speech recognition.
+      let recognition = new webkitSpeechRecognition();
+      recognition.onresult = function(event) {
+        // When a result is available, first grab the transcript.
+        let result = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          result += event.results[i][0].transcript;
+        }
+        // Check if transcript matches an activity name.
+        for (let i = 0; i < activityList.length; ++i) {
+          let item = activityList[i];
+          if (item.name.toLowerCase() == result.toLowerCase()) {
+            // Found a match!
+            $('#speech-status').text('Running activity: ' + item.name);
+            sendActivity(item.index);
+            return;
+          }
+        }
+        // Couldn't find a match, so display what was heard.
+        $('#speech-status').text('Heard: ' + result);
       }
-      </script>
-    </body>
+      recognition.onerror = function(event) {
+        $('#speech-status').text('Error recognizing speech!');
+      }
+      recognition.start();
+    }
+    </script>
+  </body>
 </html>
