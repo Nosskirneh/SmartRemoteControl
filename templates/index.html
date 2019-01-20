@@ -10,7 +10,7 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
 
@@ -46,6 +46,13 @@
     <meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/favicon-144.png') }}">
     <meta name="msapplication-config" content="{{ url_for('static', filename='favicon/browserconfig.xml') }}">
     <!-- favicons -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
+    <script>
+      cssScrollSnapPolyfill()
+    </script>
 
     <!--[if lt IE 9]>
         <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -111,7 +118,7 @@
             <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
               <span>{{ scheduled.id }}</span>
               <div class="clock">
-                <img src="{{ url_for('static', filename='img/clock-glyph-40.png') }}">
+                <span class="glyphicon glyphicon-time"></span>
                 <span>{{ scheduled.time }}</span>
               </div>
 
@@ -127,7 +134,7 @@
                 {% else %}
                   <input type="checkbox" class="uiswitch" checked>
                 {% endif %}
-                <img src="{{ url_for('static', filename='img/edit-glyph-60.png') }}">
+                <span class="glyphicon glyphicon-cog"></span>
               </div>
             </div>
           {% endfor %}
@@ -136,33 +143,24 @@
 
     </div>
 
-
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
-
-    <script>
-      cssScrollSnapPolyfill()
-    </script>
-
     <script> // Script that groups together activities
-    let groups = {};
+      let groups = {};
 
-    $('#groupContainer > div.col-sm-2').each(function() {
-        let cls = (this.className);
-        
-        let group = groups[cls];
-        if(!group)
-        {
-          group = $('<div/>').appendTo('#groupContainer');
-          group.addClass('group ' + cls.split(' ')[1]);
+      $('#groupContainer > div.col-sm-2').each(function() {
+          let cls = (this.className);
           
-          groups[cls] = group;
-        }
-        
-        $(this).appendTo(group);
-        $(this).removeClass(cls.split(' ')[1]);
-    });
+          let group = groups[cls];
+          if(!group)
+          {
+            group = $('<div/>').appendTo('#groupContainer');
+            group.addClass('group ' + cls.split(' ')[1]);
+            
+            groups[cls] = group;
+          }
+          
+          $(this).appendTo(group);
+          $(this).removeClass(cls.split(' ')[1]);
+      });
     </script>
 
 

@@ -28,6 +28,11 @@ body {
 
 #creds {
     margin: 5px 0;
+    display: flex;
+}
+
+#creds input {
+    width: initial;
 }
 
 .row {
@@ -40,7 +45,7 @@ body {
 
 .button {
     margin-bottom: 10px;
-    max-width: 170px;
+    width: 170px;
 }
 
 .group {
@@ -135,7 +140,7 @@ section > div {
     height: 50px;
 }
 
-.controls img {
+.controls span {
     height: 30px;
     width: 30px;
     cursor: pointer;
@@ -153,7 +158,7 @@ section > div {
     margin-right: 5px;
 }
 
-.clock img {
+.clock .glyphicon {
     width: 20px;
     height: 20px;
 }
@@ -187,7 +192,6 @@ and (max-device-width : 1366px) {
 
     #creds {
         margin-top: 15px;
-        display: flex;
     }
 
     .form-group {
