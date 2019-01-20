@@ -10,15 +10,15 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
 
     <script>
     function getStylesheet() {
       let currentTime = new Date().getHours();
       if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
-        document.write("<link rel='stylesheet' href={{ url_for('static', filename='night.css') }} type='text/css'>");
+        document.write("<link rel='stylesheet' href={{ url_for('static', filename='css/night.css') }} type='text/css'>");
     }
 
     getStylesheet();
@@ -111,7 +111,7 @@
             <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
               <span>{{ scheduled.id }}</span>
               <div class="clock">
-                <img src="{{ url_for('static', filename='clock-glyph-40.png') }}">
+                <img src="{{ url_for('static', filename='img/clock-glyph-40.png') }}">
                 <span>{{ scheduled.time }}</span>
               </div>
 
@@ -127,7 +127,7 @@
                 {% else %}
                   <input type="checkbox" class="uiswitch" checked>
                 {% endif %}
-                <img src="{{ url_for('static', filename='edit-glyph-60.png') }}">
+                <img src="{{ url_for('static', filename='img/edit-glyph-60.png') }}">
               </div>
             </div>
           {% endfor %}

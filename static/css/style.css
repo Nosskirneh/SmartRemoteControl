@@ -158,6 +158,11 @@ section > div {
     height: 20px;
 }
 
+.modal-body {
+    display: flex;
+    flex-direction: column;
+}
+
 /* iPad Pro */
 @media only screen 
 and (min-device-width : 1024px) 
