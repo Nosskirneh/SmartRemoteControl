@@ -48,9 +48,11 @@ body {
     display: inline-block;
 }
 
-.button {
+#activitiesContainer .button {
     margin-bottom: 10px;
     width: 170px;
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
 .group {
@@ -107,15 +109,15 @@ section > div {
 }
 
 #scheduleContainer {
-    margin-left: 3rem;
-    margin-right: 3rem;
     margin-top: 3rem;
+    flex-flow: row wrap;
+    justify-content: space-around;
 }
 
 .block {
-    margin: 0 20px 20px 0;
+    margin: 0 10px 20px;
     padding: 20px;
-    width: 200px;
+    max-width: 200px;
     height: 200px;
     background-color: #eee;
 
@@ -123,14 +125,19 @@ section > div {
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
+    flex-direction: column;
+}
+
+.block:not(:first-of-type) {
+    margin: 0 10px 20px 10px;
+}
+
+.block:last-of-type {
+    cursor: pointer;
 }
 
 .block span {
     white-space: nowrap;
-}
-
-.block:not(:first-of-type) {
-    margin: 0 20px 20px 20px;
 }
 
 .block > * {

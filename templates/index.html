@@ -92,13 +92,13 @@
 
     <div id="pages">
       <section>
-        <div id="groupContainer">
+        <div id="activitiesContainer">
           {% set count = [0] %}
           {% for group in activities.groups %}
             <div class="group">
               <h2>{{ group.name }}</h2>
               {% for act in group.activities %}
-                <div class="col-sm-2 button">
+                <div class="button">
                   <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
                 </div>
                 {% if count.append(count.pop() + 1) %}{% endif %}
@@ -134,6 +134,10 @@
               </div>
             </div>
           {% endfor %}
+
+          <div class="block btn-lg" id="new-event">
+            <span class="glyphicon glyphicon-plus"></span>
+          </div>
         </div>
       </section>
     </div>
