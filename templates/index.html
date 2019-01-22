@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" type="text/css" href="//unpkg.com/uiswitch@1.1.1/css/uiswitch.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clockpicker.css') }}">
 
     <script>
     function getStylesheet() {
@@ -50,8 +51,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
+    <script src="{{ url_for('static', filename='js/clockpicker.js') }}"></script>
+
     <script>
-      cssScrollSnapPolyfill()
+      cssScrollSnapPolyfill();
     </script>
 
     <!--[if lt IE 9]>
@@ -112,36 +115,123 @@
           {% endfor %}
         </div>
       </section>
+
       <section>
         <div id="scheduleContainer">
-          {% for scheduled in activities.scheduled %}
+          {% for event in activities.scheduled %}
             <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
-              <span>{{ scheduled.id }}</span>
+              <span>{{ event.id }}</span>
               <div class="clock">
                 <span class="glyphicon glyphicon-time"></span>
-                <span>{{ scheduled.time }}</span>
+                <span>{{ event.time }}</span>
               </div>
 
-              {% if scheduled.commands|length > 1 %}
-                <span>{{ scheduled.commands|length }} commands</span>
+              {% if event.commands|length > 1 %}
+                <span>{{ event.commands|length }} commands</span>
               {% else %}
-                <span>{{ scheduled.commands|length }} command</span>
+                <span>{{ event.commands|length }} command</span>
               {% endif %}
 
               <div class="controls">
-                {% if "disabledUntil" in scheduled and scheduled["disabledUntil"] + "T" + scheduled.time >= now() %}
+                {% if "disabledUntil" in event and event["disabledUntil"] + "T" + event.time >= now() %}
                   <input type="checkbox" class="uiswitch">
                 {% else %}
                   <input type="checkbox" class="uiswitch" checked>
                 {% endif %}
-                <span class="glyphicon glyphicon-cog"></span>
+                <span name="edit-event" class="glyphicon glyphicon-cog"></span>
               </div>
             </div>
           {% endfor %}
         </div>
       </section>
-
     </div>
+
+    <!-- Modal -->
+    <div id="configure-event" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Edit event</h4>
+          </div>
+          <table class="modal-body">
+            <tr>
+              <td>Name</td>
+              <td><input type="text" class="form-control" name="event-name"></td>
+            </tr>
+            <tr>
+              <td>Time</td>
+              <td>
+                <div class="clockpicker">
+                  <input type="text" class="form-control" name="event-time">
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Commands</td>
+              <td id="commands-td">
+                <span name="event-commands"></span>
+                <span class="glyphicon glyphicon-edit"></span>
+              </td>
+            </tr>
+            <tr>
+              <td>Enabled</td>
+              <td><input type="checkbox" class="uiswitch" name="event-enabled" checked></td>
+            </tr>
+          </table>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" name="event-save">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Modal scripts -->
+    <script type="text/javascript">
+      var scheduled = {{ activities.scheduled | tojson }};
+
+      $(document).on('click', 'span[name="edit-event"]', (e) => {
+        let modal = $('#configure-event');
+
+        let block = $(e.currentTarget).closest('.block');
+        let identifier = block.attr('identifier');
+
+        let event = scheduled[identifier];
+        modal.find('[name="event-name"]').val(event.id);
+        modal.find('[name="event-time"]').val(event.time);
+        let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
+        modal.find('[name="event-enabled"]').val(enabled);
+
+        let commands = "";
+        for (var index in event.commands) {
+          let array = event.commands[index];
+          commands += array[0] + ' [' + array[1] + ']';
+
+          if (parseInt(index) + 1 != event.commands.length)
+            commands += ',\n'
+        }
+
+        modal.find('[name="event-commands"]').text(commands);
+
+        modal.modal('show');
+      });
+
+      // Clockpicker
+      let input = $('.clockpicker');
+      input.clockpicker({
+        autoclose: true,
+        placement: 'right',
+        align: 'left'
+      });
+
+      input.on('click', (e) => {
+          input.clockpicker('show');
+      });
+    </script>
 
     <script> // Script that groups together activities
       let groups = {};
@@ -150,8 +240,7 @@
           let cls = (this.className);
           
           let group = groups[cls];
-          if(!group)
-          {
+          if (!group) {
             group = $('<div/>').appendTo('#groupContainer');
             group.addClass('group ' + cls.split(' ')[1]);
             
@@ -171,16 +260,6 @@
         let text = document.createTextNode(grpName);     // Create a text node
         h2.appendChild(text);
         $(this).prepend(h2);
-      });
-    </script>
-
-
-    <script>
-      $('.controls img').on('click', (e) => {
-        let block = $(e.currentTarget).closest('.block');
-        let identifier = block.attr('identifier');
-        console.log('click', identifier);
-        // I need to get the info from schedlued here but doesn't seem to be possible
       });
     </script>
 

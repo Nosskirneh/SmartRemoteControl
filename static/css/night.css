@@ -8,6 +8,6 @@ body, .form-control, .btn-default {
     color: #f3f3f3;
 }
 
-.block {
+.block, .modal-content {
     background-color: #474747;
 }

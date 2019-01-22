@@ -146,8 +146,6 @@ section > div {
 }
 
 .controls span {
-    height: 30px;
-    width: 30px;
     cursor: pointer;
 }
 
@@ -171,6 +169,29 @@ section > div {
 .modal-body {
     display: flex;
     flex-direction: column;
+}
+
+
+.modal-body td {
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-bottom: 15px;
+}
+
+#commands-td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#commands-td [name="event-commands"] {
+    white-space: pre-line;
+}
+
+#commands-td .glyphicon {
+    margin-left: 20px;
+    margin-right: 10px;
+    cursor: pointer;
 }
 
 /* iPad Pro */
