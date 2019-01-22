@@ -16,13 +16,13 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clockpicker.css') }}">
 
     <script>
-    function getStylesheet() {
-      let currentTime = new Date().getHours();
-      if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
-        document.write("<link rel='stylesheet' href={{ url_for('static', filename='css/night.css') }} type='text/css'>");
-    }
+      function getStylesheet() {
+        let currentTime = new Date().getHours();
+        if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
+          document.write("<link rel='stylesheet' href={{ url_for('static', filename='css/night.css') }} type='text/css'>");
+      }
 
-    getStylesheet();
+      getStylesheet();
     </script>
 
     <!-- favicons -->
@@ -229,7 +229,7 @@
       });
 
       input.on('click', (e) => {
-          input.clockpicker('show');
+        input.clockpicker('show');
       });
     </script>
 
@@ -237,18 +237,18 @@
       let groups = {};
 
       $('#groupContainer > div.col-sm-2').each(function() {
-          let cls = (this.className);
+        let cls = (this.className);
+        
+        let group = groups[cls];
+        if (!group) {
+          group = $('<div/>').appendTo('#groupContainer');
+          group.addClass('group ' + cls.split(' ')[1]);
           
-          let group = groups[cls];
-          if (!group) {
-            group = $('<div/>').appendTo('#groupContainer');
-            group.addClass('group ' + cls.split(' ')[1]);
-            
-            groups[cls] = group;
-          }
-          
-          $(this).appendTo(group);
-          $(this).removeClass(cls.split(' ')[1]);
+          groups[cls] = group;
+        }
+        
+        $(this).appendTo(group);
+        $(this).removeClass(cls.split(' ')[1]);
       });
     </script>
 
@@ -266,14 +266,14 @@
 
     <script>
     let activityList = [
-    {% set count = [0] %}
-    {% for activity in activities.groups %}
-      {% set outer_loop = loop %}
-      {% for act in activity.activities %}
-        { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
-        {% if count.append(count.pop() + 1) %}{% endif %}
+      {% set count = [0] %}
+      {% for activity in activities.groups %}
+        {% set outer_loop = loop %}
+        {% for act in activity.activities %}
+          { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+          {% if count.append(count.pop() + 1) %}{% endif %}
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
     ];
 
     function make_base_auth(username, password) {
