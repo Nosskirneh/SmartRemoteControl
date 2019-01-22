@@ -105,13 +105,16 @@
       <section>
         <div id="groupContainer">
           {% set count = [0] %}
-          {% for activity in activities.groups %}
-            {% for act in activity.activities %}
-              <div class="col-sm-2 {{ activity.name }} button">
-                <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
-              </div>
-              {% if count.append(count.pop() + 1) %}{% endif %}
-            {% endfor %}
+          {% for group in activities.groups %}
+            <div class="group">
+              <h2>{{ group.name }}</h2>
+              {% for act in group.activities %}
+                <div class="col-sm-2 button">
+                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
+                </div>
+                {% if count.append(count.pop() + 1) %}{% endif %}
+              {% endfor %}
+            </div>
           {% endfor %}
         </div>
       </section>
@@ -233,110 +236,80 @@
       });
     </script>
 
-    <script> // Script that groups together activities
-      let groups = {};
-
-      $('#groupContainer > div.col-sm-2').each(function() {
-        let cls = (this.className);
-        
-        let group = groups[cls];
-        if (!group) {
-          group = $('<div/>').appendTo('#groupContainer');
-          group.addClass('group ' + cls.split(' ')[1]);
-          
-          groups[cls] = group;
-        }
-        
-        $(this).appendTo(group);
-        $(this).removeClass(cls.split(' ')[1]);
-      });
-    </script>
-
-
-    <script> // Script that adds headlines
-      $('#groupContainer >div.group').each(function() {
-        let grpName = (this.className).split(' ')[1];
-        let h2 = document.createElement("h2");           // Create a <h2> element
-        let text = document.createTextNode(grpName);     // Create a text node
-        h2.appendChild(text);
-        $(this).prepend(h2);
-      });
-    </script>
-
 
     <script>
-    let activityList = [
-      {% set count = [0] %}
-      {% for activity in activities.groups %}
-        {% set outer_loop = loop %}
-        {% for act in activity.activities %}
-          { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
-          {% if count.append(count.pop() + 1) %}{% endif %}
+      let activityList = [
+        {% set count = [0] %}
+        {% for activity in activities.groups %}
+          {% set outer_loop = loop %}
+          {% for act in activity.activities %}
+            { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+            {% if count.append(count.pop() + 1) %}{% endif %}
+          {% endfor %}
         {% endfor %}
-      {% endfor %}
-    ];
+      ];
 
-    function make_base_auth(username, password) {
-      let tok = username + ':' + password;
-      let hash = btoa(tok);
-      return "Basic " + hash;
-    }
+      function make_base_auth(username, password) {
+        let tok = username + ':' + password;
+        let hash = btoa(tok);
+        return "Basic " + hash;
+      }
 
-    function sendActivity(index) {
-      $("#submit_button").click()
+      function sendActivity(index) {
+        $("#submit_button").click()
 
-      let request = $.ajax({
-        url: '/activity/' + index,
-        beforeSend: function (xhr) {
-          let username = $("input#usr").val();
-          let password = $("input#pwd").val();
-          xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-        },
-        method: 'POST'
-      });
+        let request = $.ajax({
+          url: '/activity/' + index,
+          beforeSend: function (xhr) {
+            let username = $("input#usr").val();
+            let password = $("input#pwd").val();
+            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+          },
+          method: 'POST'
+        });
 
-      request.done(
-        function(response) {
-          $('#result').fadeIn(0).delay(2000).fadeOut("fast");
-        }
-      );
-
-      request.fail(
-        function(response) {
-          $('#error').text(response.responseText);
-          $('#error').fadeIn(0).delay(2000).fadeOut("fast");
-        }
-      );
-    }
-
-    function speak() {
-      $('#speech-status').text('Speak activity name...');
-      // Run speech recognition.
-      let recognition = new webkitSpeechRecognition();
-      recognition.onresult = function(event) {
-        // When a result is available, first grab the transcript.
-        let result = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          result += event.results[i][0].transcript;
-        }
-        // Check if transcript matches an activity name.
-        for (let i = 0; i < activityList.length; ++i) {
-          let item = activityList[i];
-          if (item.name.toLowerCase() == result.toLowerCase()) {
-            // Found a match!
-            $('#speech-status').text('Running activity: ' + item.name);
-            sendActivity(item.index);
-            return;
+        request.done(
+          function(response) {
+            $('#result').fadeIn(0).delay(2000).fadeOut("fast");
           }
+        );
+
+        request.fail(
+          function(response) {
+            $('#error').text(response.responseText);
+            $('#error').fadeIn(0).delay(2000).fadeOut("fast");
+          }
+        );
+      }
+
+      function speak() {
+        $('#speech-status').text('Speak activity name...');
+        // Run speech recognition.
+        let recognition = new webkitSpeechRecognition();
+        recognition.onresult = function(event) {
+          // When a result is available, first grab the transcript.
+          let result = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            result += event.results[i][0].transcript;
+          }
+          // Check if transcript matches an activity name.
+          for (let i = 0; i < activityList.length; ++i) {
+            let item = activityList[i];
+            if (item.name.toLowerCase() == result.toLowerCase()) {
+              // Found a match!
+              $('#speech-status').text('Running activity: ' + item.name);
+              sendActivity(item.index);
+              return;
+            }
+          }
+          // Couldn't find a match, so display what was heard.
+          $('#speech-status').text('Heard: ' + result);
         }
-        // Couldn't find a match, so display what was heard.
-        $('#speech-status').text('Heard: ' + result);
+        recognition.onerror = function(event) {
+          $('#speech-status').text('Error recognizing speech!');
+        }
+        recognition.start();
       }
-      recognition.onerror = function(event) {
-        $('#speech-status').text('Error recognizing speech!');
-      }
-      recognition.start();
-    }
     </script>
   </body>
 </html>
