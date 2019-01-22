@@ -188,10 +188,18 @@ section > div {
     white-space: pre-line;
 }
 
-#commands-td .glyphicon {
+#commands-td #edit-commands {
     margin-left: 20px;
     margin-right: 10px;
     cursor: pointer;
+}
+
+.event-commands-edit-group > label {
+    margin-right: 10px;
+}
+
+.event-commands-edit-group > label input {
+    margin-right: 5px;
 }
 
 /* iPad Pro */

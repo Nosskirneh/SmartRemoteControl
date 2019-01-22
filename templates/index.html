@@ -164,8 +164,19 @@
             <tr>
               <td>Commands</td>
               <td id="commands-td">
-                <span name="event-commands"></span>
-                <span class="glyphicon glyphicon-edit"></span>
+
+                <div id="event-commands-edit">
+                  {% for group in activities.groups %}
+                    <div class="event-commands-edit-container" identifier="{{ group.name }}">
+                      <span>{{ group.name }}</span>
+                      <div class="event-commands-edit-group">
+                      {% for act in group.activities %}
+                        <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
+                      {% endfor %}
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
               </td>
             </tr>
             <tr>
@@ -185,31 +196,31 @@
     <!-- Modal scripts -->
     <script type="text/javascript">
       var scheduled = {{ activities.scheduled | tojson }};
+      var groups = {{ activities.groups | tojson }};
 
       $(document).on('click', 'span[name="edit-event"]', (e) => {
-        let modal = $('#configure-event');
+        let $modal = $('#configure-event');
 
-        let block = $(e.currentTarget).closest('.block');
-        let identifier = block.attr('identifier');
+        let $block = $(e.currentTarget).closest('.block');
+        let identifier = $block.attr('identifier');
 
         let event = scheduled[identifier];
-        modal.find('[name="event-name"]').val(event.id);
-        modal.find('[name="event-time"]').val(event.time);
+        $modal.find('[name="event-name"]').val(event.id);
+        $modal.find('[name="event-time"]').val(event.time);
         let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
-        modal.find('[name="event-enabled"]').val(enabled);
+        $modal.find('[name="event-enabled"]').val(enabled);
 
-        let commands = "";
-        for (var index in event.commands) {
-          let array = event.commands[index];
-          commands += array[0] + ' [' + array[1] + ']';
+        let commands = scheduled[identifier]["commands"];
+        $modal.find('#event-commands-edit input[type="checkbox"]').prop('checked', false);
 
-          if (parseInt(index) + 1 != event.commands.length)
-            commands += ',\n'
+        for (var index in commands) {
+          let array = commands[index];
+          let $container = $('[identifier="' + array[1] + '"]');
+          let $input = $container.find('[identifier="' + array[0] + '"]');
+          $input.prop('checked', true);
         }
 
-        modal.find('[name="event-commands"]').text(commands);
-
-        modal.modal('show');
+        $modal.modal('show');
       });
 
       // Clockpicker
