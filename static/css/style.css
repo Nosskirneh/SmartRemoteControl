@@ -194,6 +194,19 @@ section > div {
     cursor: pointer;
 }
 
+.event-commands-edit-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.event-commands-edit-container:not(:last-of-type) {
+    margin-bottom: 10px;
+}
+
+.event-commands-edit-container > span {
+    margin-bottom: 5px;
+}
+
 .event-commands-edit-group > label {
     margin-right: 10px;
 }
