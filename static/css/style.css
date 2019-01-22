@@ -8,7 +8,7 @@ body {
 }
 
 #logo {
-    background-image: url("favicon/favicon-310.png");
+    background-image: url("../favicon/favicon-310.png");
     background-repeat: no-repeat;
     width: 200px;
     height: 200px;
@@ -94,7 +94,6 @@ body {
 }
 
 section {
-    border-right: 1px solid white;
     min-width: 100%;
     scroll-snap-align: start;
     text-align: center;
