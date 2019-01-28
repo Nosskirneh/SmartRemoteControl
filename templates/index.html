@@ -125,7 +125,8 @@
               {% endif %}
 
               <div class="controls">
-                {% if "disabledUntil" in event and event["disabledUntil"] + "T" + event.time >= now() %}
+                {% if "disabled" in event and ("disabledUntil" not in event or
+                                               event["disabledUntil"] + "T" + event.time >= now()) %}
                   <input name="event-enabled" type="checkbox" class="uiswitch">
                 {% else %}
                   <input name="event-enabled" type="checkbox" class="uiswitch" checked>

@@ -199,6 +199,11 @@ def run_schedule():
         for event in events:
             [hour, minute] = [int(x) for x in event["time"].split(":")]
 
+            # Is event disabled?
+            if "disabled" in event and ("disabledUntil" not in event or
+                                        event["disabledUntil"] >= now.strftime('%Y-%m-%d')):
+                continue
+
             # Evening
             if event["id"] == "evening":
                 # If it's already dark by the time specified in the events dict, fire the commands.
