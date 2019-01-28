@@ -43,22 +43,22 @@ def command():
 
 
 @app.route("/checkAuth", methods=["GET"])
-def checkAuth():
-    if isAuthOK():
+def check_auth():
+    if is_auth_ok():
         return "OK", 200
     return "Unauthorized", 401
 
 
 @app.route("/status", methods=["GET"])
-def returnOnline():
+def return_online():
     return "OK", 200
 
 
 @app.route("/commands", methods=["GET"])
-def getCommands():
+def get_commands():
     # Check authorization
-    if not isAuthOK():
-       return "Unauthorized", 401
+    if not is_auth_ok():
+        return "Unauthorized", 401
     return jsonify(activities)
 
 
@@ -93,7 +93,7 @@ def activity(index):
         return "Not Implemented", 501
 
     # Check authorization
-    if not isAuthOK():
+    if not is_auth_ok():
        return "Unauthorized", 401
 
     count = 0
@@ -135,7 +135,7 @@ def activity(index):
 
 
 ### METHODS ###
-def isAuthOK():
+def is_auth_ok():
     try:
         auth = request.headers["Authorization"].split()[1]
         user, pw = base64.b64decode(auth).split(":")
@@ -174,7 +174,7 @@ def run_schedule():
 
     allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-    def isValidTimeAndDay():
+    def is_valid_time_and_day():
         if "exclude" in event:
             all_holidays = dict(holidays.SE().items())
             if "holiday" in event["exclude"] == "holidays" and now in holidays.SE():
@@ -203,7 +203,7 @@ def run_schedule():
             if event["id"] == "evening":
                 # If it's already dark by the time specified in the events dict, fire the commands.
                 # Otherwise, schedule the commands to be executed on this date + timediff.
-                if lastEvent != event["id"] and isValidTimeAndDay():
+                if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
@@ -218,7 +218,7 @@ def run_schedule():
             # Morning
             elif event["id"] == "morning":
                 # If it is dark by the time specified in the events dict, simply fire the commands.
-                if lastEvent != event["id"] and isValidTimeAndDay():
+                if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
@@ -231,7 +231,7 @@ def run_schedule():
                 # Otherwise, schedule the commands to be executed on this date + timediff.
                 # Only fire this if `morning` was executed.
                 if lastEvent != event["id"] and didTurnOnMorningLights and \
-                   isValidTimeAndDay():
+                   is_valid_time_and_day():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if not sunEvent[0]:
@@ -244,7 +244,7 @@ def run_schedule():
             # Events that don't need any custom rules, like evening off
             else:
                 # If the time match with the specified in the events dict, simply fire the commands.
-                if lastEvent != event["id"] and isValidTimeAndDay():
+                if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
                     run_commands(event["commands"])
 
