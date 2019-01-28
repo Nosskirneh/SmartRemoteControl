@@ -62,6 +62,31 @@ def getCommands():
     return jsonify(activities)
 
 
+@app.route("/schedule/configure/<int:index>", methods=["POST"])
+def configure_schedule(index):
+    if not is_auth_ok():
+        return "Unauthorized", 401
+
+    id = request.form.get('id')
+    time = request.form.get('time')
+    groups = request.form.get('groups')
+    enabled = request.form.get('enabled')
+
+    event = activities["scheduled"][index]
+    event["id"] = id;
+    event["time"] = time;
+    event["disabled"] = not enabled
+
+    formatted_groups = []
+    for group in json.loads(groups):
+        print(groups)
+        for activity in group["activities"]:
+            formatted_groups.append([activity, group["name"]])
+
+    config.save_activities(activities)
+    return "OK", 200
+
+
 @app.route("/activity/<int:index>", methods=["POST"])
 def activity(index):
     if index == -1:

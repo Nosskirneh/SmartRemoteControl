@@ -112,23 +112,23 @@
         <div id="scheduleContainer">
           {% for event in activities.scheduled %}
             <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
-              <span>{{ event.id }}</span>
+              <span name="event-id">{{ event.id }}</span>
               <div class="clock">
                 <span class="glyphicon glyphicon-time"></span>
-                <span>{{ event.time }}</span>
+                <span name="event-time">{{ event.time }}</span>
               </div>
 
               {% if event.commands|length > 1 %}
-                <span>{{ event.commands|length }} commands</span>
+                <span name="event-commands">{{ event.commands|length }} commands</span>
               {% else %}
-                <span>{{ event.commands|length }} command</span>
+                <span name="event-commands">{{ event.commands|length }} command</span>
               {% endif %}
 
               <div class="controls">
                 {% if "disabledUntil" in event and event["disabledUntil"] + "T" + event.time >= now() %}
-                  <input type="checkbox" class="uiswitch">
+                  <input name="event-enabled" type="checkbox" class="uiswitch">
                 {% else %}
-                  <input type="checkbox" class="uiswitch" checked>
+                  <input name="event-enabled" type="checkbox" class="uiswitch" checked>
                 {% endif %}
                 <span name="edit-event" class="glyphicon glyphicon-cog"></span>
               </div>
@@ -155,7 +155,7 @@
           <table class="modal-body">
             <tr>
               <td>Name</td>
-              <td><input type="text" class="form-control" name="event-name"></td>
+              <td><input type="text" class="form-control" name="event-id"></td>
             </tr>
             <tr>
               <td>Time</td>
@@ -207,9 +207,10 @@
 
         let $block = $(e.currentTarget).closest('.block');
         let identifier = $block.attr('identifier');
+        $modal.attr('index', identifier);
 
         let event = scheduled[identifier];
-        $modal.find('[name="event-name"]').val(event.id);
+        $modal.find('[name="event-id"]').val(event.id);
         $modal.find('[name="event-time"]').val(event.time);
         let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
         $modal.find('[name="event-enabled"]').val(enabled);
@@ -238,6 +239,80 @@
       input.on('click', (e) => {
         input.clockpicker('show');
       });
+
+      // Save
+      $(document).on('click', 'button[name="event-save"]', (e) => {
+        let $modal = $('#configure-event');
+        let result = getCommands($modal);
+        let groups = result[0];
+        let count = result[1];
+        let index = parseInt($modal.attr('index'));
+
+        let id = $modal.find('input[name="event-id"]').val();
+        let time = $modal.find('input[name="event-time"]').val();
+        let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
+
+        let data = {
+          id: id,
+          time: time,
+          groups: JSON.stringify(groups),
+          enabled: enabled,
+        }
+
+        $.ajax({
+          url: '/schedule/configure/' + index,
+          data: data,
+          beforeSend: function (xhr) {
+            let username = $("input#usr").val();
+            let password = $("input#pwd").val();
+            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+          },
+          success: function(data) {// Update the data client side
+            let $block = $($(document).find('.block')[index]);
+            $block.find('span[name="event-id"]').text(id);
+            $block.find('span[name="event-time"]').text(time);
+
+            let commandText = count + " commands";
+            $block.find('span[name="event-commands"]').text(commandText);
+            $block.find('input[name="event-enabled"]').prop('checked', enabled);
+          },
+          error: function(data) {
+            console.log('error: ', data);
+          },
+          method: 'POST'
+        });
+      });
+
+      function getCommands($modal) {
+        let groups = [];
+        let count = 0;
+
+        $modal.find('.event-commands-edit-container').each(function (index) {
+          let $container = $(this);
+          let groupIdentifier = $container.attr('identifier');
+          let group = {
+            "name": groupIdentifier
+          }
+
+          let activities = [];
+
+          let $inputs = $container.find('input');
+          $inputs.each(function (index) {
+            let $this = $(this);
+            if ($this.prop('checked')) {
+              count += 1;
+              activities.push($this.attr('identifier'));
+            }
+          });
+
+          if (activities.length == 0)
+            return;
+
+          group.activities = activities;
+          groups.push(group);
+        });
+        return [groups, count];
+      }
     </script>
 
 

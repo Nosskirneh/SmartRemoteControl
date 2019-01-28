@@ -8,5 +8,9 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 FILE_NAME = 'activities.json'
 
 def get_activities():
-    with open(FILE_NAME) as data_file:    
-        return json.load(data_file)
+    with open(FILE_NAME) as file:    
+        return json.load(file)
+
+def save_activities(activities):
+    with open(FILE_NAME, 'w') as file:
+        json.dump(activities, file, indent=2, separators=(',', ': '))
