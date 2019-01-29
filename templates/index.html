@@ -112,18 +112,32 @@
         <div id="scheduleContainer">
           {% for event in activities.scheduled %}
             <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
+              {# ID #}
               <span name="event-id">{{ event.id }}</span>
+
+              {# Time #}
               <div class="clock">
                 <span class="glyphicon glyphicon-time"></span>
                 <span name="event-time">{{ event.time }}</span>
               </div>
 
+              {# Days #}
+              {% if "days" not in event %}
+                <span name="event-days">all days</span>
+              {% elif event.days|length > 1 %}
+                <span name="event-days">{{ event.days|length }} days</span>
+              {% else %}
+                <span name="event-days">{{ event.days|length }} day</span>
+              {% endif %}
+
+              {# Commands #}
               {% if event.commands|length > 1 %}
                 <span name="event-commands">{{ event.commands|length }} commands</span>
               {% else %}
                 <span name="event-commands">{{ event.commands|length }} command</span>
               {% endif %}
 
+              {# Enable and edit #}
               <div class="controls">
                 {% if "disabled" in event and ("disabledUntil" not in event or
                                                event["disabledUntil"] + "T" + event.time >= now()) %}
