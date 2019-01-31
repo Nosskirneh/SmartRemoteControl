@@ -213,11 +213,11 @@ section > div {
     margin-bottom: 5px;
 }
 
-.event-commands-edit-group > label {
+.modal-body label {
     margin-right: 10px;
 }
 
-.event-commands-edit-group > label input {
+.modal-body label input {
     margin-right: 5px;
 }
 

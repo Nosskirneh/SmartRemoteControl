@@ -69,12 +69,15 @@ def configure_schedule(index):
 
     id = request.form.get('id')
     time = request.form.get('time')
+    days = request.form.get('days')
     groups = request.form.get('groups')
     enabled = request.form.get('enabled')
 
     event = activities["scheduled"][index]
     event["id"] = id;
     event["time"] = time;
+    if days:
+        event["days"] = days;
     event["disabled"] = not enabled
 
     formatted_groups = []

@@ -122,7 +122,7 @@
               </div>
 
               {# Days #}
-              {% if "days" not in event %}
+              {% if "days" not in event or event.days|length == 7 %}
                 <span name="event-days">all days</span>
               {% elif event.days|length > 1 %}
                 <span name="event-days">{{ event.days|length }} days</span>
@@ -178,6 +178,18 @@
                 <div class="clockpicker">
                   <input type="text" class="form-control" name="event-time">
                 </div>
+              </td>
+            </tr>
+            <tr>
+              <td>Days</td>
+              <td id="days-td">
+                <label><input day="Monday" type="checkbox">Monday</label>
+                <label><input day="Tuesday" type="checkbox">Tuesday</label>
+                <label><input day="Wednesday" type="checkbox">Wednesday</label>
+                <label><input day="Thursday" type="checkbox">Monday</label>
+                <label><input day="Friday" type="checkbox">Friday</label>
+                <label><input day="Saturday" type="checkbox">Saturday</label>
+                <label><input day="Sunday" type="checkbox">Sunday</label>
               </td>
             </tr>
             <tr>
@@ -237,6 +249,19 @@
           $input.prop('checked', true);
         }
 
+        if (!event.hasOwnProperty("days")) {
+          $modal.find('#days-td input[type="checkbox"]').prop('checked', true);
+        } else {
+          let days = scheduled[identifier]["days"];
+          $modal.find('#days-td input[type="checkbox"]').prop('checked', false);
+
+          for (var index in days) {
+            let day = days[index];
+            let $input = $('[day="' + day + '"]');
+            $input.prop('checked', true);
+          }
+        }
+
         $modal.modal('show');
       });
 
@@ -262,6 +287,7 @@
 
         let id = $modal.find('input[name="event-id"]').val();
         let time = $modal.find('input[name="event-time"]').val();
+        let days = getDays($modal);
         let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
 
         let data = {
@@ -270,6 +296,10 @@
           groups: JSON.stringify(groups),
           enabled: enabled,
         }
+
+        // Only append days if not all days are selected
+        if (days.length != 7)
+          data.days = JSON.stringify(days);
 
         $.ajax({
           url: '/schedule/configure/' + index,
@@ -288,6 +318,13 @@
             if (numberOfCommands != 1)
               commandText += "s";
             $block.find('span[name="event-commands"]').text(commandText);
+
+            let daysString = days.length == 7 ? "all" : days.length;
+            let dayText = daysString + " day";
+            if (days.length != 1)
+              dayText += "s";
+            $block.find('span[name="event-days"]').text(dayText);
+
             $block.find('input[name="event-enabled"]').prop('checked', enabled);
           },
           error: function(data) {
@@ -296,6 +333,16 @@
           method: 'POST'
         });
       });
+
+      function getDays($modal) {
+        let days = [];
+        $modal.find('input[day]').each(function () {
+          let $this = $(this);
+          if ($this.prop('checked'))
+            days.push($this.attr('day'))
+        });
+        return days;
+      }
 
       function getCommands($modal) {
         let groups = [];
