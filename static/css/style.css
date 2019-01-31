@@ -187,6 +187,7 @@ section > div {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-direction: column;
 }
 
 #commands-td [name="event-commands"] {

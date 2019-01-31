@@ -183,19 +183,16 @@
             <tr>
               <td>Commands</td>
               <td id="commands-td">
-
-                <div id="event-commands-edit">
-                  {% for group in activities.groups %}
-                    <div class="event-commands-edit-container" identifier="{{ group.name }}">
-                      <span>{{ group.name }}</span>
-                      <div class="event-commands-edit-group">
-                      {% for act in group.activities %}
-                        <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
-                      {% endfor %}
-                      </div>
+                {% for group in activities.groups %}
+                  <div class="event-commands-edit-container" identifier="{{ group.name }}">
+                    <span>{{ group.name }}</span>
+                    <div class="event-commands-edit-group">
+                    {% for act in group.activities %}
+                      <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
+                    {% endfor %}
                     </div>
-                  {% endfor %}
-                </div>
+                  </div>
+                {% endfor %}
               </td>
             </tr>
             <tr>
@@ -230,8 +227,8 @@
         let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
         $modal.find('[name="event-enabled"]').val(enabled);
 
-        let commands = scheduled[identifier]["commands"];
-        $modal.find('#event-commands-edit input[type="checkbox"]').prop('checked', false);
+        let commands = event["commands"];
+        $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
 
         for (var index in commands) {
           let array = commands[index];
@@ -260,7 +257,7 @@
         let $modal = $('#configure-event');
         let result = getCommands($modal);
         let groups = result[0];
-        let count = result[1];
+        let numberOfCommands = result[1];
         let index = parseInt($modal.attr('index'));
 
         let id = $modal.find('input[name="event-id"]').val();
@@ -287,7 +284,9 @@
             $block.find('span[name="event-id"]').text(id);
             $block.find('span[name="event-time"]').text(time);
 
-            let commandText = count + " commands";
+            let commandText = numberOfCommands + " command";
+            if (numberOfCommands != 1)
+              commandText += "s";
             $block.find('span[name="event-commands"]').text(commandText);
             $block.find('input[name="event-enabled"]').prop('checked', enabled);
           },
@@ -312,7 +311,7 @@
           let activities = [];
 
           let $inputs = $container.find('input');
-          $inputs.each(function (index) {
+          $inputs.each(function () {
             let $this = $(this);
             if ($this.prop('checked')) {
               count += 1;
