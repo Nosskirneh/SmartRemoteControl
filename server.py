@@ -78,7 +78,7 @@ def configure_schedule(index):
     event["id"] = id;
     event["time"] = time;
     if days:
-        event["days"] = days;
+        event["days"] = json.loads(days);
 
     event["disabled"] = not enabled
     if disabled_until:
