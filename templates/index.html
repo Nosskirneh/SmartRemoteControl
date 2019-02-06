@@ -49,6 +49,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
     <script src="{{ url_for('static', filename='js/clockpicker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap-datepicker.min.js') }}"></script>
 
     <script>
       cssScrollSnapPolyfill();
@@ -211,6 +212,11 @@
               <td>Enabled</td>
               <td><input type="checkbox" class="uiswitch" name="event-enabled" checked></td>
             </tr>
+            <tr>
+              <td>Disable until</td>
+              <td><input type='text' class="form-control" name="event-disable-until" data-toggle="datepicker"/></td>
+            </tr>
+
           </table>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal" name="event-save">Save</button>
@@ -238,6 +244,11 @@
         $modal.find('[name="event-time"]').val(event.time);
         let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
         $modal.find('[name="event-enabled"]').val(enabled);
+
+        disabledUntil = "";
+        if (event.disabledUntil)
+          disabledUntil = event.disabledUntil;
+        $modal.find('[Name="event-disable-until"]').val(disabledUntil);
 
         let commands = event["commands"];
         $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
@@ -277,6 +288,12 @@
         input.clockpicker('show');
       });
 
+      // Datepicker
+      $('input[data-toggle="datepicker"]').parent().datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true
+      });
+
       // Save
       $(document).on('click', 'button[name="event-save"]', (e) => {
         let $modal = $('#configure-event');
@@ -289,12 +306,14 @@
         let time = $modal.find('input[name="event-time"]').val();
         let days = getDays($modal);
         let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
+        let disabledUntil = $modal.find('input[name="event-disable-until"]').val();
 
         let data = {
           id: id,
           time: time,
           groups: JSON.stringify(groups),
           enabled: enabled,
+          disabledUntil: disabledUntil
         }
 
         // Only append days if not all days are selected

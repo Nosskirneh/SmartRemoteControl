@@ -72,17 +72,20 @@ def configure_schedule(index):
     days = request.form.get('days')
     groups = request.form.get('groups')
     enabled = request.form.get('enabled')
+    disabled_until = request.form.get('disabledUntil')
 
     event = activities["scheduled"][index]
     event["id"] = id;
     event["time"] = time;
     if days:
         event["days"] = days;
+
     event["disabled"] = not enabled
+    if disabled_until:
+        event["disabledUntil"] = disabled_until
 
     formatted_groups = []
     for group in json.loads(groups):
-        print(groups)
         for activity in group["activities"]:
             formatted_groups.append([activity, group["name"]])
 
