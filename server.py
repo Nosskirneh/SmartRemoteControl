@@ -80,6 +80,7 @@ def configure_schedule(index = -1):
     groups = request.form.get('groups')
     enabled = request.form.get('enabled')
     disabled_until = request.form.get('disabledUntil')
+    fire_once = request.form.get('fireOnce')
 
     if not id or not time or time == '' or not groups or len(groups) == 0:
         return "You need to provide name, time and commands.", 400
@@ -93,6 +94,9 @@ def configure_schedule(index = -1):
         event["disabled"] = enabled != "true"
         if disabled_until:
             event["disabledUntil"] = disabled_until
+
+        if fire_once:
+            event["fireOnce"] = fire_once == "true"
 
         formatted_groups = []
         for group in json.loads(groups):
@@ -108,7 +112,7 @@ def configure_schedule(index = -1):
         event = activities["scheduled"][index]
         fill_event()
 
-    # config.save_activities(activities)
+    config.save_activities(activities)
     return "OK", 200
 
 
@@ -153,7 +157,7 @@ def activity(index):
                         wol.send_magic_packet(code)
 
                     if (i != len(codes) - 1): # Don't delay after last item
-                        time.sleep(0.2)       # Wait ~200 milliseconds between codes.
+                        sleep(0.2)       # Wait ~200 milliseconds between codes.
             count = count + 1
 
     return "OK", 200
@@ -169,13 +173,16 @@ def is_auth_ok():
         return False
 
 
-def run_commands(commands):
+def run_event(event):
     auth = base64.b64encode(username + ":" + password)
     with app.test_client() as client:
-        for cmd in commands:
-            sleep(1)
+        for cmd in event["commands"]:
             client.post("/activity/" + str(return_index(cmd[0], cmd[1])),
                         headers = {"Authorization": "Basic " + auth})
+
+        if "fireOnce" in event and event["fireOnce"]:
+            event["disabled"] = True
+            config.save_activities(activities)
 
 
 def return_index(cmd, grp):
@@ -225,7 +232,7 @@ def run_schedule():
             [hour, minute] = [int(x) for x in event["time"].split(":")]
 
             # Is event disabled?
-            if "disabled" in event and ("disabledUntil" not in event or
+            if ("disabled" in event and event["disabled"]) or ("disabledUntil" in event and
                                         event["disabledUntil"] >= now.strftime('%Y-%m-%d')):
                 continue
 
@@ -237,13 +244,13 @@ def run_schedule():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
-                        run_commands(event["commands"])
+                        run_event(event)
                     else:
                         # TODO: Perhaphs replace the generic execute_once to a custom
                         #       method that reschedules with cloud data.
                         timeStr = (now + sunEvent[1]).strftime("%H:%M")
                         print("Should schedule for %s" % (timeStr))
-                        schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
+                        schedule.every().day.at(timeStr).do(execute_once, commands=event)
 
             # Morning
             elif event["id"] == "morning":
@@ -253,7 +260,7 @@ def run_schedule():
                     sunEvent = timeUntilSunEvent()
                     if sunEvent[0]:
                         didTurnOnMorningLights = True
-                        run_commands(event["commands"])
+                        run_event(event)
 
             # Morning off
             elif event["id"] == "morning_off":
@@ -265,27 +272,26 @@ def run_schedule():
                     lastEvent = event["id"]
                     sunEvent = timeUntilSunEvent()
                     if not sunEvent[0]:
-                        run_commands(event["commands"])
+                        run_event(event)
                     else:
                         timeStr = (now + sunEvent[1]).strftime("%H:%M")
                         print("Should schedule for %s" % (timeStr))
-                        schedule.every().day.at(timeStr).do(execute_once, commands=event["commands"])
+                        schedule.every().day.at(timeStr).do(execute_once, commands=event)
 
             # Events that don't need any custom rules, like evening off
             else:
                 # If the time match with the specified in the events dict, simply fire the commands.
                 if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
-                    run_commands(event["commands"])
-
+                    run_event(event)
 
         schedule.run_pending()
         sleep(1)
 
 
 # There is no other way to schedule only once other than doing this.
-def execute_once(commands="cmds"):
-    run_commands(commands)
+def execute_once(event):
+    run_event(event)
     return schedule.CancelJob
 
 
