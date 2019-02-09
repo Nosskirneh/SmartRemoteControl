@@ -1,0 +1,74 @@
+<script>
+  let activityList = [
+    {% set count = [0] %}
+    {% for activity in activities.groups %}
+      {% set outer_loop = loop %}
+      {% for act in activity.activities %}
+        { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
+        {% if count.append(count.pop() + 1) %}{% endif %}
+      {% endfor %}
+    {% endfor %}
+  ];
+
+  function make_base_auth(username, password) {
+    let tok = username + ':' + password;
+    let hash = btoa(tok);
+    return "Basic " + hash;
+  }
+
+  function sendActivity(index) {
+    $("#submit_button").click()
+
+    let request = $.ajax({
+      url: '/activity/' + index,
+      beforeSend: function (xhr) {
+        let username = $("input#usr").val();
+        let password = $("input#pwd").val();
+        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+      },
+      method: 'POST'
+    });
+
+    request.done(
+      function(response) {
+        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
+      }
+    );
+
+    request.fail(
+      function(response) {
+        $('#error').text(response.responseText);
+        $('#error').fadeIn(0).delay(2000).fadeOut("fast");
+      }
+    );
+  }
+
+  function speak() {
+    $('#speech-status').text('Speak activity name...');
+    // Run speech recognition.
+    // Does not currently work with Firefox (as of 2019-02-09)
+    let recognition = new webkitSpeechRecognition();
+    recognition.onresult = function(event) {
+      // When a result is available, first grab the transcript.
+      let result = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i)
+        result += event.results[i][0].transcript;
+
+      // Check if transcript matches an activity name.
+      for (let item of activityList) {
+        if (item.name.toLowerCase() == result.toLowerCase()) {
+          // Found a match!
+          $('#speech-status').text('Running activity: ' + item.name);
+          sendActivity(item.index);
+          return;
+        }
+      }
+      // Couldn't find a match, so display what was heard.
+      $('#speech-status').text('Heard: ' + result);
+    }
+    recognition.onerror = function(event) {
+      $('#speech-status').text('Error recognizing speech!');
+    }
+    recognition.start();
+  }
+</script>

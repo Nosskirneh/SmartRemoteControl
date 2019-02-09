@@ -1,0 +1,39 @@
+{% macro createBlock(event, loop, now) -%}
+  <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
+    {# ID #}
+    <span name="event-id">{{ event.id }}</span>
+
+    {# Time #}
+    <div class="clock">
+      <span class="glyphicon glyphicon-time"></span>
+      <span name="event-time">{{ event.time }}</span>
+    </div>
+
+    {# Days #}
+    {% if "days" not in event or event.days|length == 7 %}
+      <span name="event-days">all days</span>
+    {% elif event.days|length > 1 %}
+      <span name="event-days">{{ event.days|length }} days</span>
+    {% else %}
+      <span name="event-days">{{ event.days|length }} day</span>
+    {% endif %}
+
+    {# Commands #}
+    {% if event.commands|length > 1 %}
+      <span name="event-commands">{{ event.commands|length }} commands</span>
+    {% else %}
+      <span name="event-commands">{{ event.commands|length }} command</span>
+    {% endif %}
+
+    {# Enable and edit #}
+    <div class="controls">
+      {% if "disabled" in event and ("disabledUntil" not in event or
+                                     event["disabledUntil"] + "T" + event.time >= now()) %}
+        <input name="event-enabled" type="checkbox" class="uiswitch">
+      {% else %}
+        <input name="event-enabled" type="checkbox" class="uiswitch" checked>
+      {% endif %}
+      <span name="edit-event" class="glyphicon glyphicon-cog"></span>
+    </div>
+  </div>
+{%- endmacro %}

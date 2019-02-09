@@ -32,7 +32,7 @@ def getCurrentDateAsString():
 @app.route("/")
 def root():
     template = render_template("index.html", activities=config.get_activities(), now=getCurrentDateAsString)
-    return template;
+    return template
 
 
 @app.route("/command", methods=["POST"])
@@ -62,8 +62,15 @@ def get_commands():
     return jsonify(activities)
 
 
+@app.route("/schedule/configure/new", methods=["POST"])
+def configure_new():
+    return configure_schedule()
+
 @app.route("/schedule/configure/<int:index>", methods=["POST"])
-def configure_schedule(index):
+def configure_existing(index):
+    return configure_schedule(index)
+
+def configure_schedule(index = -1):
     if not is_auth_ok():
         return "Unauthorized", 401
 
@@ -74,22 +81,34 @@ def configure_schedule(index):
     enabled = request.form.get('enabled')
     disabled_until = request.form.get('disabledUntil')
 
-    event = activities["scheduled"][index]
-    event["id"] = id;
-    event["time"] = time;
-    if days:
-        event["days"] = json.loads(days);
+    if not id or not time or time == '' or not groups or len(groups) == 0:
+        return "You need to provide name, time and commands.", 400
 
-    event["disabled"] = not enabled
-    if disabled_until:
-        event["disabledUntil"] = disabled_until
+    def fill_event():
+        event["id"] = id
+        event["time"] = time
+        if days:
+            event["days"] = json.loads(days)
 
-    formatted_groups = []
-    for group in json.loads(groups):
-        for activity in group["activities"]:
-            formatted_groups.append([activity, group["name"]])
+        event["disabled"] = enabled != "true"
+        if disabled_until:
+            event["disabledUntil"] = disabled_until
 
-    config.save_activities(activities)
+        formatted_groups = []
+        for group in json.loads(groups):
+            for activity in group["activities"]:
+                formatted_groups.append([activity, group["name"]])
+        event["commands"] = formatted_groups
+
+    if index == -1:
+        event = {}
+        fill_event()
+        activities["scheduled"].append(event)
+    else:
+        event = activities["scheduled"][index]
+        fill_event()
+
+    # config.save_activities(activities)
     return "OK", 200
 
 

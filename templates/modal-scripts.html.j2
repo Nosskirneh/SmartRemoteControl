@@ -1,0 +1,202 @@
+<!-- Modal scripts -->
+<script type="text/javascript">
+  var scheduled = {{ activities.scheduled | tojson }};
+  var groups = {{ activities.groups | tojson }};
+  var now = "{{ now() }}";
+
+  $(document).on('click', '#new-event', (e) => {
+    let $modal = $('#configure-event');
+    $modal.find('input[type="text"]').val('');
+    $modal.find('input[type="checkbox"]').prop('checked', false);
+    $modal.find('input[day]').prop('checked', true);
+    $modal.find('input[name="event-enabled"]').prop('checked', true);
+    $modal.find('#modal-title').text('New event');
+    $modal.find('#error-msg').hide();
+    $modal.modal('show');
+  });
+
+  $(document).on('click', 'span[name="edit-event"]', (e) => {
+    let $modal = $('#configure-event');
+
+    let $block = $(e.currentTarget).closest('.block');
+    let identifier = $block.attr('identifier');
+    $modal.attr('index', identifier);
+
+    let event = scheduled[identifier];
+    $modal.find('[name="event-id"]').val(event.id);
+    $modal.find('[name="event-time"]').val(event.time);
+    let enabled = !event.disabled && (!event.disabledUntil ||
+                                      event.disabledUntil && event.disabledUntil + "T" + event.time >= now);
+    $modal.find('input[name="event-enabled"]').prop('checked', enabled);
+
+    disabledUntil = null;
+    if (event.disabledUntil)
+      disabledUntil = event.disabledUntil;
+    $modal.find('[name="event-disable-until"]').val(disabledUntil);
+
+    let commands = event["commands"];
+    $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
+
+    for (var index in commands) {
+      let array = commands[index];
+      let $container = $('[identifier="' + array[1] + '"]');
+      let $input = $container.find('[identifier="' + array[0] + '"]');
+      $input.prop('checked', true);
+    }
+
+    if (!event.hasOwnProperty("days")) {
+      $modal.find('#days-td input[type="checkbox"]').prop('checked', true);
+    } else {
+      let days = scheduled[identifier]["days"];
+      $modal.find('#days-td input[type="checkbox"]').prop('checked', false);
+
+      for (var index in days) {
+        let day = days[index];
+        let $input = $('[day="' + day + '"]');
+        $input.prop('checked', true);
+      }
+    }
+
+    $modal.find('#modal-title').text('Edit event');
+    $modal.find('#error-msg').hide();
+    $modal.modal('show');
+  });
+
+  // Clockpicker
+  let input = $('.clockpicker');
+  input.clockpicker({
+    autoclose: true,
+    placement: 'right',
+    align: 'left'
+  });
+
+  input.on('click', (e) => {
+    input.clockpicker('show');
+  });
+
+  // Datepicker
+  $('input[data-toggle="datepicker"]').parent().datepicker({
+    format: 'yyyy-mm-dd',
+    autoclose: true
+  });
+
+  // Save
+  $(document).on('click', 'button[name="event-save"]', (e) => {
+    let $modal = $('#configure-event');
+    let result = getCommands($modal);
+    let groups = result[0];
+    let numberOfCommands = result[1];
+    let index = parseInt($modal.attr('index'));
+
+    let id = $modal.find('input[name="event-id"]').val();
+    let time = $modal.find('input[name="event-time"]').val();
+    let days = getDays($modal);
+    let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
+    let disabledUntil = $modal.find('input[name="event-disable-until"]').val();
+
+    let data = {
+      id: id,
+      time: time,
+      groups: JSON.stringify(groups),
+      enabled: enabled
+    }
+
+    if (disabledUntil)
+      data.disabledUntil = disabledUntil;
+
+    // Only append days if not all days are selected
+    if (days.length != 7)
+      data.days = JSON.stringify(days);
+
+    let endpoint = index;
+    if (isNaN(index))
+      endpoint = "new";
+
+    $.ajax({
+      url: '/schedule/configure/' + endpoint,
+      data: data,
+      beforeSend: function (xhr) {
+        let username = $("input#usr").val();
+        let password = $("input#pwd").val();
+        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+      },
+      success: function(data) { // Update the data client side
+        $modal.modal('hide');
+
+        if (!isNaN(endpoint)) {
+          let $block = $($(document).find('.block')[index]);
+          $block.find('span[name="event-id"]').text(id);
+          $block.find('span[name="event-time"]').text(time);
+
+          let commandText = numberOfCommands + " command";
+          if (numberOfCommands != 1)
+            commandText += "s";
+          $block.find('span[name="event-commands"]').text(commandText);
+
+          let daysString = days.length == 7 ? "all" : days.length;
+          let dayText = daysString + " day";
+          if (days.length != 1)
+            dayText += "s";
+          $block.find('span[name="event-days"]').text(dayText);
+
+          $block.find('input[name="event-enabled"]').prop('checked', enabled);
+        } else {
+
+        }
+      },
+      error: function(data) {
+        let responseText = null;
+        if (data.status == 400)
+          responseText = data.responseText;
+        else
+          responseText = "Something went wrong. Please try again later."
+
+        let $error = $modal.find('#error-msg');
+        $error.html(responseText);
+        $error.show();
+      },
+      method: 'POST'
+    });
+  });
+
+  function getDays($modal) {
+    let days = [];
+    $modal.find('input[day]').each(function () {
+      let $this = $(this);
+      if ($this.prop('checked'))
+        days.push($this.attr('day'))
+    });
+    return days;
+  }
+
+  function getCommands($modal) {
+    let groups = [];
+    let count = 0;
+
+    $modal.find('.event-commands-edit-container').each(function (index) {
+      let $container = $(this);
+      let groupIdentifier = $container.attr('identifier');
+      let group = {
+        "name": groupIdentifier
+      }
+
+      let activities = [];
+
+      let $inputs = $container.find('input');
+      $inputs.each(function () {
+        let $this = $(this);
+        if ($this.prop('checked')) {
+          count += 1;
+          activities.push($this.attr('identifier'));
+        }
+      });
+
+      if (activities.length == 0)
+        return;
+
+      group.activities = activities;
+      groups.push(group);
+    });
+    return [groups, count];
+  }
+</script>

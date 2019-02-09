@@ -22,28 +22,10 @@
       getStylesheet();
     </script>
 
-    <!-- favicons -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
-    <link rel="icon" sizes="16x16 32x32 64x64" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
-    <link rel="icon" type="image/png" sizes="196x196" href="{{ url_for('static', filename='favicon/favicon-192.png') }}">
-    <link rel="icon" type="image/png" sizes="160x160" href="{{ url_for('static', filename='favicon/favicon-160.png') }}">
-    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96.png') }}">
-    <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='favicon/favicon-64.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16.png') }}">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon/favicon-57.png') }}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='favicon/favicon-114.png') }}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='favicon/favicon-72.png') }}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='favicon/favicon-144.png') }}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='favicon/favicon-60.png') }}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='favicon/favicon-120.png') }}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='favicon/favicon-76.png') }}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='favicon/favicon-152.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/favicon-180.png') }}">
-    <meta name="msapplication-TileColor" content="#FFFFFF">
-    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='favicon/favicon-144.png') }}">
-    <meta name="msapplication-config" content="{{ url_for('static', filename='favicon/browserconfig.xml') }}">
-    <!-- favicons -->
+    {% include 'base-scripts.html.j2' %}
+    {% import "schedule-block.html.j2" as block %}
+    {% import "command.html.j2" as command %}
+    {% include 'favicons.html.j2' %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
@@ -60,7 +42,6 @@
     <div id="result" class="alert alert-success" style="display: none;">Success!</div>
     <div id="error" class="alert alert-danger" style="display: none;">Error!</div>
 
-
     <div class="container">
       <div class="jumbotron">
         <h1>Smart Remote Control</h1>
@@ -72,7 +53,7 @@
         </div>
         <!-- iframe below is used to trigger browser 'save password' dialog -->
         <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
-        <form id="creds" class="col-sm-5" target="temp" onsubmit="getCredentials();">
+        <form id="creds" class="col-sm-5" target="temp">
           <div class="row">
             <div class="form-group">
               <input id="usr" class="form-control" name="user" placeholder="user">
@@ -96,15 +77,7 @@
         <div id="activitiesContainer">
           {% set count = [0] %}
           {% for group in activities.groups %}
-            <div class="group">
-              <h2>{{ group.name }}</h2>
-              {% for act in group.activities %}
-                <div class="button">
-                  <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
-                </div>
-                {% if count.append(count.pop() + 1) %}{% endif %}
-              {% endfor %}
-            </div>
+            {{ command.createCommand(group, count) }}
           {% endfor %}
         </div>
       </section>
@@ -112,43 +85,7 @@
       <section>
         <div id="scheduleContainer">
           {% for event in activities.scheduled %}
-            <div class="block btn-lg" identifier="{{ loop.index - 1 }}">
-              {# ID #}
-              <span name="event-id">{{ event.id }}</span>
-
-              {# Time #}
-              <div class="clock">
-                <span class="glyphicon glyphicon-time"></span>
-                <span name="event-time">{{ event.time }}</span>
-              </div>
-
-              {# Days #}
-              {% if "days" not in event or event.days|length == 7 %}
-                <span name="event-days">all days</span>
-              {% elif event.days|length > 1 %}
-                <span name="event-days">{{ event.days|length }} days</span>
-              {% else %}
-                <span name="event-days">{{ event.days|length }} day</span>
-              {% endif %}
-
-              {# Commands #}
-              {% if event.commands|length > 1 %}
-                <span name="event-commands">{{ event.commands|length }} commands</span>
-              {% else %}
-                <span name="event-commands">{{ event.commands|length }} command</span>
-              {% endif %}
-
-              {# Enable and edit #}
-              <div class="controls">
-                {% if "disabled" in event and ("disabledUntil" not in event or
-                                               event["disabledUntil"] + "T" + event.time >= now()) %}
-                  <input name="event-enabled" type="checkbox" class="uiswitch">
-                {% else %}
-                  <input name="event-enabled" type="checkbox" class="uiswitch" checked>
-                {% endif %}
-                <span name="edit-event" class="glyphicon glyphicon-cog"></span>
-              </div>
-            </div>
+            {{ block.createBlock(event, loop, now) }}
           {% endfor %}
 
           <div class="block btn-lg" id="new-event">
@@ -158,317 +95,7 @@
       </section>
     </div>
 
-    <!-- Modal -->
-    <div id="configure-event" class="modal fade" role="dialog">
-      <div class="modal-dialog">
-
-        <!-- Modal content-->
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Edit event</h4>
-          </div>
-          <table class="modal-body">
-            <tr>
-              <td>Name</td>
-              <td><input type="text" class="form-control" name="event-id"></td>
-            </tr>
-            <tr>
-              <td>Time</td>
-              <td>
-                <div class="clockpicker">
-                  <input type="text" class="form-control" name="event-time">
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Days</td>
-              <td id="days-td">
-                <label><input day="Monday" type="checkbox">Monday</label>
-                <label><input day="Tuesday" type="checkbox">Tuesday</label>
-                <label><input day="Wednesday" type="checkbox">Wednesday</label>
-                <label><input day="Thursday" type="checkbox">Monday</label>
-                <label><input day="Friday" type="checkbox">Friday</label>
-                <label><input day="Saturday" type="checkbox">Saturday</label>
-                <label><input day="Sunday" type="checkbox">Sunday</label>
-              </td>
-            </tr>
-            <tr>
-              <td>Commands</td>
-              <td id="commands-td">
-                {% for group in activities.groups %}
-                  <div class="event-commands-edit-container" identifier="{{ group.name }}">
-                    <span>{{ group.name }}</span>
-                    <div class="event-commands-edit-group">
-                    {% for act in group.activities %}
-                      <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
-                    {% endfor %}
-                    </div>
-                  </div>
-                {% endfor %}
-              </td>
-            </tr>
-            <tr>
-              <td>Enabled</td>
-              <td><input type="checkbox" class="uiswitch" name="event-enabled" checked></td>
-            </tr>
-            <tr>
-              <td>Disable until</td>
-              <td><input type='text' class="form-control" name="event-disable-until" data-toggle="datepicker"/></td>
-            </tr>
-
-          </table>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal" name="event-save">Save</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Modal scripts -->
-    <script type="text/javascript">
-      var scheduled = {{ activities.scheduled | tojson }};
-      var groups = {{ activities.groups | tojson }};
-
-      $(document).on('click', 'span[name="edit-event"]', (e) => {
-        let $modal = $('#configure-event');
-
-        let $block = $(e.currentTarget).closest('.block');
-        let identifier = $block.attr('identifier');
-        $modal.attr('index', identifier);
-
-        let event = scheduled[identifier];
-        $modal.find('[name="event-id"]').val(event.id);
-        $modal.find('[name="event-time"]').val(event.time);
-        let enabled = scheduled.disabledUntil && event.disabledUntil + "T" + event.time >= now();
-        $modal.find('[name="event-enabled"]').val(enabled);
-
-        disabledUntil = "";
-        if (event.disabledUntil)
-          disabledUntil = event.disabledUntil;
-        $modal.find('[Name="event-disable-until"]').val(disabledUntil);
-
-        let commands = event["commands"];
-        $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
-
-        for (var index in commands) {
-          let array = commands[index];
-          let $container = $('[identifier="' + array[1] + '"]');
-          let $input = $container.find('[identifier="' + array[0] + '"]');
-          $input.prop('checked', true);
-        }
-
-        if (!event.hasOwnProperty("days")) {
-          $modal.find('#days-td input[type="checkbox"]').prop('checked', true);
-        } else {
-          let days = scheduled[identifier]["days"];
-          $modal.find('#days-td input[type="checkbox"]').prop('checked', false);
-
-          for (var index in days) {
-            let day = days[index];
-            let $input = $('[day="' + day + '"]');
-            $input.prop('checked', true);
-          }
-        }
-
-        $modal.modal('show');
-      });
-
-      // Clockpicker
-      let input = $('.clockpicker');
-      input.clockpicker({
-        autoclose: true,
-        placement: 'right',
-        align: 'left'
-      });
-
-      input.on('click', (e) => {
-        input.clockpicker('show');
-      });
-
-      // Datepicker
-      $('input[data-toggle="datepicker"]').parent().datepicker({
-        format: 'yyyy-mm-dd',
-        autoclose: true
-      });
-
-      // Save
-      $(document).on('click', 'button[name="event-save"]', (e) => {
-        let $modal = $('#configure-event');
-        let result = getCommands($modal);
-        let groups = result[0];
-        let numberOfCommands = result[1];
-        let index = parseInt($modal.attr('index'));
-
-        let id = $modal.find('input[name="event-id"]').val();
-        let time = $modal.find('input[name="event-time"]').val();
-        let days = getDays($modal);
-        let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
-        let disabledUntil = $modal.find('input[name="event-disable-until"]').val();
-
-        let data = {
-          id: id,
-          time: time,
-          groups: JSON.stringify(groups),
-          enabled: enabled,
-          disabledUntil: disabledUntil
-        }
-
-        // Only append days if not all days are selected
-        if (days.length != 7)
-          data.days = JSON.stringify(days);
-
-        $.ajax({
-          url: '/schedule/configure/' + index,
-          data: data,
-          beforeSend: function (xhr) {
-            let username = $("input#usr").val();
-            let password = $("input#pwd").val();
-            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-          },
-          success: function(data) {// Update the data client side
-            let $block = $($(document).find('.block')[index]);
-            $block.find('span[name="event-id"]').text(id);
-            $block.find('span[name="event-time"]').text(time);
-
-            let commandText = numberOfCommands + " command";
-            if (numberOfCommands != 1)
-              commandText += "s";
-            $block.find('span[name="event-commands"]').text(commandText);
-
-            let daysString = days.length == 7 ? "all" : days.length;
-            let dayText = daysString + " day";
-            if (days.length != 1)
-              dayText += "s";
-            $block.find('span[name="event-days"]').text(dayText);
-
-            $block.find('input[name="event-enabled"]').prop('checked', enabled);
-          },
-          error: function(data) {
-            console.log('error: ', data);
-          },
-          method: 'POST'
-        });
-      });
-
-      function getDays($modal) {
-        let days = [];
-        $modal.find('input[day]').each(function () {
-          let $this = $(this);
-          if ($this.prop('checked'))
-            days.push($this.attr('day'))
-        });
-        return days;
-      }
-
-      function getCommands($modal) {
-        let groups = [];
-        let count = 0;
-
-        $modal.find('.event-commands-edit-container').each(function (index) {
-          let $container = $(this);
-          let groupIdentifier = $container.attr('identifier');
-          let group = {
-            "name": groupIdentifier
-          }
-
-          let activities = [];
-
-          let $inputs = $container.find('input');
-          $inputs.each(function () {
-            let $this = $(this);
-            if ($this.prop('checked')) {
-              count += 1;
-              activities.push($this.attr('identifier'));
-            }
-          });
-
-          if (activities.length == 0)
-            return;
-
-          group.activities = activities;
-          groups.push(group);
-        });
-        return [groups, count];
-      }
-    </script>
-
-
-    <script>
-      let activityList = [
-        {% set count = [0] %}
-        {% for activity in activities.groups %}
-          {% set outer_loop = loop %}
-          {% for act in activity.activities %}
-            { name: '{{ act.name }}', index: {{ count[0] }} } {{ ',' if not (loop.last and outer_loop.last) }}
-            {% if count.append(count.pop() + 1) %}{% endif %}
-          {% endfor %}
-        {% endfor %}
-      ];
-
-      function make_base_auth(username, password) {
-        let tok = username + ':' + password;
-        let hash = btoa(tok);
-        return "Basic " + hash;
-      }
-
-      function sendActivity(index) {
-        $("#submit_button").click()
-
-        let request = $.ajax({
-          url: '/activity/' + index,
-          beforeSend: function (xhr) {
-            let username = $("input#usr").val();
-            let password = $("input#pwd").val();
-            xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-          },
-          method: 'POST'
-        });
-
-        request.done(
-          function(response) {
-            $('#result').fadeIn(0).delay(2000).fadeOut("fast");
-          }
-        );
-
-        request.fail(
-          function(response) {
-            $('#error').text(response.responseText);
-            $('#error').fadeIn(0).delay(2000).fadeOut("fast");
-          }
-        );
-      }
-
-      function speak() {
-        $('#speech-status').text('Speak activity name...');
-        // Run speech recognition.
-        let recognition = new webkitSpeechRecognition();
-        recognition.onresult = function(event) {
-          // When a result is available, first grab the transcript.
-          let result = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            result += event.results[i][0].transcript;
-          }
-          // Check if transcript matches an activity name.
-          for (let i = 0; i < activityList.length; ++i) {
-            let item = activityList[i];
-            if (item.name.toLowerCase() == result.toLowerCase()) {
-              // Found a match!
-              $('#speech-status').text('Running activity: ' + item.name);
-              sendActivity(item.index);
-              return;
-            }
-          }
-          // Couldn't find a match, so display what was heard.
-          $('#speech-status').text('Heard: ' + result);
-        }
-        recognition.onerror = function(event) {
-          $('#speech-status').text('Error recognizing speech!');
-        }
-        recognition.start();
-      }
-    </script>
+    {% include 'modal.html.j2' %}
+    {% include 'modal-scripts.html.j2' %}
   </body>
 </html>

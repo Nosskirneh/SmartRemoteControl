@@ -1,0 +1,71 @@
+<!-- Modal -->
+<div id="configure-event" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 id="modal-title"></h4>
+      </div>
+
+      <table class="modal-body">
+        <tr>
+          <td>Name</td>
+          <td><input type="text" class="form-control" name="event-id"></td>
+        </tr>
+        <tr>
+          <td>Time</td>
+          <td>
+            <div class="clockpicker">
+              <input type="text" class="form-control" name="event-time">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Days</td>
+          <td id="days-td">
+            <label><input day="Monday" type="checkbox">Monday</label>
+            <label><input day="Tuesday" type="checkbox">Tuesday</label>
+            <label><input day="Wednesday" type="checkbox">Wednesday</label>
+            <label><input day="Thursday" type="checkbox">Monday</label>
+            <label><input day="Friday" type="checkbox">Friday</label>
+            <label><input day="Saturday" type="checkbox">Saturday</label>
+            <label><input day="Sunday" type="checkbox">Sunday</label>
+          </td>
+        </tr>
+        <tr>
+          <td>Commands</td>
+          <td id="commands-td">
+            {% for group in activities.groups %}
+              <div class="event-commands-edit-container" identifier="{{ group.name }}">
+                <span>{{ group.name }}</span>
+                <div class="event-commands-edit-group">
+                {% for act in group.activities %}
+                  <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
+                {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </td>
+        </tr>
+        <tr>
+          <td>Enabled</td>
+          <td><input type="checkbox" class="uiswitch" name="event-enabled" checked></td>
+        </tr>
+        <tr>
+          <td>Disable until</td>
+          <td><input type='text' class="form-control" name="event-disable-until" data-toggle="datepicker"/></td>
+        </tr>
+      </table>
+
+      <div id="error-msg" class="alert alert-warning" role="alert" style="display: none;"></div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" name="event-save">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
