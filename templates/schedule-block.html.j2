@@ -29,9 +29,9 @@
     <div class="controls">
       {% if "disabled" in event and ("disabledUntil" not in event or
                                      event["disabledUntil"] + "T" + event.time >= now()) %}
-        <input name="event-enabled" type="checkbox" class="uiswitch">
+        <input name="event-enabled" type="checkbox" autocomplete="off" class="uiswitch">
       {% else %}
-        <input name="event-enabled" type="checkbox" class="uiswitch" checked>
+        <input name="event-enabled" type="checkbox" autocomplete="off" class="uiswitch" checked>
       {% endif %}
       <span name="edit-event" class="glyphicon glyphicon-cog"></span>
     </div>

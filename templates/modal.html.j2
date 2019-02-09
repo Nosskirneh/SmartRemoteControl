@@ -24,18 +24,18 @@
         </tr>
         <tr>
           <td>Fire once</td>
-          <td><input type="checkbox" class="uiswitch" name="event-fire-once"></td>
+          <td><input type="checkbox" autocomplete="off" class="uiswitch" name="event-fire-once"></td>
         </tr>
         <tr>
           <td>Days</td>
           <td id="days-td">
-            <label><input day="Monday" type="checkbox">Monday</label>
-            <label><input day="Tuesday" type="checkbox">Tuesday</label>
-            <label><input day="Wednesday" type="checkbox">Wednesday</label>
-            <label><input day="Thursday" type="checkbox">Monday</label>
-            <label><input day="Friday" type="checkbox">Friday</label>
-            <label><input day="Saturday" type="checkbox">Saturday</label>
-            <label><input day="Sunday" type="checkbox">Sunday</label>
+            <label><input day="Monday" type="checkbox" autocomplete="off">Monday</label>
+            <label><input day="Tuesday" type="checkbox" autocomplete="off">Tuesday</label>
+            <label><input day="Wednesday" type="checkbox" autocomplete="off">Wednesday</label>
+            <label><input day="Thursday" type="checkbox" autocomplete="off">Monday</label>
+            <label><input day="Friday" type="checkbox" autocomplete="off">Friday</label>
+            <label><input day="Saturday" type="checkbox" autocomplete="off">Saturday</label>
+            <label><input day="Sunday" type="checkbox" autocomplete="off">Sunday</label>
           </td>
         </tr>
         <tr>
@@ -46,7 +46,7 @@
                 <span>{{ group.name }}</span>
                 <div class="event-commands-edit-group">
                 {% for act in group.activities %}
-                  <label><input identifier="{{ act.name }}" type="checkbox">{{ act.name }}</label>
+                  <label><input identifier="{{ act.name }}" type="checkbox" autocomplete="off">{{ act.name }}</label>
                 {% endfor %}
                 </div>
               </div>
@@ -55,7 +55,7 @@
         </tr>
         <tr>
           <td>Enabled</td>
-          <td><input type="checkbox" class="uiswitch" name="event-enabled" checked></td>
+          <td><input type="checkbox" autocomplete="off" class="uiswitch" name="event-enabled" checked></td>
         </tr>
         <tr>
           <td>Disable until</td>
