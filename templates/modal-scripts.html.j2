@@ -3,9 +3,9 @@
   var scheduled = {{ activities.scheduled | tojson }};
   var groups = {{ activities.groups | tojson }};
   var now = "{{ now() }}";
+  let $modal = $('#configure-event');
 
   $(document).on('click', '#new-event', (e) => {
-    let $modal = $('#configure-event');
     $modal.find('input[type="text"]').val('');
     $modal.find('input[type="checkbox"]').prop('checked', false);
     $modal.find('input[day]').prop('checked', true);
@@ -16,8 +16,6 @@
   });
 
   $(document).on('click', 'span[name="edit-event"]', (e) => {
-    let $modal = $('#configure-event');
-
     let $block = $(e.currentTarget).closest('.block');
     let identifier = $block.attr('identifier');
     $modal.attr('index', identifier);
@@ -80,9 +78,16 @@
     autoclose: true
   });
 
+  $(document).on('change', 'input[name="event-fire-once"]', (e) => {
+    let $input = $(e.currentTarget);
+    if ($input.prop('checked'))
+      $modal.find('input[day]').attr('disabled', true);
+    else
+      $modal.find('input[day]').removeAttr('disabled');
+  });
+
   // Save
   $(document).on('click', 'button[name="event-save"]', (e) => {
-    let $modal = $('#configure-event');
     let result = getCommands($modal);
     let groups = result[0];
     let numberOfCommands = result[1];
@@ -93,6 +98,7 @@
     let days = getDays($modal);
     let enabled = $modal.find('input[name="event-enabled"]').prop('checked');
     let disabledUntil = $modal.find('input[name="event-disable-until"]').val();
+    let fireOnce = $modal.find('input[name="event-fire-once"]').prop('checked');
 
     let data = {
       id: id,
@@ -103,6 +109,9 @@
 
     if (disabledUntil)
       data.disabledUntil = disabledUntil;
+
+    if (fireOnce)
+      data.fireOnce = fireOnce;
 
     // Only append days if not all days are selected
     if (days.length != 7)
