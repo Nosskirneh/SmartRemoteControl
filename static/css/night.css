@@ -11,3 +11,8 @@ body, .form-control, .btn-default {
 .block, .modal-content {
     background-color: #474747;
 }
+
+.close, .close:hover {
+    color: #fff;
+    text-shadow: 0 1px 0 #000;
+}

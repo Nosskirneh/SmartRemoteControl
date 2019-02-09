@@ -221,6 +221,11 @@ section > div {
     margin-right: 5px;
 }
 
+.modal-dialog .alert {
+    margin: 35px;
+    margin-top: 0;
+}
+
 /* iPad Pro */
 @media only screen 
 and (min-device-width : 1024px) 
