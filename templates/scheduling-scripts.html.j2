@@ -4,6 +4,7 @@
   let now = "{{ now() }}";
   let $modal = $('#configure-event');
 
+  // Click on new event
   $(document).on('click', '#new-event', (e) => {
     $modal.find('input[type="text"]').val('');
     $modal.find('input[type="checkbox"]').prop('checked', false);
@@ -14,6 +15,7 @@
     $modal.modal('show');
   });
 
+  // Click on existing event
   $(document).on('click', 'span[name="edit-event"]', (e) => {
     let $block = $(e.currentTarget).closest('.block');
     let identifier = $block.attr('identifier');
@@ -30,6 +32,8 @@
     if (event.disabledUntil)
       disabledUntil = event.disabledUntil;
     $modal.find('[name="event-disable-until"]').val(disabledUntil);
+
+    $modal.find('[name="event-fire-once"]').prop('checked', event.fireOnce | false);
 
     let commands = event["commands"];
     $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
