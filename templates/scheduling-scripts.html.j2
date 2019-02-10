@@ -1,8 +1,7 @@
-<!-- Modal scripts -->
 <script type="text/javascript">
-  var scheduled = {{ activities.scheduled | tojson }};
-  var groups = {{ activities.groups | tojson }};
-  var now = "{{ now() }}";
+  let scheduled = {{ activities.scheduled | tojson }};
+  let groups = {{ activities.groups | tojson }};
+  let now = "{{ now() }}";
   let $modal = $('#configure-event');
 
   $(document).on('click', '#new-event', (e) => {
@@ -86,7 +85,7 @@
       $modal.find('input[day]').removeAttr('disabled');
   });
 
-  // Save
+  // Save within modal
   $(document).on('click', 'button[name="event-save"]', (e) => {
     let result = getCommands($modal);
     let groups = result[0];
@@ -150,7 +149,8 @@
 
           $block.find('input[name="event-enabled"]').prop('checked', enabled);
         } else {
-
+          // TODO
+          // create new node
         }
       },
       error: function(data) {
@@ -163,6 +163,33 @@
         let $error = $modal.find('#error-msg');
         $error.html(responseText);
         $error.show();
+      },
+      method: 'POST'
+    });
+  });
+
+  // Switch enable state on block
+  $(document).on('change', 'input[name="event-enabled"]', (e) => {
+    let $input = $(e.currentTarget);
+    let state = $input.prop('checked');
+    let $block = $input.closest('.block');
+    let identifier = $block.attr('identifier');
+
+    $.ajax({
+      url: '/schedule/enable/' + identifier,
+      data: { enabled: state },
+      beforeSend: function (xhr) {
+        let username = $("input#usr").val();
+        let password = $("input#pwd").val();
+        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+      },
+      success: function(data) {
+        // TODO -- feedback on success
+        console.log("success")
+      },
+      error: function(data) {
+        // TODO -- feedback on revert
+        $input.prop('checked', !state);
       },
       method: 'POST'
     });

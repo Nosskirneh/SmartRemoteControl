@@ -62,6 +62,18 @@ def get_commands():
     return jsonify(activities)
 
 
+@app.route("/schedule/enable/<int:index>", methods=["POST"])
+def set_enabled(index):
+    if not is_auth_ok():
+        return "Unauthorized", 401
+
+    event = activities["scheduled"][index]
+    event["disabled"] = request.form.get('enabled') != "true"
+
+    config.save_activities(activities)
+    return "OK", 200
+
+
 @app.route("/schedule/configure/new", methods=["POST"])
 def configure_new():
     return configure_schedule()
