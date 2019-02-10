@@ -156,6 +156,8 @@
           // TODO
           // create new node
         }
+
+        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },
       error: function(data) {
         let responseText = null;
@@ -188,12 +190,12 @@
         xhr.setRequestHeader('Authorization', make_base_auth(username, password));
       },
       success: function(data) {
-        // TODO -- feedback on success
-        console.log("success")
+        scheduled[identifier].disabled = !state;
+        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },
       error: function(data) {
-        // TODO -- feedback on revert
         $input.prop('checked', !state);
+        $('#error').fadeIn(0).delay(2000).fadeOut("fast");
       },
       method: 'POST'
     });
