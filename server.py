@@ -177,6 +177,9 @@ def activity(index):
 
 ### METHODS ###
 def is_auth_ok():
+    if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
+        return True
+
     try:
         auth = request.headers["Authorization"].split()[1]
         user, pw = base64.b64decode(auth).split(":")
