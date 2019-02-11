@@ -31,7 +31,8 @@ def getCurrentDateAsString():
 ### APP ROUTES ###
 @app.route("/")
 def root():
-    template = render_template("index.html", activities=config.get_activities(), now=getCurrentDateAsString)
+    activities = config.get_activities()
+    template = render_template("index.html", activities=activities, now=getCurrentDateAsString)
     return template
 
 
