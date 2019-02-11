@@ -23,8 +23,7 @@
     </script>
 
     {% include 'base-scripts.html.j2' %}
-    {% import "schedule-block.html.j2" as block %}
-    {% import "command.html.j2" as command %}
+    {% import "macros.html.j2" as macros %}
     {% include 'favicons.html.j2' %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -79,7 +78,7 @@
         <div id="activitiesContainer">
           {% set count = [0] %}
           {% for group in activities.groups %}
-            {{ command.createCommand(group, count) }}
+            {{ macros.createCommand(group, count) }}
           {% endfor %}
         </div>
       </section>
@@ -87,7 +86,7 @@
       <section>
         <div id="scheduleContainer">
           {% for event in activities.scheduled %}
-            {{ block.createBlock(event, loop, now) }}
+            {{ macros.createBlock(event, loop.index - 1, now) }}
           {% endfor %}
 
           <div class="block btn-lg" id="new-event">

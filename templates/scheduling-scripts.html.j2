@@ -132,7 +132,7 @@
         let password = $("input#pwd").val();
         xhr.setRequestHeader('Authorization', make_base_auth(username, password));
       },
-      success: function(data) { // Update the data client side
+      success: function(response) { // Update the data client side
         $modal.modal('hide');
 
         if (!isNaN(endpoint)) {
@@ -153,16 +153,17 @@
 
           $block.find('input[name="event-enabled"]').prop('checked', enabled);
         } else {
-          // TODO
-          // create new node
+          scheduled.push(response.data);
+          $newBlock = $(response.html);
+          $('#new-event').before($newBlock);
         }
 
         $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },
-      error: function(data) {
+      error: function(response) {
         let responseText = null;
-        if (data.status == 400)
-          responseText = data.responseText;
+        if (response.status == 400)
+          responseText = response.responseText;
         else
           responseText = "Something went wrong. Please try again later."
 
@@ -189,11 +190,11 @@
         let password = $("input#pwd").val();
         xhr.setRequestHeader('Authorization', make_base_auth(username, password));
       },
-      success: function(data) {
+      success: function(response) {
         scheduled[identifier].disabled = !state;
         $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },
-      error: function(data) {
+      error: function(response) {
         $input.prop('checked', !state);
         $('#error').fadeIn(0).delay(2000).fadeOut("fast");
       },

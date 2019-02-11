@@ -77,7 +77,14 @@ def set_enabled(index):
 
 @app.route("/schedule/configure/new", methods=["POST"])
 def configure_new():
-    return configure_schedule()
+    response = configure_schedule()
+    if response[1] == 200:
+        result = {
+            "data": activities["scheduled"][-1],
+            "html": render_template("schedule-block.html.j2", event=activities["scheduled"][-1], index=len(activities["scheduled"]) - 1, now=getCurrentDateAsString)
+        }
+        return jsonify(result), 200
+    return response
 
 @app.route("/schedule/configure/<int:index>", methods=["POST"])
 def configure_existing(index):
@@ -92,8 +99,8 @@ def configure_schedule(index = -1):
     days = request.form.get('days')
     groups = request.form.get('groups')
     enabled = request.form.get('enabled')
-    disabled_until = request.form.get('disabledUntil')
     fire_once = request.form.get('fireOnce')
+    disabled_until = request.form.get('disabledUntil')
 
     if not id or not time or time == '' or not groups or len(groups) == 0:
         return "You need to provide name, time and commands.", 400
