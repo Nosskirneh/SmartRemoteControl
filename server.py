@@ -99,6 +99,9 @@ def configure_schedule(identifier):
     if not id or not time or time == '' or not groups or len(groups) == 0:
         return "You need to provide name, time and commands.", 400
 
+    if identifier == None and any(event["id"] == id for event in activities["scheduled"]):
+        return "An event with that name does already exist.", 400
+
     def fill_event():
         event["id"] = id
         event["time"] = time
