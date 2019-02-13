@@ -1,5 +1,9 @@
 <script type="text/javascript">
-  let scheduled = {{ activities.scheduled | tojson }};
+  let _scheduledArray = {{ activities.scheduled | tojson }};
+  let scheduled = {};
+  for (event of _scheduledArray)
+    scheduled[event["id"]] = event;
+
   let groups = {{ activities.groups | tojson }};
   let now = "{{ now() }}";
   let $modal = $('#configure-event');
@@ -19,7 +23,7 @@
   $(document).on('click', 'span[name="edit-event"]', (e) => {
     let $block = $(e.currentTarget).closest('.block');
     let identifier = $block.attr('identifier');
-    $modal.attr('index', identifier);
+    $modal.attr('identifier', identifier);
 
     let event = scheduled[identifier];
     $modal.find('[name="event-id"]').val(event.id);
@@ -94,7 +98,7 @@
     let result = getCommands($modal);
     let groups = result[0];
     let numberOfCommands = result[1];
-    let index = parseInt($modal.attr('index'));
+    let identifier = $modal.attr('identifier');
 
     let id = $modal.find('input[name="event-id"]').val();
     let time = $modal.find('input[name="event-time"]').val();
@@ -120,8 +124,8 @@
     if (days.length != 7)
       data.days = JSON.stringify(days);
 
-    let endpoint = index;
-    if (isNaN(index))
+    let endpoint = identifier;
+    if (!identifier)
       endpoint = "new";
 
     $.ajax({
@@ -135,8 +139,12 @@
       success: function(response) { // Update the data client side
         $modal.modal('hide');
 
-        if (!isNaN(endpoint)) {
-          let $block = $($(document).find('.block')[index]);
+        if (identifier) {
+          if (identifier != id)
+            scheduled[identifier] = null;
+
+          let $block = $('.block[identifier="' + identifier + '"]');
+          $block.attr('identifier', id)
           $block.find('span[name="event-id"]').text(id);
           $block.find('span[name="event-time"]').text(time);
 
@@ -153,10 +161,10 @@
 
           $block.find('input[name="event-enabled"]').prop('checked', enabled);
         } else {
-          scheduled.push(response.data);
           $newBlock = $(response.html);
           $('#new-event').before($newBlock);
         }
+        scheduled[id] = response.data;
 
         $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },
@@ -170,6 +178,33 @@
         let $error = $modal.find('#error-msg');
         $error.html(responseText);
         $error.show();
+      },
+      method: 'POST'
+    });
+  });
+
+  // Delete event from modal
+  $(document).on('click', 'button[name="event-delete"]', (e) => {
+    let identifier = $modal.attr('identifier');
+
+    $.ajax({
+      url: '/schedule/delete/' + identifier,
+      beforeSend: function (xhr) {
+        let username = $("input#usr").val();
+        let password = $("input#pwd").val();
+        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+      },
+      success: function(response) {
+        scheduled[identifier] = null;
+
+        let $block = $('.block[identifier="' + identifier + '"]');
+        $block.remove();
+
+        $modal.modal('hide');
+        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
+      },
+      error: function(response) {
+        $('#error').fadeIn(0).delay(2000).fadeOut("fast");
       },
       method: 'POST'
     });

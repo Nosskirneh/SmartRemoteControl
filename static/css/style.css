@@ -180,7 +180,6 @@ section > div {
     flex-direction: column;
 }
 
-
 .modal-body td {
     padding-right: 20px;
     padding-left: 20px;
@@ -228,6 +227,15 @@ section > div {
 .modal-dialog .alert {
     margin: 35px;
     margin-top: 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-footer button:first-child {
+    margin-right: auto;
 }
 
 /* iPad Pro */

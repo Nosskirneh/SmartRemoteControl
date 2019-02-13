@@ -86,7 +86,7 @@
       <section>
         <div id="scheduleContainer">
           {% for event in activities.scheduled %}
-            {{ macros.createBlock(event, loop.index - 1, now) }}
+            {{ macros.createBlock(event, now) }}
           {% endfor %}
 
           <div class="block btn-lg" id="new-event">

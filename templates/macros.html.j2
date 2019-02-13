@@ -11,8 +11,8 @@
 {%- endmacro %}
 
 
-{% macro createBlock(event, index, now) -%}
-  <div class="block btn-lg" identifier="{{ index }}">
+{% macro createBlock(event, now) -%}
+  <div class="block btn-lg" identifier="{{ event['id'] }}">
     {# ID #}
     <span name="event-id">{{ event.id }}</span>
 
@@ -40,8 +40,8 @@
 
     {# Enable and edit #}
     <div class="controls">
-      {% if "disabled" in event and ("disabledUntil" not in event or
-                                     event["disabledUntil"] + "T" + event.time >= now()) %}
+      {% if ("disabled" in event and event["disabled"]) or
+            ("disabledUntil" in event and event["disabledUntil"] + "T" + event.time >= now()) %}
         <input name="event-enabled" type="checkbox" autocomplete="off" class="uiswitch">
       {% else %}
         <input name="event-enabled" type="checkbox" autocomplete="off" class="uiswitch" checked>

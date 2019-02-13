@@ -63,11 +63,12 @@ def get_commands():
     return jsonify(activities)
 
 
-@app.route("/schedule/enable/<int:index>", methods=["POST"])
-def set_enabled(index):
+@app.route("/schedule/enable/<string:identifier>", methods=["POST"])
+def set_enabled(identifier):
     if not is_auth_ok():
         return "Unauthorized", 401
 
+    index = return_schedule_index(identifier)
     event = activities["scheduled"][index]
     event["disabled"] = request.form.get('enabled') != "true"
 
@@ -77,20 +78,13 @@ def set_enabled(index):
 
 @app.route("/schedule/configure/new", methods=["POST"])
 def configure_new():
-    response = configure_schedule()
-    if response[1] == 200:
-        result = {
-            "data": activities["scheduled"][-1],
-            "html": render_template("schedule-block.html.j2", event=activities["scheduled"][-1], index=len(activities["scheduled"]) - 1, now=getCurrentDateAsString)
-        }
-        return jsonify(result), 200
-    return response
+    return configure_schedule(None)
 
-@app.route("/schedule/configure/<int:index>", methods=["POST"])
-def configure_existing(index):
-    return configure_schedule(index)
+@app.route("/schedule/configure/<string:identifier>", methods=["POST"])
+def configure_existing(identifier):
+    return configure_schedule(identifier)
 
-def configure_schedule(index = -1):
+def configure_schedule(identifier):
     if not is_auth_ok():
         return "Unauthorized", 401
 
@@ -124,13 +118,34 @@ def configure_schedule(index = -1):
                 formatted_groups.append([activity, group["name"]])
         event["commands"] = formatted_groups
 
-    if index == -1:
+    result = {}
+    if identifier == None:
         event = {}
         fill_event()
         activities["scheduled"].append(event)
+        result["data"] = activities["scheduled"][-1]
+        result["html"] = render_template("schedule-block.html.j2", event=activities["scheduled"][-1], index=len(activities["scheduled"]) - 1, now=getCurrentDateAsString)
     else:
+        index = return_schedule_index(identifier)
         event = activities["scheduled"][index]
         fill_event()
+        result["data"] = event;
+
+    config.save_activities(activities)
+    return jsonify(result), 200
+
+
+@app.route("/schedule/delete/<string:identifier>", methods=["POST"])
+def delete(identifier):
+    if not is_auth_ok():
+        return "Unauthorized", 401
+
+    index = return_schedule_index(identifier)
+
+    if index == -1:
+        return "Event does not exist.", 400
+
+    activities["scheduled"].pop(index)
 
     config.save_activities(activities)
     return "OK", 200
@@ -207,6 +222,14 @@ def run_event(event):
             event["disabled"] = True
             config.save_activities(activities)
 
+
+def return_schedule_index(identifier):
+    count = 0
+    for event in activities["scheduled"]:
+        if event["id"] == identifier:
+            return count
+        count = count + 1
+    return -1
 
 def return_index(cmd, grp):
     count = 0
