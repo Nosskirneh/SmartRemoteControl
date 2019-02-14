@@ -16,6 +16,7 @@
     $modal.find('input[name="event-enabled"]').prop('checked', true);
     $modal.find('#modal-title').text('New event');
     $modal.find('#error-msg').hide();
+    $modal.find('button[name="event-delete"]').hide();
     $modal.modal('show');
   });
 
@@ -64,6 +65,7 @@
 
     $modal.find('#modal-title').text('Edit event');
     $modal.find('#error-msg').hide();
+    $modal.find('button[name="event-delete"]').show();
     $modal.modal('show');
   });
 
@@ -83,6 +85,13 @@
   $('input[data-toggle="datepicker"]').parent().datepicker({
     format: 'yyyy-mm-dd',
     autoclose: true
+  });
+
+  // Delete confirmation
+  $('[data-toggle=confirmation]').confirmation({
+    rootSelector: '[data-toggle=confirmation]',
+    container: 'body',
+    onConfirm: deleteEvent,
   });
 
   $(document).on('change', 'input[name="event-fire-once"]', (e) => {
@@ -184,30 +193,7 @@
   });
 
   // Delete event from modal
-  $(document).on('click', 'button[name="event-delete"]', (e) => {
-    let identifier = $modal.attr('identifier');
-
-    $.ajax({
-      url: '/schedule/delete/' + identifier,
-      beforeSend: function (xhr) {
-        let username = $("input#usr").val();
-        let password = $("input#pwd").val();
-        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-      },
-      success: function(response) {
-        scheduled[identifier] = null;
-
-        let $block = $('.block[identifier="' + identifier + '"]');
-        $block.remove();
-
-        $modal.modal('hide');
-        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
-      },
-      error: function(response) {
-        $('#error').fadeIn(0).delay(2000).fadeOut("fast");
-      },
-      method: 'POST'
-    });
+  $(document).on('click', 'a[data-apply="confirmation"]', (e) => {
   });
 
   // Switch enable state on block
@@ -236,6 +222,32 @@
       method: 'POST'
     });
   });
+
+  function deleteEvent() {
+    let identifier = $modal.attr('identifier');
+
+    $.ajax({
+      url: '/schedule/delete/' + identifier,
+      beforeSend: function (xhr) {
+        let username = $("input#usr").val();
+        let password = $("input#pwd").val();
+        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+      },
+      success: function(response) {
+        scheduled[identifier] = null;
+
+        let $block = $('.block[identifier="' + identifier + '"]');
+        $block.remove();
+
+        $modal.modal('hide');
+        $('#result').fadeIn(0).delay(2000).fadeOut("fast");
+      },
+      error: function(response) {
+        $('#error').fadeIn(0).delay(2000).fadeOut("fast");
+      },
+      method: 'POST'
+    });
+  }
 
   function getDays($modal) {
     let days = [];
