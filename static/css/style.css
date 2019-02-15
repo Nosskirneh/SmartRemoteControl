@@ -27,41 +27,26 @@ body {
 
 .btn-speak {
     width: 100%;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
 }
 
-#creds {
-    margin: 5px 0;
+#creds .row {
     display: flex;
-    justify-content: flex-end;
-}
-
-#creds input {
-    width: initial;
+    justify-content: center;
 }
 
 .row {
     text-align: center;
 }
 
-.row div {
-    display: inline-block;
-}
-
 #activitiesContainer .button {
     margin-bottom: 10px;
-    width: 170px;
-    padding-left: 15px;
-    padding-right: 15px;
 }
 
 .group {
-    padding: 0 20px 20px 20px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 500px;
-    width: 440px;
     height: 100%;
 }
 
@@ -75,6 +60,10 @@ body {
     width: 100%;
     display: flex;
     justify-content: center;
+}
+
+.btn-block {
+    white-space: normal;
 }
 
 #result, #error {
@@ -104,18 +93,19 @@ section {
     scroll-snap-align: start;
     text-align: center;
     position: relative;
-    padding: 0 12rem;
+    padding: 0 10%;
 }
 
 section > div {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 #scheduleContainer {
     margin-top: 3rem;
     flex-flow: row wrap;
-    justify-content: space-around;
+    justify-content: center;
 }
 
 .block {
@@ -236,73 +226,4 @@ section > div {
 
 .modal-footer button:first-child {
     margin-right: auto;
-}
-
-/* iPad Pro */
-@media only screen 
-and (min-device-width : 1024px) 
-and (max-device-width : 1366px) {
-    .group {
-        padding: 0;
-        max-width: initial;
-        width: initial;
-    }
-}
-
-@media screen and (max-width: 1200px) and (min-width: 768px) {
-    #creds {
-        margin-top: 15px;
-    }
-}
-
-@media screen and (max-width: 585px) {
-    .row > div {
-        display: block;
-    }
-
-    #creds {
-        margin-top: 15px;
-    }
-
-    .form-group {
-        margin: auto;
-        width: 45%;
-    }
-}
-
-@media only screen and (max-device-width: 1000px) {
-    .row > div {
-        width: 100%;
-        display: inline-block;
-        margin: 4px 0;
-    }
-
-    .form-group {
-        display: initial;
-        margin: auto;
-    }
-
-    .group {
-        display: initial;
-    }
-
-    .button {
-        width: 50%;
-    }
-}
-
-@media only screen and (max-device-width: 667px) {
-    .group {
-        display: flex;
-        width: auto;
-        height: auto;
-    }
-
-    #groupContainer {
-        display: initial;
-    }
-
-    #logo {
-        display: none;
-    }
 }

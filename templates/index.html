@@ -50,12 +50,12 @@
         <div id=logo></div>
       </div>
       <div id="first-row" class="row">
-        <div class="col-sm-7">
-          <button type="button" class="btn btn-primary btn-speak btn-lg" onclick="speak();" >Speak</button>
+        <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
+          <button type="button" class="btn btn-primary btn-speak" onclick="speak();" >Speak</button>
         </div>
         <!-- iframe below is used to trigger browser 'save password' dialog -->
         <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
-        <form id="creds" class="col-sm-5" target="temp">
+        <form id="creds" class="col-xs-12 col-sm-5 col-md-5 col-lg-5" target="temp">
           <div class="row">
             <div class="form-group">
               <input id="usr" class="form-control" name="user" placeholder="user">
