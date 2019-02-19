@@ -25,8 +25,8 @@
     let $block = $(e.currentTarget).closest('.block');
     let identifier = $block.attr('identifier');
     $modal.attr('identifier', identifier);
-
     let event = scheduled[identifier];
+
     $modal.find('[name="event-id"]').val(event.id);
     $modal.find('[name="event-time"]').val(event.time);
     let enabled = !event.disabled && (!event.disabledUntil ||
@@ -63,6 +63,18 @@
       }
     }
 
+    $modal.find('[name="exclude-all-holidays"]').prop('checked', event.excludeAllHolidays)
+    $modal.find('.excluded-holiday').prop('checked', false);
+    if (event.excludedHolidays) {
+      for (day of event.excludedHolidays)
+        $modal.find('[identifier="' + day + '"]').prop('checked', true);
+    }
+
+    if (event.excludeAllHolidays)
+      $modal.find('#excluded-holidays-td').parent().hide();
+    else
+      $modal.find('#excluded-holidays-td').parent().show();
+
     $modal.find('#modal-title').text('Edit event');
     $modal.find('#error-msg').hide();
     $modal.find('button[name="event-delete"]').show();
@@ -94,6 +106,7 @@
     onConfirm: deleteEvent,
   });
 
+  // Toggle fire once should disable all days
   $(document).on('change', 'input[name="event-fire-once"]', (e) => {
     let $input = $(e.currentTarget);
     if ($input.prop('checked'))
@@ -102,12 +115,34 @@
       $modal.find('input[day]').removeAttr('disabled');
   });
 
+  // Hide/show holidays when toggling exclude all holidays
+  $(document).on('change', 'input[name="exclude-all-holidays"]', (e) => {
+    let $input = $(e.currentTarget);
+    let $td = $modal.find('#excluded-holidays-td');
+    $td.parent().show();
+    if ($input.prop('checked')) {
+      $td.prev('td').velocity("slideUp", {
+        duration: 500,
+      });
+      $td.find('[left], [right]').velocity("slideUp", {
+        duration: 500,
+      });
+    } else {
+      $td.prev('td').velocity("slideDown", {
+        duration: 500,
+        display: "table-cell"
+      });
+      $td.find('[left], [right]').velocity("slideDown", {
+        duration: 500,
+      });
+    }
+  })
+
   // Save within modal
   $(document).on('click', 'button[name="event-save"]', (e) => {
-    let result = getCommands($modal);
-    let groups = result[0];
-    let numberOfCommands = result[1];
-    let identifier = $modal.attr('identifier');
+    let commandResult = getCommands();
+    let groups = commandResult[0];
+    let numberOfCommands = commandResult[1];
 
     let id = $modal.find('input[name="event-id"]').val();
     let time = $modal.find('input[name="event-time"]').val();
@@ -123,6 +158,10 @@
       enabled: enabled
     }
 
+    data.excludeAllHolidays = $('input[name="exclude-all-holidays"]').prop('checked');
+    if (!data.excludeAllHolidays)
+      data.excludedHolidays = JSON.stringify(getExcludedHolidays());
+
     if (disabledUntil)
       data.disabledUntil = disabledUntil;
 
@@ -133,6 +172,7 @@
     if (days.length != 7)
       data.days = JSON.stringify(days);
 
+    let identifier = $modal.attr('identifier');
     let endpoint = identifier;
     if (!identifier)
       endpoint = "new";
@@ -259,7 +299,7 @@
     return days;
   }
 
-  function getCommands($modal) {
+  function getCommands() {
     let groups = [];
     let count = 0;
 
@@ -288,5 +328,17 @@
       groups.push(group);
     });
     return [groups, count];
+  }
+
+  function getExcludedHolidays() {
+    let holidays = [];
+
+    $('#excluded-holidays-td').find('input[type="checkbox"]').each((index, element) => {
+      let $input = $(element);
+      if ($input.prop('checked')) {
+        holidays.push($input.attr('identifier'));
+      }
+    });
+    return holidays;
   }
 </script>

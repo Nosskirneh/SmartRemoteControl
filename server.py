@@ -16,10 +16,18 @@ import threading
 from datetime import datetime, date
 import schedule
 import holidays
+from collections import OrderedDict
 import time
 from astral import Astral
 import pytz
 import logging
+
+
+# Since the holiday object cannot be created with a years parameter if the CountryHoliday is used,
+# we have to do a simple check just to populate the years property. The other solution would be to
+# use the language constructor, for example .SE(years=yyyy)
+all_holidays = holidays.CountryHoliday(config.HOLIDAY_COUNTRY)
+datetime.now() in all_holidays
 
 
 # Create flask application.
@@ -32,7 +40,8 @@ def getCurrentDateAsString():
 @app.route("/")
 def root():
     activities = config.get_activities()
-    template = render_template("index.html", activities=activities, now=getCurrentDateAsString)
+    holiday_names = list(OrderedDict.fromkeys([name.decode('utf-8') for _, name in sorted(all_holidays.items())]))
+    template = render_template("index.html", activities=activities, now=getCurrentDateAsString, holidays=holiday_names)
     return template
 
 
@@ -92,15 +101,18 @@ def configure_schedule(identifier):
     time = request.form.get('time')
     days = request.form.get('days')
     groups = request.form.get('groups')
-    enabled = request.form.get('enabled')
-    fire_once = request.form.get('fireOnce')
-    disabled_until = request.form.get('disabledUntil')
 
     if not id or not time or time == '' or not groups or len(groups) == 0:
         return "You need to provide name, time and commands.", 400
 
     if identifier == None and any(event["id"] == id for event in activities["scheduled"]):
         return "An event with that name does already exist.", 400
+
+    enabled = request.form.get('enabled')
+    fire_once = request.form.get('fireOnce')
+    disabled_until = request.form.get('disabledUntil')
+    exclude_all_holidays = request.form.get('excludeAllHolidays')
+    excluded_holidays = request.form.get('excludedHolidays')
 
     def fill_event():
         event["id"] = id
@@ -121,18 +133,22 @@ def configure_schedule(identifier):
                 formatted_groups.append([activity, group["name"]])
         event["commands"] = formatted_groups
 
+        event["excludeAllHolidays"] = exclude_all_holidays == "true"
+        if excluded_holidays:
+            event["excludedHolidays"] = json.loads(excluded_holidays)
+
     result = {}
-    if identifier == None:
+    if identifier == None: # New event
         event = {}
         fill_event()
         activities["scheduled"].append(event)
         result["data"] = activities["scheduled"][-1]
         result["html"] = render_template("schedule-block.html.j2", event=activities["scheduled"][-1], index=len(activities["scheduled"]) - 1, now=getCurrentDateAsString)
-    else:
+    else: # Existing event
         index = return_schedule_index(identifier)
         event = activities["scheduled"][index]
         fill_event()
-        result["data"] = event;
+        result["data"] = event
 
     config.save_activities(activities)
     return jsonify(result), 200
@@ -256,12 +272,13 @@ def run_schedule():
     allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     def is_valid_time_and_day():
-        if "exclude" in event:
-            all_holidays = dict(holidays.SE().items())
-            if "holiday" in event["exclude"] == "holidays" and now in holidays.SE():
-                return False
+        # If today is a holiday and all holidays should be excluded
+        if "excludeAllHolidays" in event and event["excludeAllHolidays"] and now.date() in all_holidays:
+            return False
+
+        if "excludedHolidays" in event:
             # If today is a holiday and this holiday should be excluded
-            elif now.date() in all_holidays and all_holidays[now.date()] in event["exclude"]:
+            if now.date() in all_holidays and dict(all_holidays.items())[now.date()] in event["excludedHolidays"]:
                 return False
 
         return now.hour == hour and now.minute == minute and \

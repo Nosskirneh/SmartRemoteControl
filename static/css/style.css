@@ -176,6 +176,10 @@ section > div {
     padding-bottom: 15px;
 }
 
+.modal-body td:first-child {
+    max-width: 110px;
+}
+
 #commands-td {
     display: flex;
     align-items: center;
@@ -204,6 +208,15 @@ section > div {
 
 .event-commands-edit-container > span {
     margin-bottom: 5px;
+}
+
+#excluded-holidays-td {
+    display: flex;
+}
+
+#excluded-holidays-td label {
+    width: 100%;
+    margin-right: 0;
 }
 
 .modal-body label {

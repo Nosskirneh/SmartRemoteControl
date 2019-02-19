@@ -61,6 +61,27 @@
           <td>Disable until</td>
           <td><input type='text' class="form-control" name="event-disable-until" data-toggle="datepicker"/></td>
         </tr>
+        <tr>
+          <td>Exclude all holidays</td>
+          <td>
+            <input type="checkbox" autocomplete="off" class="uiswitch" name="exclude-all-holidays">
+          </td>
+        </tr>
+        <tr>
+          <td>Excluded holidays</td>
+          <td id="excluded-holidays-td">
+            <div left>
+              {% for holiday in holidays[:(holidays|length/2 + 0.5)|int] %}
+                <label><input class="excluded-holiday" identifier="{{ holiday }}" type="checkbox" autocomplete="off">{{ holiday }}</label>
+              {% endfor %}
+            </div>
+            <div right>
+              {% for holiday in holidays[(holidays|length/2 + 0.5)|int:] %}
+                <label><input class="excluded-holiday" identifier="{{ holiday }}" type="checkbox" autocomplete="off">{{ holiday }}</label>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
       </table>
 
       <div id="error-msg" class="alert alert-warning" role="alert" style="display: none;"></div>

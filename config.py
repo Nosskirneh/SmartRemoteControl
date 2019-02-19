@@ -4,6 +4,8 @@ import json
 # Change to directory of script so relative file references work.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+HOLIDAY_COUNTRY = 'SE'
+
 # Name of configuration file.
 FILE_NAME = 'activities.json'
 
