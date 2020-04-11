@@ -33,7 +33,7 @@ datetime.now() in all_holidays
 # Create flask application.
 app = Flask(__name__)
 
-def getCurrentDateAsString():
+def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
 
 ### APP ROUTES ###
@@ -41,7 +41,10 @@ def getCurrentDateAsString():
 def root():
     activities = config.get_activities()
     holiday_names = list(OrderedDict.fromkeys([name.decode('utf-8') for _, name in sorted(all_holidays.items())]))
-    template = render_template("index.html", activities=activities, now=getCurrentDateAsString, holidays=holiday_names)
+    template = render_template("index.html",
+                               activities=activities,
+                               now=get_current_date_string,
+                               holidays=holiday_names)
     return template
 
 
@@ -143,7 +146,10 @@ def configure_schedule(identifier):
         fill_event()
         activities["scheduled"].append(event)
         result["data"] = activities["scheduled"][-1]
-        result["html"] = render_template("schedule-block.html.j2", event=activities["scheduled"][-1], index=len(activities["scheduled"]) - 1, now=getCurrentDateAsString)
+        result["html"] = render_template("schedule-block.html.j2",
+                                         event=activities["scheduled"][-1],
+                                         index=len(activities["scheduled"]) - 1,
+                                         now=get_current_date_string)
     else: # Existing event
         index = return_schedule_index(identifier)
         event = activities["scheduled"][index]
@@ -289,7 +295,7 @@ def run_schedule():
         dayIndex = datetime.today().weekday()
         currentDay = allDays[dayIndex]
 
-        # Reset in case the same event is only one event being fired 
+        # Reset in case the same event is only one event being fired
         if len(events) == 1 and now.hour == "0" and now.minute == "0" and not hasClearedLastEventToday:
             hasClearedLastEventToday = True
             lastEvent = None
@@ -308,7 +314,7 @@ def run_schedule():
                 # Otherwise, schedule the commands to be executed on this date + timediff.
                 if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
-                    sunEvent = timeUntilSunEvent()
+                    sunEvent = time_until_next_sun_event()
                     if sunEvent[0]:
                         run_event(event)
                     else:
@@ -323,7 +329,7 @@ def run_schedule():
                 # If it is dark by the time specified in the events dict, simply fire the commands.
                 if lastEvent != event["id"] and is_valid_time_and_day():
                     lastEvent = event["id"]
-                    sunEvent = timeUntilSunEvent()
+                    sunEvent = time_until_next_sun_event()
                     if sunEvent[0]:
                         didTurnOnMorningLights = True
                         run_event(event)
@@ -336,7 +342,7 @@ def run_schedule():
                 if lastEvent != event["id"] and didTurnOnMorningLights and \
                    is_valid_time_and_day():
                     lastEvent = event["id"]
-                    sunEvent = timeUntilSunEvent()
+                    sunEvent = time_until_next_sun_event()
                     if not sunEvent[0]:
                         run_event(event)
                     else:
@@ -363,7 +369,7 @@ def execute_once(event):
 
 # Returns if it is dark or light, and the time until the next sunrise/sunset
 # True means it is dark, False means it is sunny
-def timeUntilSunEvent():
+def time_until_next_sun_event():
     city_name = "Stockholm"
     a = Astral()
     city = a[city_name]
@@ -425,7 +431,7 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     activities = config.get_activities() # Parse activity configuration.
     REQ_ADDR = "http://192.168.0.20:1234"
 
-    # Initialize COM-port 
+    # Initialize COM-port
     ser = init_comport()
 
     thread = threading.Thread(target=run_schedule, args=())
