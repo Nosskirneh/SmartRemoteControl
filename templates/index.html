@@ -26,13 +26,21 @@
     {% import "macros.html.j2" as macros %}
     {% include 'favicons.html.j2' %}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-    <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script> -->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+    <!-- <script src="//bundle.run/css-scroll-snap-polyfill@0.1.2"></script> -->
+    <script src="{{ url_for('static', filename='js/css-scroll-snap-polyfill@0.1.2.js') }}"></script>
+
     <script src="{{ url_for('static', filename='js/clockpicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap-datepicker.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap-confirmation.min.js') }}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.2/velocity.min.js"></script>
+
+    <script src="{{ url_for('static', filename='js/velocity.min.js') }}"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.5.2/velocity.min.js"></script> -->
 
     <script>
       cssScrollSnapPolyfill();
