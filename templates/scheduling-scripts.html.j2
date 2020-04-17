@@ -173,17 +173,16 @@
       data.days = JSON.stringify(days);
 
     let identifier = $modal.attr('identifier');
-    let endpoint = identifier;
     if (!identifier)
       endpoint = "new";
+    else
+      endpoint = "configure/" + identifier;
 
     $.ajax({
-      url: '/schedule/configure/' + endpoint,
+      url: '/schedule/' + endpoint,
       data: data,
       beforeSend: function (xhr) {
-        let username = $("input#usr").val();
-        let password = $("input#pwd").val();
-        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+        xhr.setRequestHeader('Authorization', get_auth());
       },
       success: function(response) { // Update the data client side
         $modal.modal('hide');
@@ -232,10 +231,6 @@
     });
   });
 
-  // Delete event from modal
-  $(document).on('click', 'a[data-apply="confirmation"]', (e) => {
-  });
-
   // Switch enable state on block
   $(document).on('change', 'input[name="event-enabled"]', (e) => {
     let $input = $(e.currentTarget);
@@ -247,9 +242,7 @@
       url: '/schedule/enable/' + identifier,
       data: { enabled: state },
       beforeSend: function (xhr) {
-        let username = $("input#usr").val();
-        let password = $("input#pwd").val();
-        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+        xhr.setRequestHeader('Authorization', get_auth());
       },
       success: function(response) {
         scheduled[identifier].disabled = !state;
@@ -269,9 +262,7 @@
     $.ajax({
       url: '/schedule/delete/' + identifier,
       beforeSend: function (xhr) {
-        let username = $("input#usr").val();
-        let password = $("input#pwd").val();
-        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+        xhr.setRequestHeader('Authorization', get_auth());
       },
       success: function(response) {
         scheduled[identifier] = null;
@@ -279,6 +270,7 @@
         let $block = $('.block[identifier="' + identifier + '"]');
         $block.remove();
 
+        $modal.removeAttr('identifier');
         $modal.modal('hide');
         $('#result').fadeIn(0).delay(2000).fadeOut("fast");
       },

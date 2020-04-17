@@ -10,6 +10,12 @@
     {% endfor %}
   ];
 
+  function get_auth() {
+    let username = $("input#usr").val();
+    let password = $("input#pwd").val();
+    return make_base_auth(username, password);
+  }
+
   function make_base_auth(username, password) {
     let tok = username + ':' + password;
     let hash = btoa(tok);
@@ -17,14 +23,12 @@
   }
 
   function sendActivity(index) {
-    $("#submit_button").click()
+    $("#submit_button").click();
 
     let request = $.ajax({
       url: '/activity/' + index,
       beforeSend: function (xhr) {
-        let username = $("input#usr").val();
-        let password = $("input#pwd").val();
-        xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+        xhr.setRequestHeader('Authorization', get_auth());
       },
       method: 'POST'
     });

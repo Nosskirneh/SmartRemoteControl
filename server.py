@@ -88,7 +88,7 @@ def set_enabled(identifier):
     return "OK", 200
 
 
-@app.route("/schedule/configure/new", methods=["POST"])
+@app.route("/schedule/new", methods=["POST"])
 def configure_new():
     return configure_schedule(None)
 
@@ -105,8 +105,12 @@ def configure_schedule(identifier):
     days = request.form.get('days')
     groups = request.form.get('groups')
 
-    if not id or not time or time == '' or not groups or len(groups) == 0:
+    if not id or not time or time == '' or not groups:
         return "You need to provide name, time and commands.", 400
+
+    groups = json.loads(groups)
+    if len(groups) == 0:
+        return "You need to provide commands.", 400
 
     if identifier == None and any(event["id"] == id for event in activities["scheduled"]):
         return "An event with that name does already exist.", 400
@@ -131,7 +135,7 @@ def configure_schedule(identifier):
             event["fireOnce"] = fire_once == "true"
 
         formatted_groups = []
-        for group in json.loads(groups):
+        for group in groups:
             for activity in group["activities"]:
                 formatted_groups.append([activity, group["name"]])
         event["commands"] = formatted_groups
