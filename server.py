@@ -176,15 +176,7 @@ def delete(identifier):
     return "OK", 200
 
 
-@app.route("/activity/<int:index>", methods=["POST"])
-def activity(index):
-    if index == -1:
-        return "Not Implemented", 501
-
-    # Check authorization
-    if not is_auth_ok():
-       return "Unauthorized", 401
-
+def run_activity(index):
     count = 0
     for activity in activities["groups"]:
         for act in activity["activities"]:
@@ -220,6 +212,18 @@ def activity(index):
                         sleep(0.2)       # Wait ~200 milliseconds between codes.
             count = count + 1
 
+
+@app.route("/activity/<int:index>", methods=["POST"])
+def activity(index):
+    # Check authorization
+    if not is_auth_ok():
+       return "Unauthorized", 401
+
+    if index == -1:
+        return "Not Implemented", 501
+
+    run_activity(index)
+
     return "OK", 200
 
 
@@ -237,15 +241,14 @@ def is_auth_ok():
 
 
 def run_event(event):
-    auth = base64.b64encode(username + ":" + password)
-    with app.test_client() as client:
-        for cmd in event["commands"]:
-            client.post("/activity/" + str(return_index(cmd[0], cmd[1])),
-                        headers = {"Authorization": "Basic " + auth})
+    for cmd in event["commands"]:
+        index = return_index(cmd[0], cmd[1])
+        if index != -1:
+            run_activity(index)
 
-        if "fireOnce" in event and event["fireOnce"]:
-            event["disabled"] = True
-            config.save_activities(activities)
+    if "fireOnce" in event and event["fireOnce"]:
+        event["disabled"] = True
+        config.save_activities(activities)
 
 
 def return_schedule_index(identifier):
