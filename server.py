@@ -20,7 +20,9 @@ from collections import OrderedDict
 import time
 from astral import Astral
 import pytz
+
 import logging
+from logging.handlers import RotatingFileHandler
 
 
 # Since the holiday object cannot be created with a years parameter if the CountryHoliday is used,
@@ -209,7 +211,7 @@ def run_activity(index):
                 if count is index:
                     if group == "IR":         # IR section
                         ser.write(code + ";") # Send IR code to Arduino
-                        print(ser.readlines())
+                        # print(ser.readlines())
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser.write(group + ": " + code + ";")
@@ -349,7 +351,7 @@ def run_schedule():
                         # TODO: Perhaphs replace the generic execute_once to a custom
                         #       method that reschedules with cloud data.
                         timeStr = (now + sunEvent[1]).strftime("%H:%M")
-                        print("Should schedule for %s" % (timeStr))
+                        logger.debug("Should schedule for %s" % (timeStr))
                         schedule.every().day.at(timeStr).do(execute_once, commands=event)
 
             # Morning
@@ -375,7 +377,7 @@ def run_schedule():
                         run_event(event)
                     else:
                         timeStr = (now + sunEvent[1]).strftime("%H:%M")
-                        print("Should schedule for %s" % (timeStr))
+                        logger.debug("Should schedule for %s" % (timeStr))
                         schedule.every().day.at(timeStr).do(execute_once, commands=event)
 
             # Events that don't need any custom rules, like evening off
@@ -413,13 +415,12 @@ def time_until_next_sun_event():
         if sun["sunset"] <= currentTime:
             event = "sunrise"
             timediff = currentTime - sun["sunrise"]
-        logging.debug("It's sunny outside, %s in %s" % (event, timediff))
-        print("It's sunny outside, %s in %s" % (event, timediff))
+
+        logger.debug("It's sunny outside, {} in {}".format(event, timediff))
         return (False, timediff)
     else:
         timediff = sun["sunrise"] - currentTime
-        logging.debug("It's dark outside, %s until sunrise" % (timediff))
-        print("It's dark outside, %s until sunrise" % (timediff))
+        logger.debug("It's dark outside, {} until sunrise".format(timediff))
         return (True, timediff)
 
 
@@ -449,11 +450,31 @@ def init_comport():
             print(" * Error open serial port: " + str(e))
     return ser
 
+def init_logger():
+    log_level = logging.DEBUG
+    log_filename = 'log.txt'
+    logger = logging.getLogger('root')
+    logger.setLevel(log_level)
+    formatter = logging.Formatter('%(asctime)s %(message)s')
+
+    # 5 MB logging
+    file_handler = RotatingFileHandler(log_filename, mode='a', maxBytes=5000 * 1000,
+                                       backupCount=2, encoding='utf-8')
+    file_handler.setLevel(log_level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(log_level)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger
+
 
 # This will only run once, not twice
 if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     # Setup logging to file
-    logging.basicConfig(filename="log.txt", level=logging.DEBUG, format="%(asctime)s %(message)s")
+    logger = init_logger()
 
     # Load variables
     activities = config.get_activities() # Parse activity configuration.
@@ -466,7 +487,7 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     thread.daemon = True
     thread.start()
 
-    logging.debug("Server started")
+    logger.debug("Server started")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True, threaded=True)
