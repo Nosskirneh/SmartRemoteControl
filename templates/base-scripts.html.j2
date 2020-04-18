@@ -18,8 +18,8 @@
 
   function make_base_auth(username, password) {
     let tok = username + ':' + password;
-    let hash = btoa(tok);
-    return "Basic " + hash;
+    let base64 = btoa(tok);
+    return "Basic " + base64;
   }
 
   function sendActivity(index) {

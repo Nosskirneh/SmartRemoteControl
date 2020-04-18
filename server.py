@@ -39,13 +39,32 @@ def get_current_date_string():
 ### APP ROUTES ###
 @app.route("/")
 def root():
+    auth = request.cookies.get('auth')
+    if auth == None or not is_auth_ok(auth):
+        return render_template("login.html")
+
     activities = config.get_activities()
     holiday_names = list(OrderedDict.fromkeys([name.decode('utf-8') for _, name in sorted(all_holidays.items())]))
-    template = render_template("index.html",
-                               activities=activities,
-                               now=get_current_date_string,
-                               holidays=holiday_names)
-    return template
+    return render_template("index.html",
+                           activities=activities,
+                           now=get_current_date_string,
+                           holidays=holiday_names)
+
+
+@app.route("/login", methods = ['POST'])
+def login():
+    form = request.form
+    if 'username' not in form or 'password' not in form:
+        return render_template("login.html")
+
+    username = form['username']
+    password = form['password']
+    auth = base64.b64encode(username + ':' + password)
+
+    response = make_response(redirect('/'))
+    response.set_cookie('auth', auth)
+
+    return response
 
 
 @app.route("/command", methods=["POST"])
@@ -232,16 +251,18 @@ def activity(index):
 
 
 ### METHODS ###
-def is_auth_ok():
+def is_auth_ok(auth = None):
     if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
         return True
 
-    try:
-        auth = request.headers["Authorization"].split()[1]
-        user, pw = base64.b64decode(auth).split(":")
-        return (user == username and pw == password)
-    except KeyError:
-        return False
+    if auth == None:
+        try:
+            auth = request.headers["Authorization"].split()[1]
+        except KeyError:
+            return False
+
+    user, pw = base64.b64decode(auth).split(":")
+    return (user == username and pw == password)
 
 
 def run_event(event):

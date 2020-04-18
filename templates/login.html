@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Smart Remote Control</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login.css') }}">
+
+    {% include 'favicons.html.j2' %}
+    {% include 'shared-scripts.html.j2' %}
+
+    <div class="container">
+      {% include 'jumbotron.html.j2' %}
+    </div>
+
+    <form id="login-container" action="login" method="post">
+      {% include 'enter-credentials.html.j2' %}
+
+      <div class="row d-flex">
+        <div class="m-0a col-xs-6 col-sm-6 col-md-6 col-lg-6">
+          <button type="submit" class="btn btn-primary btn-login">Login</button>
+        </div>
+      </div>
+    </form>
+
+  </body>
+</html>

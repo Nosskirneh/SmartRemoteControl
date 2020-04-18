@@ -6,6 +6,7 @@
     <title>Smart Remote Control</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
 
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"> -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -14,19 +15,9 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/uiswitch.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/clockpicker.css') }}">
 
-    <script>
-      function getStylesheet() {
-        let currentTime = new Date().getHours();
-        if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
-          document.write("<link rel='stylesheet' href={{ url_for('static', filename='css/night.css') }} type='text/css'>");
-      }
-
-      getStylesheet();
-    </script>
-
+    {% include 'favicons.html.j2' %}
     {% include 'base-scripts.html.j2' %}
     {% import "macros.html.j2" as macros %}
-    {% include 'favicons.html.j2' %}
 
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -56,10 +47,7 @@
     </div>
 
     <div class="container">
-      <div class="jumbotron">
-        <h1>Smart Remote Control</h1>
-        <div id=logo></div>
-      </div>
+      {% include 'jumbotron.html.j2' %}
       <div id="first-row" class="row">
         <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7">
           <button type="button" class="btn btn-primary btn-speak" onclick="speak();">Speak</button>
@@ -67,14 +55,7 @@
         <!-- iframe below is used to trigger browser 'save password' dialog -->
         <iframe src="{{ url_for('static', filename='ablankpage.htm') }}" id="temp" name="temp" style="display:none"></iframe>
         <form id="creds" class="col-xs-12 col-sm-5 col-md-5 col-lg-5" target="temp">
-          <div class="row">
-            <div class="form-group">
-              <input id="usr" class="form-control" name="user" placeholder="user">
-            </div>
-            <div class="form-group">
-              <input id="pwd" class="form-control" name="password" type="password" placeholder="password">
-            </div>
-          </div>
+          {% include 'enter-credentials.html.j2' %}
           <input id="submit_button" style="display: none;" value="Login" type="submit">
         </form>
       </div>

@@ -240,3 +240,11 @@ section > div {
 .modal-footer button:first-child {
     margin-right: auto;
 }
+
+.m-0a {
+    margin: 0 auto;
+}
+
+.d-flex {
+    display: flex;
+}
