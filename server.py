@@ -388,7 +388,7 @@ def run_schedule():
                     run_event(event)
 
         schedule.run_pending()
-        sleep(1)
+        sleep(5)
 
 
 # There is no other way to schedule only once other than doing this.
