@@ -151,15 +151,15 @@
   });
 
   // Clockpicker
-  let input = $('.clockpicker');
-  input.clockpicker({
+  let $input = $('.clockpicker');
+  $input.clockpicker({
     autoclose: true,
     placement: 'right',
     align: 'left'
   });
 
-  input.on('click', (e) => {
-    input.clockpicker('show');
+  $input.on('click', (e) => {
+    $(e.currentTarget).clockpicker('show');
   });
 
   // Datepicker
