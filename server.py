@@ -325,15 +325,15 @@ def return_index(cmd, grp):
     return -1
 
 
-did_run = {}
+executed_scheduled_events = {}
 
 ### Scheduling ###
 def run_schedule():
-    lastProcessedEvent = None
-    hasClearedLastProcessedEventToday = False
+    last_processed_event = None
+    has_reset_today = False
 
     events = activities["scheduled"]
-    allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     def is_valid_time_and_day():
         # If today is a holiday and all holidays should be excluded
@@ -356,21 +356,25 @@ def run_schedule():
         schedule.every().day.at(time_str).do(execute_once, commands=event)
 
     def run_scheduled_event():
-        did_run[event['id']] = True
+        executed_scheduled_events[event['id']] = True
         logger.debug("Executing scheduled event {}".format(event['id']))
         run_event(event)
 
     while True:
         now = datetime.now()
         dayIndex = datetime.today().weekday()
-        currentDay = allDays[dayIndex]
+        currentDay = all_days[dayIndex]
 
         # Reset data structures keeping track of which events have run
-        if len(events) == 1 and now.hour == "0" and now.minute == "0" and not hasClearedLastProcessedEventToday:
-            hasClearedLastProcessedEventToday = True
-            # Reset this in case the same event is the only one event being fired
-            lastProcessedEvent = None
-            did_run.clear()
+        if now.hour == "0" and now.minute == "0":
+            if not has_reset_today:
+                has_reset_today = True
+                # Reset last_processed_event in case the same event
+                # is the only one event being fired.
+                last_processed_event = None
+                executed_scheduled_events.clear()
+        elif has_reset_today:
+            has_reset_today = False
 
         for event in events:
             [hour, minute] = [int(x) for x in event["time"].split(":")]
@@ -380,12 +384,13 @@ def run_schedule():
                                         event["disabledUntil"] >= now.strftime('%Y-%m-%d')):
                 continue
 
-            if lastProcessedEvent == event["id"] or not is_valid_time_and_day():
+            # Skip event if we already processed it or if the day and time is not matching
+            if last_processed_event == event["id"] or not is_valid_time_and_day():
                 continue
 
-            lastProcessedEvent = event["id"]
+            last_processed_event = event["id"]
 
-            if "ifExecutedEventID" in event and event["ifExecutedEventID"] not in did_run:
+            if "ifExecutedEventID" in event and event["ifExecutedEventID"] not in executed_scheduled_events:
                 continue
 
             if "onDark" in event:
@@ -412,14 +417,14 @@ def run_schedule():
                 run_scheduled_event()
 
         schedule.run_pending()
-        sleep(5)
+        sleep(30)
 
 
 # There is no other way to schedule only once other than doing this.
 def execute_once(event):
     run_event(event)
 
-    did_run[event['id']] = True
+    executed_scheduled_events[event['id']] = True
     return schedule.CancelJob
 
 
@@ -432,20 +437,20 @@ def get_sun_info():
     today = date.today()
     sun = city.sun(date=today, local=True)
     utc = pytz.UTC
-    currentTime = utc.localize(datetime.utcnow())
+    current_time = utc.localize(datetime.utcnow())
     # Is it between sunrise and sunset?
-    if sun["sunrise"] <= currentTime <= sun["sunset"]:
-        if sun["sunset"] >= currentTime:
+    if sun["sunrise"] <= current_time <= sun["sunset"]:
+        if sun["sunset"] >= current_time:
             event = "sunset"
-            timediff = sun["sunset"] - currentTime
-        if sun["sunset"] <= currentTime:
+            timediff = sun["sunset"] - current_time
+        if sun["sunset"] <= current_time:
             event = "sunrise"
-            timediff = currentTime - sun["sunrise"]
+            timediff = current_time - sun["sunrise"]
 
         logger.debug("It's sunny outside, {} in {}".format(event, timediff))
         return (False, timediff)
     else:
-        timediff = sun["sunrise"] - currentTime
+        timediff = sun["sunrise"] - current_time
         logger.debug("It's dark outside, {} until sunrise".format(timediff))
         return (True, timediff)
 
