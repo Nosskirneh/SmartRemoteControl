@@ -121,10 +121,12 @@ def configure_schedule(identifier):
     if not is_auth_ok():
         return "Unauthorized", 401
 
-    id = request.form.get('id')
-    time = request.form.get('time')
-    days = request.form.get('days')
-    groups = request.form.get('groups')
+    form = request.form
+
+    id = form.get('id')
+    time = form.get('time')
+    days = form.get('days')
+    groups = form.get('groups')
 
     if not id or not time or time == '' or not groups:
         return "You need to provide name, time and commands.", 400
@@ -136,15 +138,40 @@ def configure_schedule(identifier):
     if identifier == None and any(event["id"] == id for event in activities["scheduled"]):
         return "An event with that name does already exist.", 400
 
-    enabled = request.form.get('enabled')
-    fire_once = request.form.get('fireOnce')
-    disabled_until = request.form.get('disabledUntil')
-    exclude_all_holidays = request.form.get('excludeAllHolidays')
-    excluded_holidays = request.form.get('excludedHolidays')
+    enabled = form.get('enabled')
+    fire_once = form.get('fireOnce')
+    disabled_until = form.get('disabledUntil')
+    exclude_all_holidays = form.get('excludeAllHolidays')
+    excluded_holidays = form.get('excludedHolidays')
+
+    wait_for_sunrise = form.get('waitForSunrise')
+    wait_for_sunset = form.get('waitForSunset')
+    on_sunny = form.get('onSunny')
+    on_dark = form.get('onDark')
+
+    if_executed_event_id = form.get('ifExecutedEventID')
 
     def fill_event():
         event["id"] = id
         event["time"] = time
+
+        event.pop("waitForSunrise", None)
+        event.pop("waitForSunset", None)
+        event.pop("onSunny", None)
+        event.pop("onDark", None)
+
+        if wait_for_sunrise:
+            event["waitForSunrise"] = True
+        elif wait_for_sunset:
+            event["waitForSunset"] = True
+        elif on_sunny:
+            event["onSunny"] = True
+        elif on_dark:
+            event["onDark"] = True
+
+        if if_executed_event_id:
+            event["ifExecutedEventID"] = if_executed_event_id
+
         if days:
             event["days"] = json.loads(days)
 
@@ -298,13 +325,14 @@ def return_index(cmd, grp):
     return -1
 
 
+did_run = {}
+
 ### Scheduling ###
 def run_schedule():
-    lastEvent = None
-    events = activities["scheduled"]
-    didTurnOnMorningLights = False
-    hasClearedLastEventToday = False
+    lastProcessedEvent = None
+    hasClearedLastProcessedEventToday = False
 
+    events = activities["scheduled"]
     allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     def is_valid_time_and_day():
@@ -320,15 +348,29 @@ def run_schedule():
         return now.hour == hour and now.minute == minute and \
                ("days" not in event or currentDay in event["days"])
 
+    def reschedule_event():
+        # TODO: Perhaphs add the option to replace the generic execute_once
+        #       to a custom method that reschedules with cloud data.
+        time_str = (now + time_until).strftime("%H:%M")
+        logger.debug("Reschedule for {}".format(time_str))
+        schedule.every().day.at(time_str).do(execute_once, commands=event)
+
+    def run_scheduled_event():
+        did_run[event['id']] = True
+        logger.debug("Executing scheduled event {}".format(event['id']))
+        run_event(event)
+
     while True:
         now = datetime.now()
         dayIndex = datetime.today().weekday()
         currentDay = allDays[dayIndex]
 
-        # Reset in case the same event is only one event being fired
-        if len(events) == 1 and now.hour == "0" and now.minute == "0" and not hasClearedLastEventToday:
-            hasClearedLastEventToday = True
-            lastEvent = None
+        # Reset data structures keeping track of which events have run
+        if len(events) == 1 and now.hour == "0" and now.minute == "0" and not hasClearedLastProcessedEventToday:
+            hasClearedLastProcessedEventToday = True
+            # Reset this in case the same event is the only one event being fired
+            lastProcessedEvent = None
+            did_run.clear()
 
         for event in events:
             [hour, minute] = [int(x) for x in event["time"].split(":")]
@@ -338,54 +380,36 @@ def run_schedule():
                                         event["disabledUntil"] >= now.strftime('%Y-%m-%d')):
                 continue
 
-            # Evening
-            if event["id"] == "evening":
-                # If it's already dark by the time specified in the events dict, fire the commands.
-                # Otherwise, schedule the commands to be executed on this date + timediff.
-                if lastEvent != event["id"] and is_valid_time_and_day():
-                    lastEvent = event["id"]
-                    sunEvent = time_until_next_sun_event()
-                    if sunEvent[0]:
-                        run_event(event)
-                    else:
-                        # TODO: Perhaphs replace the generic execute_once to a custom
-                        #       method that reschedules with cloud data.
-                        timeStr = (now + sunEvent[1]).strftime("%H:%M")
-                        logger.debug("Should schedule for %s" % (timeStr))
-                        schedule.every().day.at(timeStr).do(execute_once, commands=event)
+            if lastProcessedEvent == event["id"] or not is_valid_time_and_day():
+                continue
 
-            # Morning
-            elif event["id"] == "morning":
-                # If it is dark by the time specified in the events dict, simply fire the commands.
-                if lastEvent != event["id"] and is_valid_time_and_day():
-                    lastEvent = event["id"]
-                    sunEvent = time_until_next_sun_event()
-                    if sunEvent[0]:
-                        didTurnOnMorningLights = True
-                        run_event(event)
+            lastProcessedEvent = event["id"]
 
-            # Morning off
-            elif event["id"] == "morning_off":
-                # If it is light by the time specified in the events dict, simply fire the commands.
-                # Otherwise, schedule the commands to be executed on this date + timediff.
-                # Only fire this if `morning` was executed.
-                if lastEvent != event["id"] and didTurnOnMorningLights and \
-                   is_valid_time_and_day():
-                    lastEvent = event["id"]
-                    sunEvent = time_until_next_sun_event()
-                    if not sunEvent[0]:
-                        run_event(event)
-                    else:
-                        timeStr = (now + sunEvent[1]).strftime("%H:%M")
-                        logger.debug("Should schedule for %s" % (timeStr))
-                        schedule.every().day.at(timeStr).do(execute_once, commands=event)
+            if "ifExecutedEventID" in event and event["ifExecutedEventID"] not in did_run:
+                continue
 
-            # Events that don't need any custom rules, like evening off
+            if "onDark" in event:
+                is_dark, _ = get_sun_info()
+                if is_dark:
+                    run_scheduled_event()
+            elif "onSunny" in event:
+                is_dark, _ = get_sun_info()
+                if not is_dark:
+                    run_scheduled_event()
+            elif "waitForSunrise" in event:
+                is_dark, time_until = get_sun_info()
+                if not is_dark:
+                    run_scheduled_event()
+                else:
+                    reschedule_event()
+            elif "waitForSunset" in event:
+                is_dark, time_until = get_sun_info()
+                if is_dark:
+                    run_scheduled_event()
+                else:
+                    reschedule_event()
             else:
-                # If the time match with the specified in the events dict, simply fire the commands.
-                if lastEvent != event["id"] and is_valid_time_and_day():
-                    lastEvent = event["id"]
-                    run_event(event)
+                run_scheduled_event()
 
         schedule.run_pending()
         sleep(5)
@@ -394,12 +418,14 @@ def run_schedule():
 # There is no other way to schedule only once other than doing this.
 def execute_once(event):
     run_event(event)
+
+    did_run[event['id']] = True
     return schedule.CancelJob
 
 
 # Returns if it is dark or light, and the time until the next sunrise/sunset
 # True means it is dark, False means it is sunny
-def time_until_next_sun_event():
+def get_sun_info():
     city_name = "Stockholm"
     a = Astral()
     city = a[city_name]

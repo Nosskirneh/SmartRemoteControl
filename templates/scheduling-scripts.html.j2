@@ -20,6 +20,12 @@
     $modal.modal('show');
   });
 
+  function initRadioButton($input, enable) {
+    $input.prop('checked', enable);
+    if (enable)
+      $input.attr('checked', enable);
+  }
+
   // Click on existing event
   $(document).on('click', 'span[name="edit-event"]', (e) => {
     let $block = $(e.currentTarget).closest('.block');
@@ -32,6 +38,25 @@
     let enabled = !event.disabled && (!event.disabledUntil ||
                                       event.disabledUntil && event.disabledUntil + "T" + event.time >= now);
     $modal.find('input[name="event-enabled"]').prop('checked', enabled);
+
+    // Radio buttons
+    $modal.find('input[type="radio"]').removeAttr('checked');
+
+    initRadioButton($modal.find('input[name="wait-for-sunrise"]'), event.waitForSunrise | false);
+    initRadioButton($modal.find('input[name="wait-for-sunset"]'), event.waitForSunset | false);
+    initRadioButton($modal.find('input[name="on-sunny"]'), event.onSunny | false);
+    initRadioButton($modal.find('input[name="on-dark"]'), event.onDark | false);
+
+    $modal.find('[disabled]').removeAttr('disabled');
+    // Initiate all disabled radio buttons
+    $controlGroups = $('.radio-group[radio-disable-selectors]');
+    for (controlGroup of $controlGroups) {
+      let $controlGroup = $(controlGroup);
+      if ($controlGroup.find('input[type="radio"]:checked').length > 0) {
+        selectors = $controlGroup.attr('radio-disable-selectors');
+        disableElements(selectors, true);
+      }
+    }
 
     disabledUntil = null;
     if (event.disabledUntil)
@@ -79,6 +104,50 @@
     $modal.find('#error-msg').hide();
     $modal.find('button[name="event-delete"]').show();
     $modal.modal('show');
+  });
+
+  // Disable and clear all input elements inside of elements matching the selectors
+  function disableElements(selectors, disable) {
+    if (selectors) {
+      selectors = selectors.split(' ');
+      for (selector of selectors) {
+        $group = $(selector);
+        $group.attr('disabled', disable);
+        $inputs = $group.find('input');
+        $inputs.prop('disabled', disable);
+        $inputs.prop('checked', false);
+      }
+    }
+  }
+
+  // Add the ability to deselect radio buttons
+  $(document).on('click', 'input[type="radio"]', (e) => {
+    $input = $(e.currentTarget);
+    input = e.target;
+    if (input.checked) {
+      $radioGroup = $input.closest('.radio-group');
+      selectors = $radioGroup.attr('radio-disable-selectors');
+
+      if (input.hasAttribute('checked')) {
+        // Add ability to remove checked state
+        input.checked = !input.checked;
+        $input.removeAttr('checked');
+
+        disableElements(selectors, false);
+
+        return;
+      }
+
+      // Mark this radio button as checked
+      $input.attr('checked', true);
+
+      // Deselect any other radio button in this group
+      $others = $radioGroup.find('input[type="radio"]').not($input);
+      $others.prop('checked', false);
+      $others.removeAttr('checked');
+
+      disableElements(selectors, true);
+    }
   });
 
   // Clockpicker
@@ -156,6 +225,25 @@
       time: time,
       groups: JSON.stringify(groups),
       enabled: enabled
+    }
+
+    let waitForSunrise = $modal.find('input[name="wait-for-sunrise"]').prop('checked');
+    let waitForSunset = $modal.find('input[name="wait-for-sunset"]').prop('checked');
+    let onSunny = $modal.find('input[name="on-sunny"]').prop('checked');
+    let onDark = $modal.find('input[name="on-dark"]').prop('checked');
+    if (waitForSunrise) {
+      data.waitForSunrise = waitForSunrise;
+    } else if (waitForSunset) {
+      data.waitForSunset = waitForSunset;
+    } else if (onSunny) {
+      data.onSunny = onSunny;
+    } else if (onDark) {
+      data.onDark = onDark;
+    }
+
+    let ifExecutedEventID = $modal.find('input[name="if-executed-event-id"]').val();
+    if (ifExecutedEventID) {
+      data.ifExecutedEventID = ifExecutedEventID;
     }
 
     data.excludeAllHolidays = $('input[name="exclude-all-holidays"]').prop('checked');

@@ -248,3 +248,7 @@ section > div {
 .d-flex {
     display: flex;
 }
+
+[disabled="disabled"] label {
+    color: gray;
+}
