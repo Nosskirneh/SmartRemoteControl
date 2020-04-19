@@ -58,6 +58,8 @@
       }
     }
 
+    $modal.find('input[name="if-executed-event-id"]').val(event.ifExecutedEventID);
+
     disabledUntil = null;
     if (event.disabledUntil)
       disabledUntil = event.disabledUntil;
@@ -88,7 +90,7 @@
       }
     }
 
-    $modal.find('[name="exclude-all-holidays"]').prop('checked', event.excludeAllHolidays)
+    $modal.find('[name="exclude-all-holidays"]').prop('checked', event.excludeAllHolidays | false)
     $modal.find('.excluded-holiday').prop('checked', false);
     if (event.excludedHolidays) {
       for (day of event.excludedHolidays)
@@ -325,6 +327,8 @@
     let state = $input.prop('checked');
     let $block = $input.closest('.block');
     let identifier = $block.attr('identifier');
+    if (!identifier)
+      identifier = $modal.attr('identifier');
 
     $.ajax({
       url: '/schedule/enable/' + identifier,
