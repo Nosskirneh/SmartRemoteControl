@@ -1,4 +1,4 @@
-body, .form-control, .btn-default {
+body, .form-control, .btn-default, .popover-title {
     background-color: #2d2d2d;
     color: #f3f3f3;
 }
@@ -8,7 +8,7 @@ body, .form-control, .btn-default {
     color: #f3f3f3;
 }
 
-.block, .modal-content {
+.block, .modal-content, .popover {
     background-color: #474747;
 }
 
