@@ -8,6 +8,10 @@
   let now = "{{ now() }}";
   let $modal = $('#configure-event');
 
+  $modal.on('hide.bs.modal', e => {
+    $modal.find('[data-toggle=confirmation]').confirmation('hide');
+  });
+
   // Click on new event
   $(document).on('click', '#new-event', (e) => {
     $modal.find('input[type="text"]').val('');
