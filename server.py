@@ -353,7 +353,7 @@ def run_schedule():
         #       to a custom method that reschedules with cloud data.
         time_str = (now + time_until).strftime("%H:%M")
         logger.debug("Reschedule for {}".format(time_str))
-        schedule.every().day.at(time_str).do(execute_once, commands=event)
+        schedule.every().day.at(time_str).do(execute_once, event=event)
 
     def run_scheduled_event():
         executed_scheduled_events[event['id']] = True
