@@ -65,7 +65,6 @@ def login():
 
     response = make_response(redirect('/'))
     response.set_cookie('auth', auth)
-
     return response
 
 
@@ -275,7 +274,6 @@ def activity(index):
         return "Not Implemented", 501
 
     run_activity(index)
-
     return "OK", 200
 
 
@@ -422,6 +420,7 @@ def run_schedule():
 
 # There is no other way to schedule only once other than doing this.
 def execute_once(event):
+    logger.debug("Executing rescheduled event {}".format(event['id']))
     run_event(event)
 
     executed_scheduled_events[event['id']] = True
@@ -467,9 +466,9 @@ def init_comport():
     ser.port     = matches[0]
     ser.baudrate = 9600
     ser.timeout  = 0
-    ser.xonxoff  = False       # disable software flow control
-    ser.rtscts   = False       # disable hardware (RTS/CTS) flow control
-    ser.dsrdtr   = False       # disable hardware (DSR/DTR) flow control
+    ser.xonxoff  = False       # Disable software flow control
+    ser.rtscts   = False       # Disable hardware (RTS/CTS) flow control
+    ser.dsrdtr   = False       # Disable hardware (DSR/DTR) flow control
 
     if ser.isOpen():
         print("### Serial conenction already open!")

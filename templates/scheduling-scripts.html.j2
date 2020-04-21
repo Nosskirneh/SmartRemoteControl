@@ -13,7 +13,7 @@
   });
 
   // Click on new event
-  $(document).on('click', '#new-event', (e) => {
+  $(document).on('click', '#new-event', e => {
     $modal.find('input[type="text"]').val('');
     $modal.find('input[type="checkbox"]').prop('checked', false);
     $modal.find('input[day]').prop('checked', true);
@@ -31,7 +31,7 @@
   }
 
   // Click on existing event
-  $(document).on('click', 'span[name="edit-event"]', (e) => {
+  $(document).on('click', 'span[name="edit-event"]', e => {
     let $block = $(e.currentTarget).closest('.block');
     let identifier = $block.attr('identifier');
     $modal.attr('identifier', identifier);
@@ -127,7 +127,7 @@
   }
 
   // Add the ability to deselect radio buttons
-  $(document).on('click', 'input[type="radio"]', (e) => {
+  $(document).on('click', 'input[type="radio"]', e => {
     $input = $(e.currentTarget);
     input = e.target;
     if (input.checked) {
@@ -164,7 +164,7 @@
     align: 'left'
   });
 
-  $input.on('click', (e) => {
+  $input.on('click', e => {
     $(e.currentTarget).clockpicker('show');
   });
 
@@ -182,7 +182,7 @@
   });
 
   // Toggle fire once should disable all days
-  $(document).on('change', 'input[name="event-fire-once"]', (e) => {
+  $(document).on('change', 'input[name="event-fire-once"]', e => {
     let $input = $(e.currentTarget);
     if ($input.prop('checked'))
       $modal.find('input[day]').attr('disabled', true);
@@ -191,7 +191,7 @@
   });
 
   // Hide/show holidays when toggling exclude all holidays
-  $(document).on('change', 'input[name="exclude-all-holidays"]', (e) => {
+  $(document).on('change', 'input[name="exclude-all-holidays"]', e => {
     let $input = $(e.currentTarget);
     let $td = $modal.find('#excluded-holidays-td');
     $td.parent().show();
@@ -214,7 +214,7 @@
   })
 
   // Save within modal
-  $(document).on('click', 'button[name="event-save"]', (e) => {
+  $(document).on('click', 'button[name="event-save"]', e => {
     let commandResult = getCommands();
     let groups = commandResult[0];
     let numberOfCommands = commandResult[1];
@@ -326,7 +326,7 @@
   });
 
   // Switch enable state on block
-  $(document).on('change', 'input[name="event-enabled"]', (e) => {
+  $(document).on('change', 'input[name="event-enabled"]', e => {
     let $input = $(e.currentTarget);
     let state = $input.prop('checked');
     let $block = $input.closest('.block');
