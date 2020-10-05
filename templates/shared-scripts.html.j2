@@ -1,9 +1,10 @@
 <script>
-  function getStylesheet() {
+  function isNight() {
     let currentTime = new Date().getHours();
-    if (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5)
-      document.write("<link rel='stylesheet' href={{ url_for('static', filename='css/night.css') }} type='text/css'>");
+    return (22 <= currentTime && currentTime <= 24 || 0 <= currentTime && currentTime < 5);
   }
 
-  getStylesheet();
+  if (isNight()) {
+    $(document.body).addClass('night')
+  }
 </script>
