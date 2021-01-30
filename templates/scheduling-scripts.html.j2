@@ -39,8 +39,7 @@
 
     $modal.find('[name="event-id"]').val(event.id);
     $modal.find('[name="event-time"]').val(event.time);
-    let enabled = !event.disabled && (!event.disabledUntil ||
-                                      event.disabledUntil && event.disabledUntil + "T" + event.time >= now);
+    let enabled = !event.disabled && (!event.disabledUntil || event.disabledUntil + "T" + event.time < now);
     $modal.find('input[name="event-enabled"]').prop('checked', enabled);
 
     // Radio buttons
