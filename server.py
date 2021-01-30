@@ -332,6 +332,7 @@ def run_schedule():
 
     events = activities["scheduled"]
     all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    timezone = pytz.timezone('Europe/Stockholm')
 
     def is_valid_time_and_day():
         # If today is a holiday and all holidays should be excluded
@@ -359,7 +360,7 @@ def run_schedule():
         run_event(event)
 
     while True:
-        now = datetime.now()
+        now = datetime.now(timezone)
         dayIndex = datetime.today().weekday()
         currentDay = all_days[dayIndex]
 
