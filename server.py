@@ -10,7 +10,7 @@ import config
 from credentials import *
 import requests
 import base64
-from wakeonlan import wol
+import wakeonlan as wol
 
 import threading
 from datetime import datetime, date
