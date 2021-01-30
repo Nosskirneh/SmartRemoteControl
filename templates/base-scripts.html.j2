@@ -23,8 +23,6 @@
   }
 
   function sendActivity(index) {
-    $("#submit_button").click();
-
     let request = $.ajax({
       url: '/activity/' + index,
       beforeSend: function (xhr) {
