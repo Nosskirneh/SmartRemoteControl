@@ -332,7 +332,7 @@ def run_schedule():
 
     events = activities["scheduled"]
     all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    timezone = pytz.timezone('Europe/Stockholm')
+    timezone = pytz.timezone(config.TIMEZONE)
 
     def is_valid_time_and_day():
         # If today is a holiday and all holidays should be excluded
@@ -431,13 +431,13 @@ def execute_once(event):
 # Returns if it is dark or light, and the time until the next sunrise/sunset
 # True means it is dark, False means it is sunny
 def get_sun_info():
-    city_name = "Stockholm"
+    city_name = config.TIMEZONE.split('/')[1]
     a = Astral()
     city = a[city_name]
     today = date.today()
     sun = city.sun(date=today, local=True)
-    utc = pytz.UTC
-    current_time = utc.localize(datetime.utcnow())
+    timezone = pytz.timezone(config.TIMEZONE)
+    current_time = datetime.now(timezone)
     # Is it between sunrise and sunset?
     if sun["sunrise"] <= current_time <= sun["sunset"]:
         if sun["sunset"] >= current_time:
@@ -487,6 +487,13 @@ def init_logger():
     logger = logging.getLogger('root')
     logger.setLevel(log_level)
     formatter = logging.Formatter('%(asctime)s %(message)s')
+
+    def customTime(*args):
+        timezone = pytz.timezone(config.TIMEZONE);
+        now = datetime.now(timezone)
+        return now.timetuple()
+
+    formatter.converter = customTime
 
     # 5 MB logging
     file_handler = RotatingFileHandler(log_filename, mode='a', maxBytes=5000 * 1000,
