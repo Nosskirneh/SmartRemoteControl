@@ -227,6 +227,11 @@ def delete(identifier):
     return "OK", 200
 
 
+def ser_write(data):
+    if os.environ.get("DEBUG") is None:
+        ser.write(data)
+
+
 def run_activity(index):
     count = 0
     for activity in activities["groups"]:
@@ -236,11 +241,11 @@ def run_activity(index):
                 group = codes["channel"].encode()
                 if count is index:
                     if group == "IR":         # IR section
-                        ser.write(code + ";") # Send IR code to Arduino
+                        ser_write(code + ";") # Send IR code to Arduino
                         # print(ser.readlines())
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
-                        ser.write(group + ": " + code + ";")
+                        ser_write(group + ": " + code + ";")
 
                     elif (group == "LED"):    # HyperionWeb
                         if (code == "CLEAR"):
@@ -518,8 +523,9 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
     activities = config.get_activities() # Parse activity configuration.
     REQ_ADDR = "http://192.168.0.20:1234"
 
-    # Initialize COM-port
-    ser = init_comport()
+    if os.environ.get("DEBUG") is None:
+        # Initialize COM-port
+        ser = init_comport()
 
     thread = threading.Thread(target=run_schedule, args=())
     thread.daemon = True
