@@ -22,9 +22,9 @@
     return "Basic " + base64;
   }
 
-  function sendActivity(index) {
+  function sendUrl(url, success = undefined) {
     let request = $.ajax({
-      url: '/activity/' + index,
+      url: url,
       beforeSend: function (xhr) {
         xhr.setRequestHeader('Authorization', get_auth());
       },
@@ -34,6 +34,9 @@
     request.done(
       function(response) {
         $('#result').fadeIn(0).delay(2000).fadeOut("fast");
+        if (success) {
+          success();
+        }
       }
     );
 
@@ -43,6 +46,22 @@
         $('#error').fadeIn(0).delay(2000).fadeOut("fast");
       }
     );
+  }
+
+  function sendActivity(index) {
+    sendUrl('/activity/' + index);
+  }
+
+  function sendTradfriDimmer(groupID, value) {
+    sendUrl('/tradfri/' + groupID + '/dimmer/' + value);
+  }
+
+  function sendTradfriColor(groupID, value) {
+    sendUrl('/tradfri/' + groupID + '/color/' + value);
+  }
+
+  function sendTradfriOnOff(groupID, on_off, success) {
+    sendUrl('/tradfri/' + groupID + '/' + on_off, success);
   }
 
   function speak() {

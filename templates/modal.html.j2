@@ -26,7 +26,7 @@
 
         <tr>
           <td>Wait for</td>
-          <td id="wait-for-td" class="radio-group" radio-disable-selectors="#condition-td">
+          <td id="wait-for-td" class="radio-group" radio-action-selectors="#condition-td;#condition-td input" radio-action="disabled-checked">
             <label><input name="wait-for-sunrise" type="radio" autocomplete="off">Sunrise</label>
             <label><input name="wait-for-sunset" type="radio" autocomplete="off">Sunset</label>
           </td>
@@ -67,7 +67,7 @@
           <td>Commands</td>
           <td id="commands-td">
             {% for group in activities.groups %}
-              <div class="event-commands-edit-container" identifier="{{ group.name }}">
+              <div class="event-commands-edit-container" identifier="{{ group.name }}" view="simple">
                 <span>{{ group.name }}</span>
                 <div class="event-commands-edit-group">
                 {% for act in group.activities %}
@@ -76,6 +76,14 @@
                 </div>
               </div>
             {% endfor %}
+
+
+            <div class="event-commands-edit-container" identifier="tradfri" view="subgroups">
+              <span>trådfri</span>
+              <div>
+                {{ macros.createTradfri(tradfri_groups, suggested_colors, False) }}
+              </div>
+            </div>
           </td>
         </tr>
 

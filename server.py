@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os
 import fnmatch
-sys.path.append("/storage/.python")
 import serial
 from time import sleep
 from flask import *
@@ -11,6 +10,7 @@ from credentials import *
 import requests
 import base64
 import wakeonlan as wol
+from IKEA import TradfriHandler
 
 import threading
 from datetime import datetime, date
@@ -18,7 +18,9 @@ import schedule
 import holidays
 from collections import OrderedDict
 import time
-from astral import Astral
+from astral import LocationInfo
+from astral.geocoder import lookup, database
+from astral.location import Location
 import pytz
 
 import logging
@@ -34,6 +36,7 @@ datetime.now() in all_holidays
 
 # Create flask application.
 app = Flask(__name__)
+tradfri_handler = TradfriHandler(ikea_gateway_ip, ikea_gateway_key)
 
 def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -46,9 +49,11 @@ def root():
         return render_template("login.html")
 
     activities = config.get_activities()
-    holiday_names = list(OrderedDict.fromkeys([name.decode('utf-8') for _, name in sorted(all_holidays.items())]))
+    holiday_names = list(OrderedDict.fromkeys([name for _, name in sorted(all_holidays.items())]))
     return render_template("index.html",
                            activities=activities,
+                           tradfri_groups=tradfri_handler.export_groups(),
+                           suggested_colors=["FFA64D", "FFC47E", "F5FAF6"],
                            now=get_current_date_string,
                            holidays=holiday_names)
 
@@ -61,7 +66,7 @@ def login():
 
     username = form['username']
     password = form['password']
-    auth = base64.b64encode(username + ':' + password)
+    auth = base64.b64encode((username + ':' + password).encode('ascii'))
 
     response = make_response(redirect('/'))
     response.set_cookie('auth', auth)
@@ -92,7 +97,9 @@ def get_commands():
     # Check authorization
     if not is_auth_ok():
         return "Unauthorized", 401
-    return jsonify(activities)
+    commands = activities.copy()
+    commands["tradfri_groups"] = tradfri_handler.export_groups()
+    return jsonify(commands)
 
 
 @app.route("/schedule/enable/<string:identifier>", methods=["POST"])
@@ -181,11 +188,17 @@ def configure_schedule(identifier):
         if fire_once:
             event["fireOnce"] = fire_once == "true"
 
-        formatted_groups = []
+        commands = {}
+        plain_formatted_groups = []
         for group in groups:
-            for activity in group["activities"]:
-                formatted_groups.append([activity, group["name"]])
-        event["commands"] = formatted_groups
+            group_activities = group["activities"]
+            if type(group_activities) == list:
+                for activity in group_activities:
+                    plain_formatted_groups.append([activity, group["name"]])
+            else:
+                commands[group["name"]] = group_activities
+        commands["plain"] = plain_formatted_groups
+        event["commands"] = commands
 
         event["excludeAllHolidays"] = exclude_all_holidays == "true"
         if excluded_holidays:
@@ -282,6 +295,47 @@ def activity(index):
     return "OK", 200
 
 
+@app.route("/tradfri/<int:group_id>/dimmer/<int:value>", methods=["POST"])
+def tradfri_dimmer(group_id, value):
+    # Check authorization
+    if not is_auth_ok():
+       return "Unauthorized", 401
+
+    if not tradfri_handler.set_dimmer(group_id, value):
+        return "Device not found", 403
+    return "OK", 200
+
+
+@app.route("/tradfri/<int:group_id>/color/<string:value>", methods=["POST"])
+def tradfri_color(group_id, value):
+    # Check authorization
+    if not is_auth_ok():
+       return "Unauthorized", 401
+
+    if value.startswith('#'):
+        value = value.lstrip('#')
+
+    if not tradfri_handler.set_hex_color(group_id, value):
+        return "Device not found", 403
+    return "OK", 200
+
+
+
+@app.route("/tradfri/<int:group_id>/<string:on_off>", methods=["POST"])
+def tradfri_on_off(group_id, on_off):
+    # Check authorization
+    if not is_auth_ok():
+       return "Unauthorized", 401
+
+    if on_off not in ("on", "off"):
+        return "Use the on/off endpoint", 405
+
+    if not tradfri_handler.set_state(group_id, on_off == "on"):
+        return "Device not found", 403
+    return "OK", 200
+
+
+
 ### METHODS ###
 def is_auth_ok(auth = None):
     if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
@@ -298,10 +352,27 @@ def is_auth_ok(auth = None):
 
 
 def run_event(event):
-    for cmd in event["commands"]:
-        index = return_index(cmd[0], cmd[1])
-        if index != -1:
-            run_activity(index)
+    if "commands" in event:
+        all_commands = event["commands"]
+        if "plain" in all_commands:
+            for (actitivty, group) in all_commands["plain"]:
+                index = return_index(actitivty, group)
+                if index != -1:
+                    run_activity(index)
+
+        if "tradfri" in all_commands:
+            for device_id_str in all_commands["tradfri"]:
+                device_commands = all_commands["tradfri"][device_id_str]
+                device_id = int(device_id_str)
+                if "light-state" in device_commands and not device_commands["light-state"]:
+                    tradfri_handler.set_state(device_id, False);
+                else:
+                    if "color" in device_commands:
+                        tradfri_handler.set_hex_color(device_id, device_commands["color"])
+                    if "dimmer" in device_commands:
+                        tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
+                    elif "light-state" in device_commands:
+                        tradfri_handler.set_state(device_id, True);
 
     if "fireOnce" in event and event["fireOnce"]:
         event["disabled"] = True
@@ -437,7 +508,7 @@ def execute_once(event):
 # True means it is dark, False means it is sunny
 def get_sun_info():
     city_name = config.TIMEZONE.split('/')[1]
-    a = Astral()
+    a = Location(lookup(args.city, database()))
     city = a[city_name]
     today = date.today()
     sun = city.sun(date=today, local=True)
@@ -482,7 +553,7 @@ def init_comport():
         try:
             ser.open()
             print(" * Serial connection open!")
-        except Exception, e:
+        except Exception as e:
             print(" * Error open serial port: " + str(e))
     return ser
 

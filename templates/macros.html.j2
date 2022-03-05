@@ -1,4 +1,4 @@
-{% macro createCommand(group, count) -%}
+{% macro createGroup(group, count) -%}
   <div class="group col-lg-4 col-md-6 col-sm-6 col-xs-12">
     <h2>{{ group.name }}</h2>
     {% for act in group.activities %}
@@ -8,6 +8,59 @@
       {% if count.append(count.pop() + 1) %}{% endif %}
     {% endfor %}
   </div>
+{%- endmacro %}
+
+
+{# controllable groups are found on the first page, configurable ones are found in the scheduling modal #}
+{% macro createTradfri(groups, suggested_colors, controllable) -%}
+  {% for group in groups %}
+  <div class="subgroup tradfri-container col-lg-6 col-md-5 col-sm-6 col-xs-6" group-id={{ group.id }}>
+    <div class="tradfri-inner-container">
+      <div class="name-container">
+        {% if not controllable %}
+          <input class="group-active" identifier="{{ group.id }}" type="checkbox" autocomplete="off">
+        {% endif %}
+        <span class="name">{{ group.name }}</span>
+        <span class="light-state glyphicon glyphicon-off {{ 'on' if group.state and controllable else 'off' }}"></span>
+
+        {% if not controllable %}
+          <input class="hidden" type="checkbox" key="light-state">
+        {% endif %}
+      </div>
+      <div class="dimmer-container">
+        <input class="slider" key="dimmer" type="range" style="background: linear-gradient(90deg, {{ group.color }}10 0%, {{ group.color }}80 100%);" min="0" max="255" value="{{ group.dimmer if controllable else '0' }}">
+      </div>
+      {% if controllable %}
+        <div class="hex-container">
+      {% else %}
+        <div class="hex-container radio-group" radio-action-selectors=".tradfri-container[group-id='{{ group.id }}'] .hex-suggestion" radio-action="checked">
+      {% endif %}
+        {{ tradfriColorSuggestion(controllable, suggested_colors[0]) }}
+        {{ tradfriColorSuggestion(controllable, suggested_colors[1]) }}
+        {{ tradfriColorSuggestion(controllable, suggested_colors[2]) }}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{%- endmacro %}
+
+
+{% macro tradfriColorSuggestion(controllable, color) -%}
+  {% set common = "class='hex-suggestion' value=" + color + " style='background-color: #" + color + "'" %}
+  {% if controllable %}
+    <button {{ common }}></button>
+  {% else %}
+    <div>
+      <input key='color' name='color' type='radio' {{ common }}></input>
+      <span class="checkmark">
+        <div class="checkmark-inner">
+          <div class="checkmark-circle"></div>
+          <div class="checkmark-stem"></div>
+          <div class="checkmark-kick"></div>
+        </div>
+      </span>
+    </div>
+  {% endif %}
 {%- endmacro %}
 
 

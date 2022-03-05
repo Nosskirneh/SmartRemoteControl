@@ -63,8 +63,13 @@
         <div id="activitiesContainer">
           {% set count = [0] %}
           {% for group in activities.groups %}
-            {{ macros.createCommand(group, count) }}
+            {{ macros.createGroup(group, count) }}
           {% endfor %}
+
+          <div id="tradfri-commands" class="group col-lg-4 col-md-6 col-sm-6 col-xs-12">
+            <h2>trådfri</h2>
+            {{ macros.createTradfri(tradfri_groups, suggested_colors, True) }}
+          </div>
         </div>
       </section>
 
@@ -83,5 +88,6 @@
 
     {% include 'modal.html.j2' %}
     {% include 'scheduling-scripts.html.j2' %}
+    <script src="{{ url_for('static', filename='js/tradfri-scripts.js') }}"></script>
   </body>
 </html>

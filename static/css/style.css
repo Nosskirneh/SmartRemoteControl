@@ -3,6 +3,10 @@ body {
     padding-bottom: 20px;
 }
 
+.hidden {
+    display: none;
+}
+
 .jumbotron {
     display: flex;
 }
@@ -39,7 +43,7 @@ body {
     text-align: center;
 }
 
-#activitiesContainer .button {
+#activitiesContainer .button, .tradfri-container {
     margin-bottom: 10px;
 }
 
@@ -251,4 +255,153 @@ section > div {
 
 [disabled="disabled"] label {
     color: gray;
+}
+
+.glyphicon[disabled], input[disabled] {
+    cursor: not-allowed !important;
+}
+
+.tradfri-inner-container {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-width: 1px;
+    border-color: rgb(62, 68, 70);
+    border-style: solid;
+    border-radius: 6px;
+}
+
+.tradfri-inner-container.inactive {
+    opacity: 0.7;
+}
+
+.name-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.name-container .name {
+    text-align: center;
+    font-size: 16px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.name-container .glyphicon-off {
+    font-size: 18px;
+    color: #80808070;
+    cursor: pointer;
+}
+
+.name-container .glyphicon-off.on {
+    color: rgb(41, 98, 146, 0.7);
+}
+
+.hex-container {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.hex-suggestion {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 10px;
+    border-color: gray;
+    border-width: 1px;
+    border-style: solid;
+    opacity: 0.7;
+}
+
+.hex-suggestion:not([disabled]):hover {
+    opacity: 1;
+}
+
+input.hex-suggestion {
+    appearance: none
+}
+
+/*input.hex-suggestion:checked {
+
+}*/
+
+.checkmark {
+    cursor: pointer;
+    position: relative;
+    top: -22px;
+    right: -7px;
+}
+
+.checkmark-inner {
+    -ms-transform: rotate(45deg); /* IE 9 */
+    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
+    transform: rotate(45deg);
+}
+
+.checkmark-circle {
+    position: absolute;
+    width:20px;
+    height:20px;
+    background-color: #30333096;
+    border-radius:11px;
+    left:0;
+    top:0;
+}
+
+.checkmark-stem {
+    position: absolute;
+    width:3px;
+    height:9px;
+    background-color:#ccc;
+    left:10px;
+    top:5px;
+}
+
+.checkmark-kick {
+    position: absolute;
+    width:3px;
+    height:3px;
+    background-color:#ccc;
+    left:7px;
+    top:11px;
+}
+
+.dimmer-container {
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+/* The slider itself */
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    border-radius: 2px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:not([disabled]):hover {
+    opacity: 1;
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb, .slider::-moz-range-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 13px;
+    background: rgb(41, 98, 146);
+    cursor: pointer;
+}
+
+.slider[disabled]::-webkit-slider-thumb, .slider[disabled]::-moz-range-thumb {
+    cursor: not-allowed !important;
 }

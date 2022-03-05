@@ -22,12 +22,30 @@
     $modal.find('#error-msg').hide();
     $modal.find('button[name="event-delete"]').hide();
     $modal.modal('show');
+
+    let $trådfriContainer = $modal.find('.event-commands-edit-container[identifier=tradfri]');
+    $trådfriContainer.find('.tradfri-inner-container').each((_, element) => {
+      initTradfriInModal($(element));
+    });
   });
 
-  function initRadioButton($input, enable) {
-    $input.prop('checked', enable);
-    if (enable)
-      $input.attr('checked', enable);
+  function initRadioButton($input, checked) {
+    $input.prop('checked', checked);
+    if (checked)
+      $input.attr('checked', checked);
+  }
+
+  function initTradfriInModal($groupContainer) {
+    // Uncheck all color radio buttons
+    let $colorInputs = $groupContainer.find('input.hex-suggestion');
+    initRadioButton($colorInputs, false);
+    $colorInputs.next('.checkmark').hide();
+
+    let $groupCheckbox = $groupContainer.find('input.group-active');
+    $groupCheckbox.prop('checked', false);
+    $groupContainer.addClass('inactive');
+    $groupContainer.find('.light-state').attr('disabled', true);
+    $groupContainer.find('input').not($groupCheckbox).attr('disabled', true);
   }
 
   // Click on existing event
@@ -52,11 +70,11 @@
 
     $modal.find('[disabled]').removeAttr('disabled');
     // Initiate all disabled radio buttons
-    $controlGroups = $('.radio-group[radio-disable-selectors]');
+    $controlGroups = $('.radio-group[radio-action-selectors]');
     for (controlGroup of $controlGroups) {
       let $controlGroup = $(controlGroup);
       if ($controlGroup.find('input[type="radio"]:checked').length > 0) {
-        selectors = $controlGroup.attr('radio-disable-selectors');
+        selectors = $controlGroup.attr('radio-action-selectors');
         disableElements(selectors, true);
       }
     }
@@ -73,12 +91,46 @@
     let commands = event["commands"];
     $modal.find('#commands-td input[type="checkbox"]').prop('checked', false);
 
-    for (var index in commands) {
-      let array = commands[index];
+    for (var index in commands.plain) {
+      let array = commands.plain[index];
       let $container = $('[identifier="' + array[1] + '"]');
       let $input = $container.find('[identifier="' + array[0] + '"]');
       $input.prop('checked', true);
     }
+
+    // Trådfri groups
+    let $trådfriContainer = $modal.find('.event-commands-edit-container[identifier=tradfri]');
+    $trådfriContainer.find('.tradfri-inner-container').each((index, element) => {
+      let $groupContainer = $(element);
+      let $groupCheckbox = $groupContainer.find('input.group-active');
+      let groupID = parseInt($groupCheckbox.attr('identifier'));
+
+      initTradfriInModal($groupContainer);
+
+      // Group checkbox – add/remove disabled attributes
+      console.log('event: ', event);
+      if ("tradfri" in commands && commands["tradfri"][groupID]) {
+        $groupCheckbox.prop('checked', true);
+        $groupContainer.removeClass('inactive');
+        $groupContainer.find('.light-state').removeAttr('disabled');
+        $groupContainer.find('input').not($groupCheckbox).removeAttr('disabled');
+
+        // Set the light state button's backing input checked property
+        let groupActions = commands["tradfri"][groupID];
+        if (groupActions["light-state"]) {
+          let $lightState = $groupContainer.find('.light-state');
+          $lightState.addClass('on');
+          $lightState.next('input.hidden').prop('checked', true);
+
+          let $pickedColorInput = $groupContainer.find('input[key=color][value=' + groupActions.color + ']');
+          $pickedColorInput.prop('checked', true);
+          $pickedColorInput.next('.checkmark').show();
+
+          $groupContainer.find('input[key=dimmer]').prop('value', groupActions.dimmer);
+        }
+      }
+      // TODO: Add checkmark for chosen dim value (in thumb possibly?)
+    });
 
     if (!event.hasOwnProperty("days")) {
       $modal.find('#days-td input[type="checkbox"]').prop('checked', true);
@@ -112,15 +164,26 @@
   });
 
   // Disable and clear all input elements inside of elements matching the selectors
-  function disableElements(selectors, disable) {
-    if (selectors) {
-      selectors = selectors.split(' ');
-      for (selector of selectors) {
-        $group = $(selector);
-        $group.attr('disabled', disable);
-        $inputs = $group.find('input');
-        $inputs.prop('disabled', disable);
-        $inputs.prop('checked', false);
+  function disableElements(selectors, disable, action = "disabled-checked", exclude = undefined) {
+    if (!selectors) {
+      return;
+    }
+
+    selectors = selectors.split(';');
+    for (selector of selectors) {
+      $element = $(selector);
+      if (exclude) {
+        $element = $element.not(exclude);
+      }
+      let isInput = $element.is('input');
+      if (action == "disabled-checked") {
+        $element.attr('disabled', disable);
+        if (isInput) {
+          $element.prop('disabled', disable);
+          $element.prop('checked', false);
+        }
+      } else if (isInput && action == "checked") {
+        $element.prop('checked', false);
       }
     }
   }
@@ -129,30 +192,30 @@
   $(document).on('click', 'input[type="radio"]', e => {
     $input = $(e.currentTarget);
     input = e.target;
+    $radioGroup = $input.closest('.radio-group');
     if (input.checked) {
-      $radioGroup = $input.closest('.radio-group');
-      selectors = $radioGroup.attr('radio-disable-selectors');
+      selectors = $radioGroup.attr('radio-action-selectors');
+      radioAction = $radioGroup.attr('radio-action');
 
       if (input.hasAttribute('checked')) {
         // Add ability to remove checked state
         input.checked = !input.checked;
         $input.removeAttr('checked');
 
-        disableElements(selectors, false);
-
+        disableElements(selectors, false, radioAction, $input);
         return;
       }
 
       // Mark this radio button as checked
       $input.attr('checked', true);
 
-      // Deselect any other radio button in this group
-      $others = $radioGroup.find('input[type="radio"]').not($input);
-      $others.prop('checked', false);
-      $others.removeAttr('checked');
-
-      disableElements(selectors, true);
+      disableElements(selectors, true, radioAction, $input);
     }
+
+    // Deselect any other radio button in this group
+    $others = $radioGroup.find('input[type="radio"]').not($input);
+    $others.prop('checked', false);
+    $others.removeAttr('checked');
   });
 
   // Clockpicker
@@ -378,10 +441,10 @@
 
   function getDays($modal) {
     let days = [];
-    $modal.find('input[day]').each(function () {
-      let $this = $(this);
-      if ($this.prop('checked'))
-        days.push($this.attr('day'))
+    $modal.find('input[day]').each((_, element) => {
+      let $element = $(element);
+      if ($element.prop('checked'))
+        days.push($element.attr('day'))
     });
     return days;
   }
@@ -390,28 +453,75 @@
     let groups = [];
     let count = 0;
 
-    $modal.find('.event-commands-edit-container').each(function (index) {
-      let $container = $(this);
+    $modal.find('.event-commands-edit-container').each((_, element) => {
+      let $container = $(element);
       let groupIdentifier = $container.attr('identifier');
       let group = {
         "name": groupIdentifier
+      };
+
+      var activities;
+      if ($container.attr('view') == 'subgroups') {
+        // The subgroups view will create this format:
+        // {
+        //   "name": "tradfri"
+        //   "activities": {
+        //     "1234" : {
+        //       "color": "deadbeef"
+        //     },
+        //     "467": {
+        //       "dimmer": 22
+        //     }
+        //   }
+        // }
+        activities = {};
+        $container.find('.subgroup').each((_, e) => {
+          let $subgroupContainer = $(e);
+          if (!$subgroupContainer.find('.group-active').prop('checked')) {
+            return;
+          }
+
+          let subgroupActivites = {};
+          $subgroupContainer.find('input').each((_, e) => {
+            let $input = $(e);
+            if ($input.attr('disabled')) {
+              return;
+            }
+
+            let key = $input.attr('key');
+            if ($input.attr('value') && key) {
+              // Make sure the key doesn't exist. If it does, only store if $input is checked.
+              if (!subgroupActivites[key] || $input.prop('checked')) {
+                subgroupActivites[key] = $input.prop('value');
+              }
+            } else if (key) {
+              subgroupActivites[key] = $input.prop('checked');
+            }
+          });
+          activities[$subgroupContainer.attr('group-id')] = subgroupActivites;
+          count += 1;
+        });
+      } else {
+        // The simple view will create this format:
+        // {
+        //   "name": "mhz433",
+        //   "activities": ["1 ON", "4 OFF"]
+        // }
+        activities = [];
+
+        $container.find('input').each(function () {
+          let $this = $(this);
+          if ($this.prop('checked')) {
+            count += 1;
+            activities.push($this.attr('identifier'));
+          }
+        });
+
+        if (activities.length == 0)
+          return;
       }
 
-      let activities = [];
-
-      let $inputs = $container.find('input');
-      $inputs.each(function () {
-        let $this = $(this);
-        if ($this.prop('checked')) {
-          count += 1;
-          activities.push($this.attr('identifier'));
-        }
-      });
-
-      if (activities.length == 0)
-        return;
-
-      group.activities = activities;
+      group.activities = activities
       groups.push(group);
     });
     return [groups, count];
@@ -420,7 +530,7 @@
   function getExcludedHolidays() {
     let holidays = [];
 
-    $('#excluded-holidays-td').find('input[type="checkbox"]').each((index, element) => {
+    $('#excluded-holidays-td').find('input[type="checkbox"]').each((_, element) => {
       let $input = $(element);
       if ($input.prop('checked')) {
         holidays.push($input.attr('identifier'));
