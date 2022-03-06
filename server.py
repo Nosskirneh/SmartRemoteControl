@@ -347,7 +347,7 @@ def is_auth_ok(auth = None):
         except KeyError:
             return False
 
-    user, pw = base64.b64decode(auth).split(":")
+    user, pw = base64.b64decode(auth).decode('utf-8').split(":")
     return (user == username and pw == password)
 
 
