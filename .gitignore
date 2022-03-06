@@ -1,5 +1,7 @@
 *.pyc
 *.pyo
 .DS_Store
-sftp-config.json
+sftp-config*.json
 credentials.py
+*psk.conf
+log*.txt
