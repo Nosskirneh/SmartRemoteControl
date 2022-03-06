@@ -14,4 +14,4 @@ All of these are located in this repo under Arduino/libraries.
 
 
 ## Installation
-pip3 install pyserial wakeonlan pytradfri schedule holidays astral
+pip3 install pyserial wakeonlan pytradfri schedule holidays astral flask numpy
