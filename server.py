@@ -555,6 +555,7 @@ def init_comport():
             print(" * Error open serial port: " + str(e))
     return ser
 
+
 def init_logger():
     log_level = logging.DEBUG
     log_filename = 'log.txt'
@@ -602,4 +603,8 @@ if __name__ == "__main__":
     logger.debug("Server started")
 
     from waitress import serve
-    serve(app, host="0.0.0.0", port=3000)
+    # Most common browsers send 6 requests at once. We don't really care
+    # that much since we're waiting for the response from the tradfri
+    # gateway either way, but increasing the number of threads to 6 gets
+    # rid of some warning logs about waiting requests.
+    serve(app, host="0.0.0.0", port=3000, threads=6)
