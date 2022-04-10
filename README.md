@@ -14,4 +14,7 @@ All of these are located in this repo under Arduino/libraries.
 
 
 ## Installation
-pip3 install pyserial wakeonlan pytradfri schedule holidays astral flask numpy
+pip3 install pyserial wakeonlan pytradfri aiocoap schedule holidays astral flask numpy waitress
+
+coap-client is required to be built:
+https://raspberry-valley.azurewebsites.net/CoAP-Getting-Started/
