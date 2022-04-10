@@ -583,8 +583,7 @@ def init_logger():
     return logger
 
 
-# This will only run once, not twice
-if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+if __name__ == "__main__":
     # Setup logging to file
     logger = init_logger()
 
@@ -602,5 +601,5 @@ if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
 
     logger.debug("Server started")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True, threaded=True)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=3000)
