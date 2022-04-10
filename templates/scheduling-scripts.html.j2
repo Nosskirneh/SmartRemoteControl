@@ -491,7 +491,7 @@
             let key = $input.attr('key');
             if ($input.attr('value') && key) {
               // Make sure the key doesn't exist. If it does, only store if $input is checked.
-              if (!subgroupActivites[key] || $input.prop('checked')) {
+              if (!subgroupActivites[key] || $input.prop('checked') || $input.attr('always-store')) {
                 subgroupActivites[key] = $input.prop('value');
               }
             } else if (key) {

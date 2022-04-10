@@ -24,7 +24,7 @@
         <span class="light-state glyphicon glyphicon-off {{ 'on' if group.state and controllable else 'off' }}"></span>
 
         {% if not controllable %}
-          <input class="hidden" type="checkbox" key="light-state">
+          <input class="hidden" type="checkbox" key="light-state" always-store="true">
         {% endif %}
       </div>
       <div class="dimmer-container">
