@@ -242,7 +242,7 @@ def delete(identifier):
 
 def ser_write(data):
     if os.environ.get("DEBUG") is None:
-        ser.write(data)
+        ser.write(data.encode())
 
 
 def run_activity(index):
@@ -250,12 +250,11 @@ def run_activity(index):
     for activity in activities["groups"]:
         for act in activity["activities"]:
             for i, codes in enumerate(act["codes"]):
-                code = codes["data"].encode()
-                group = codes["channel"].encode()
+                code = codes["data"]
+                group = codes["channel"]
                 if count is index:
                     if group == "IR":         # IR section
                         ser_write(code + ";") # Send IR code to Arduino
-                        # print(ser.readlines())
 
                     elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
                         ser_write(group + ": " + code + ";")
@@ -508,8 +507,7 @@ def execute_once(event):
 # True means it is dark, False means it is sunny
 def get_sun_info():
     city_name = config.TIMEZONE.split('/')[1]
-    a = Location(lookup(args.city, database()))
-    city = a[city_name]
+    city = Location(lookup(city_name, database()))
     today = date.today()
     sun = city.sun(date=today, local=True)
     timezone = pytz.timezone(config.TIMEZONE)
