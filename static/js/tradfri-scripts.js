@@ -4,6 +4,7 @@
 $('#tradfri-commands .light-state').on('click', e => {
   let element = e.currentTarget;
   let groupID = $(element).closest('.tradfri-container').attr('group-id');
+  let isOnCurrently = element.classList.contains('on');
   let endpoint = isOnCurrently ? 'off' : 'on';
 
   sendTradfriOnOff(groupID, endpoint, () => {
