@@ -11,9 +11,6 @@
     {% include 'base-scripts.html.j2' %}
     {% import "macros.html.j2" as macros %}
 
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
-    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-
     <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script> -->
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 
@@ -89,5 +86,6 @@
     {% include 'modal.html.j2' %}
     {% include 'scheduling-scripts.html.j2' %}
     <script src="{{ url_for('static', filename='js/tradfri-scripts.js') }}"></script>
+    {% include 'shared-scripts.html.j2' %}
   </body>
 </html>
