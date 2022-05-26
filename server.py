@@ -102,6 +102,17 @@ def get_commands():
     return jsonify(commands)
 
 
+@app.route("/schedule/run/<string:identifier>", methods=["POST"])
+def manually_run_event(identifier):
+    if not is_auth_ok():
+        return "Unauthorized", 401
+
+    index = return_schedule_index(identifier)
+    event = activities["scheduled"][index]
+    run_event(event)
+    return "OK", 200
+
+
 @app.route("/schedule/enable/<string:identifier>", methods=["POST"])
 def set_enabled(identifier):
     if not is_auth_ok():
