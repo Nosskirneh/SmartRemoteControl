@@ -363,15 +363,12 @@ def run_event(event):
             for device_id_str in all_commands["tradfri"]:
                 device_commands = all_commands["tradfri"][device_id_str]
                 device_id = int(device_id_str)
-                if "light-state" in device_commands and not device_commands["light-state"]:
-                    tradfri_handler.set_state(device_id, False);
-                else:
-                    if "color" in device_commands:
-                        tradfri_handler.set_hex_color(device_id, device_commands["color"])
-                    if "dimmer" in device_commands:
-                        tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
-                    elif "light-state" in device_commands:
-                        tradfri_handler.set_state(device_id, True);
+                if "light-state" in device_commands:
+                    tradfri_handler.set_state(device_id, device_commands["light-state"])
+                if "color" in device_commands:
+                    tradfri_handler.set_hex_color(device_id, device_commands["color"])
+                if "dimmer" in device_commands:
+                    tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
 
     if "fireOnce" in event and event["fireOnce"]:
         event["disabled"] = True
