@@ -399,9 +399,6 @@ executed_scheduled_events = {}
 
 ### Scheduling ###
 def run_schedule():
-    last_processed_event = None
-    has_reset_today = False
-
     events = activities["scheduled"]
     all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     timezone = pytz.timezone(config.TIMEZONE)
@@ -436,17 +433,6 @@ def run_schedule():
         dayIndex = datetime.today().weekday()
         currentDay = all_days[dayIndex]
 
-        # Reset data structures keeping track of which events have run
-        if now.hour == "0" and now.minute == "0":
-            if not has_reset_today:
-                has_reset_today = True
-                # Reset last_processed_event in case the same event
-                # is the only one event being fired.
-                last_processed_event = None
-                executed_scheduled_events.clear()
-        elif has_reset_today:
-            has_reset_today = False
-
         for event in events:
             [hour, minute] = [int(x) for x in event["time"].split(":")]
 
@@ -456,10 +442,8 @@ def run_schedule():
                 continue
 
             # Skip event if we already processed it or if the day and time is not matching
-            if last_processed_event == event["id"] or not is_valid_time_and_day():
+            if event["id"] in executed_scheduled_events or not is_valid_time_and_day():
                 continue
-
-            last_processed_event = event["id"]
 
             if "ifExecutedEventID" in event and event["ifExecutedEventID"] not in executed_scheduled_events:
                 continue
@@ -488,7 +472,11 @@ def run_schedule():
                 run_scheduled_event()
 
         schedule.run_pending()
-        sleep(30)
+
+        # Reset data structures keeping track of which events have run
+        if now.hour == 0 and now.minute == 0:
+            executed_scheduled_events.clear()
+        sleep(60)
 
 
 # There is no other way to schedule only once other than doing this.
