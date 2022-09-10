@@ -11,9 +11,10 @@ import requests
 import base64
 import wakeonlan as wol
 from IKEA import TradfriHandler
+from weather import WeatherManager
 
 import threading
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import schedule
 import holidays
 from collections import OrderedDict
@@ -37,6 +38,7 @@ datetime.now() in all_holidays
 # Create flask application.
 app = Flask(__name__)
 tradfri_handler = TradfriHandler(ikea_gateway_ip, ikea_gateway_key)
+weather_manager = WeatherManager(open_weather_map_key, open_weather_map_lat, open_weather_map_lon)
 
 def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -428,8 +430,6 @@ def run_schedule():
                ("days" not in event or currentDay in event["days"])
 
     def reschedule_event():
-        # TODO: Perhaphs add the option to replace the generic execute_once
-        #       to a custom method that reschedules with cloud data.
         time_str = (now + time_until).strftime("%H:%M")
         logger.debug("Reschedule for {}".format(time_str))
         schedule.every().day.at(time_str).do(execute_once, event=event)
@@ -438,6 +438,20 @@ def run_schedule():
         executed_scheduled_events[event['id']] = True
         logger.debug("Executing scheduled event {}".format(event['id']))
         run_event(event)
+
+    def try_reschedule_for_cloud_check():
+        if "preponeWhenCloudy" not in event:
+            return False
+        
+        cloudy_settings = event["preponeWhenCloudy"]
+        cloudy_offset = timedelta(minutes=cloudy_settings["minutes_offset"])
+        cloudy_threshold = cloudy_settings["threshold"]
+
+        time_str = (now + time_until - cloudy_offset).strftime("%H:%M")
+        logger.debug("Schedule cloud check for {}".format(time_str))
+        schedule.every().day.at(time_str).do(execute_cloud_check_once, event=event, cloudy_offset=cloudy_offset,
+                                                                       cloudy_threshold=cloudy_threshold, timezone=timezone)
+        return True
 
     while True:
         now = datetime.now(timezone)
@@ -471,13 +485,13 @@ def run_schedule():
                 is_dark, time_until = get_sun_info()
                 if not is_dark:
                     run_scheduled_event()
-                else:
+                elif not try_reschedule_for_cloud_check():
                     reschedule_event()
             elif "waitForSunset" in event:
                 is_dark, time_until = get_sun_info()
                 if is_dark:
                     run_scheduled_event()
-                else:
+                elif not try_reschedule_for_cloud_check():
                     reschedule_event()
             else:
                 run_scheduled_event()
@@ -496,6 +510,19 @@ def execute_once(event):
     run_event(event)
 
     executed_scheduled_events[event['id']] = True
+    return schedule.CancelJob
+
+
+def execute_cloud_check_once(event, cloudy_offset, cloudy_threshold, timezone):
+    logger.debug("Executing cloud check for event {}".format(event['id']))
+    if weather_manager.is_cloudy(cloudy_threshold):
+        run_event(event)
+        executed_scheduled_events[event['id']] = True
+    else:
+        now = datetime.now(timezone)
+        time_str = (now + cloudy_offset).strftime("%H:%M")
+        schedule.every().day.at(time_str).do(execute_once, event=event)
+
     return schedule.CancelJob
 
 
