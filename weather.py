@@ -10,14 +10,11 @@ class WeatherManager:
         self.last_updated = None
 
     def load_data(self):
-        self.data = self.mgr.one_call(lat=self.lat, lon=self.lon, exclude='current,minutely,daily,alerts')
+        self.data = self.mgr.one_call(lat=self.lat, lon=self.lon, exclude='minutely,hourly,daily,alerts')
         self.last_updated = datetime.now()
 
-    def is_cloudy(self, threshold, hour_offset=0):
-        assert hour_offset < 46
+    def is_cloudy(self, threshold):
         # Only update every 20 minutes at most
         if not self.last_updated or datetime.now() > self.last_updated + timedelta(minutes=20):
             self.load_data()
-        # There seems to be two hours before the current hour here
-        # even though the docs state otherwise
-        return self.data.forecast_hourly[2 + hour_offset].clouds > threshold
+        return self.data.current.clouds > threshold
