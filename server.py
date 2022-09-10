@@ -18,8 +18,6 @@ from datetime import datetime, date, timedelta
 import schedule
 import holidays
 from collections import OrderedDict
-import time
-from astral import LocationInfo
 from astral.geocoder import lookup, database
 from astral.location import Location
 import pytz
@@ -291,7 +289,7 @@ def run_activity(index):
 
                     if (i != len(codes) - 1): # Don't delay after last item
                         sleep(0.2)       # Wait ~200 milliseconds between codes.
-            count = count + 1
+            count += 1
 
 
 @app.route("/activity/<int:index>", methods=["POST"])
@@ -393,7 +391,7 @@ def return_schedule_index(identifier):
     for event in activities["scheduled"]:
         if event["id"] == identifier:
             return count
-        count = count + 1
+        count += 1
     return -1
 
 def return_index(cmd, grp):
@@ -404,7 +402,7 @@ def return_index(cmd, grp):
             n = act["name"]
             if n == cmd and g == grp:
                 return count
-            count = count + 1
+            count += 1
     return -1
 
 
@@ -557,7 +555,7 @@ def init_comport():
     # Find the right USB port
     matches = []
 
-    for root, dirnames, filenames in os.walk("/dev"):
+    for root, _, filenames in os.walk("/dev"):
         for filename in fnmatch.filter(filenames, "ttyUSB*"):
             matches.append(os.path.join(root, filename))
 
@@ -588,7 +586,7 @@ def init_logger():
     formatter = logging.Formatter('%(asctime)s %(message)s')
 
     def customTime(*args):
-        timezone = pytz.timezone(config.TIMEZONE);
+        timezone = pytz.timezone(config.TIMEZONE)
         now = datetime.now(timezone)
         return now.timetuple()
 
