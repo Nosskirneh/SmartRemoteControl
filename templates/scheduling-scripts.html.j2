@@ -108,7 +108,6 @@
       initTradfriInModal($groupContainer);
 
       // Group checkbox – add/remove disabled attributes
-      console.log('event: ', event);
       if ("tradfri" in commands && commands["tradfri"][groupID]) {
         $groupCheckbox.prop('checked', true);
         $groupContainer.removeClass('inactive');
