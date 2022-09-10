@@ -534,7 +534,7 @@ def init_comport():
             matches.append(os.path.join(root, filename))
 
     ser          = serial.Serial()
-    ser.port     = matches[0]
+    ser.port     = matches[-1]
     ser.baudrate = 9600
     ser.timeout  = 0
     ser.xonxoff  = False       # Disable software flow control
