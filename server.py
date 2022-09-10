@@ -528,7 +528,7 @@ def execute_cloud_check_once(event, cloudy_offset, cloudy_threshold, timezone):
 
 # Returns if it is dark or light, and the time until the next sunrise/sunset
 # True means it is dark, False means it is sunny
-def get_sun_info():
+def get_sun_info() -> tuple[bool, timedelta]:
     city_name = config.TIMEZONE.split('/')[1]
     city = Location(lookup(city_name, database()))
     today = date.today()
@@ -539,15 +539,16 @@ def get_sun_info():
     if sun["sunrise"] <= current_time <= sun["sunset"]:
         if sun["sunset"] >= current_time:
             event = "sunset"
-            timediff = sun["sunset"] - current_time
+            timediff = sun[event] - current_time
         if sun["sunset"] <= current_time:
             event = "sunrise"
-            timediff = current_time - sun["sunrise"]
+            timediff = current_time - sun[event]
 
         logger.debug("It's sunny outside, {} in {}".format(event, timediff))
         return (False, timediff)
     else:
-        timediff = sun["sunrise"] - current_time
+        sun_tomorrow = city.sun(date=today + timedelta(days=1), local=True)
+        timediff = sun_tomorrow["sunrise"] - current_time
         logger.debug("It's dark outside, {} until sunrise".format(timediff))
         return (True, timediff)
 
