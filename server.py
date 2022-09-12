@@ -259,7 +259,7 @@ def run_activity(group, index):
             channel = code_configuration["channel"]
             if channel not in channel_handlers:
                 return "Channel not found", 404
-            result = channel_handlers[channel].handle_simple_code(channel, code_configuration["data"])
+            result = channel_handlers[channel].handle_code(channel, code_configuration["data"])
             if result != None:
                 return result
 

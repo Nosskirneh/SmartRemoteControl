@@ -9,14 +9,14 @@ class ChannelHandler:
     def __init__(self, channels):
         self.channels = channels
 
-    def handle_simple_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
+    def handle_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
         raise NotImplementedError
 
 class WakeOnLanHandler(ChannelHandler):
     def __init__(self):
         super().__init__(["WOL"])
 
-    def handle_simple_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
+    def handle_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
         wol.send_magic_packet(data)
         return True
 
@@ -26,7 +26,7 @@ class HyperionWebHandler(ChannelHandler):
     def __init__(self):
         super().__init__(["LED"])
 
-    def handle_simple_code(self, _, data: dict) -> Union[None, tuple[str, int]]:
+    def handle_code(self, _, data: dict) -> Union[None, tuple[str, int]]:
         try:
             requests.post(self.REQ_ADDR + "/" + data["endpoint"], data=data["data"])
         except requests.ConnectionError:
@@ -40,7 +40,7 @@ class ArduinoHandler(ChannelHandler):
             # Initialize COM-port
             self.ser = self.init_comport()
 
-    def handle_simple_code(self, channel, data) -> Union[None, tuple[str, int]]:
+    def handle_code(self, channel, data) -> Union[None, tuple[str, int]]:
         if channel == "IR":
             self.ser_write(data + ";") # Send IR code to Arduino
 
