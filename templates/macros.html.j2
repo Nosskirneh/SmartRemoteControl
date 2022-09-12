@@ -1,11 +1,10 @@
-{% macro createGroup(group, count) -%}
+{% macro createGroup(group) -%}
   <div class="group col-lg-4 col-md-6 col-sm-6 col-xs-12">
     <h2>{{ group.name }}</h2>
     {% for act in group.activities %}
       <div class="button col-lg-6 col-md-5 col-sm-6 col-xs-6">
-        <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity({{ count[0] }});">{{ act.name }}</button>
+        <button type="button" class="btn btn-default btn-block btn-lg" onclick="sendActivity('{{ group.name }}', {{ loop.index - 1}});">{{ act.name }}</button>
       </div>
-      {% if count.append(count.pop() + 1) %}{% endif %}
     {% endfor %}
   </div>
 {%- endmacro %}

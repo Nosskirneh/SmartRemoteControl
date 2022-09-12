@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 import sys
 import os
-import fnmatch
-import serial
 from time import sleep
 from flask import *
 import config
 from credentials import *
-import requests
 import base64
-import wakeonlan as wol
+from collections import ChainMap
 from IKEA import TradfriHandler
 from weather import WeatherManager
+from channel_handler import ChannelHandler
 
 import threading
 from datetime import datetime, date, timedelta
@@ -77,7 +75,7 @@ def login():
 def command():
     name  = request.form.get("name")
     group = request.form.get("group")
-    return activity(return_index(name, group))
+    return activity(group, return_index(name, group))
 
 
 @app.route("/checkAuth", methods=["GET"])
@@ -251,49 +249,26 @@ def delete(identifier):
     return "OK", 200
 
 
-def ser_write(data):
-    if os.environ.get("DEBUG") is None:
-        ser.write(data.encode())
+def run_activity(group, index):
+    for activity_group in activities["groups"]:
+        if activity_group["name"] != group:
+            continue
+
+        activity = activity_group["activities"][index]
+        for code_configuration in activity["codes"]:
+            channel = code_configuration["channel"]
+            if channel not in channel_handlers:
+                return "Channel not found", 404
+            result = channel_handlers[channel].handle_simple_code(channel, code_configuration["data"])
+            if result != None:
+                return result
+
+            if code_configuration != activity["codes"][-1]: # Don't delay after last item
+                sleep(0.2)       # Wait ~200 milliseconds between codes.
 
 
-def run_activity(index):
-    count = 0
-    for activity in activities["groups"]:
-        for act in activity["activities"]:
-            for i, codes in enumerate(act["codes"]):
-                code = codes["data"]
-                group = codes["channel"]
-                if count is index:
-                    if group == "IR":         # IR section
-                        ser_write(code + ";") # Send IR code to Arduino
-
-                    elif (group == "MHZ433" or group == "NEXA"): # MHZ433 & NEXA section
-                        ser_write(group + ": " + code + ";")
-
-                    elif (group == "LED"):    # HyperionWeb
-                        if (code == "CLEAR"):
-                            try:
-                                r = requests.post(REQ_ADDR + "/do_clear", data={"clear":"clear"})
-                                r = requests.post(REQ_ADDR + "/set_value_gain", data={"valueGain":"20"})
-                            except requests.ConnectionError:
-                                return "Service Unavailable", 503
-                        if (code == "BLACK"):
-                            try:
-                                r = requests.post(REQ_ADDR + "/set_color_name", data={"colorName":"black"})
-                                r = requests.post(REQ_ADDR + "/set_value_gain", data={"valueGain":"100"})
-                            except requests.ConnectionError:
-                                return "Service Unavailable", 503
-
-                    elif (group == "WOL"):    # Wake on LAN
-                        wol.send_magic_packet(code)
-
-                    if (i != len(codes) - 1): # Don't delay after last item
-                        sleep(0.2)       # Wait ~200 milliseconds between codes.
-            count += 1
-
-
-@app.route("/activity/<int:index>", methods=["POST"])
-def activity(index):
+@app.route("/activity/<group>/<int:index>", methods=["POST"])
+def activity(group, index):
     # Check authorization
     if not is_auth_ok():
        return "Unauthorized", 401
@@ -301,7 +276,7 @@ def activity(index):
     if index == -1:
         return "Not Implemented", 501
 
-    run_activity(index)
+    run_activity(group, index)
     return "OK", 200
 
 
@@ -351,6 +326,9 @@ def is_auth_ok(auth = None):
     if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
         return True
 
+    if request.remote_addr in config.WHITELISTED_IPS:
+        return True
+
     if auth == None:
         try:
             auth = request.headers["Authorization"].split()[1]
@@ -365,10 +343,10 @@ def run_event(event):
     if "commands" in event:
         all_commands = event["commands"]
         if "plain" in all_commands:
-            for (actitivty, group) in all_commands["plain"]:
-                index = return_index(actitivty, group)
+            for (data, group) in all_commands["plain"]:
+                index = return_index(data, group)
                 if index != -1:
-                    run_activity(index)
+                    run_activity(group, index)
 
         if "tradfri" in all_commands:
             for device_id_str in all_commands["tradfri"]:
@@ -398,9 +376,11 @@ def return_index(cmd, grp):
     count = 0
     for activity in activities["groups"]:
         g = activity["name"]
+        if g != grp:
+            continue
         for act in activity["activities"]:
             n = act["name"]
-            if n == cmd and g == grp:
+            if n == cmd:
                 return count
             count += 1
     return -1
@@ -551,33 +531,6 @@ def get_sun_info() -> tuple[bool, timedelta]:
         return (True, timediff)
 
 
-def init_comport():
-    # Find the right USB port
-    matches = []
-
-    for root, _, filenames in os.walk("/dev"):
-        for filename in fnmatch.filter(filenames, "ttyUSB*"):
-            matches.append(os.path.join(root, filename))
-
-    ser          = serial.Serial()
-    ser.port     = matches[-1]
-    ser.baudrate = 9600
-    ser.timeout  = 0
-    ser.xonxoff  = False       # Disable software flow control
-    ser.rtscts   = False       # Disable hardware (RTS/CTS) flow control
-    ser.dsrdtr   = False       # Disable hardware (DSR/DTR) flow control
-
-    if ser.isOpen():
-        print("### Serial conenction already open!")
-    else:
-        try:
-            ser.open()
-            print(" * Serial connection open!")
-        except Exception as e:
-            print(" * Error open serial port: " + str(e))
-    return ser
-
-
 def init_logger():
     log_level = logging.DEBUG
     log_filename = 'log.txt'
@@ -612,11 +565,9 @@ if __name__ == "__main__":
 
     # Load variables
     activities = config.get_activities() # Parse activity configuration.
-    REQ_ADDR = "http://192.168.0.20:1234"
 
-    if os.environ.get("DEBUG") is None:
-        # Initialize COM-port
-        ser = init_comport()
+    channel_handlers: dict[str, ChannelHandler] = dict(ChainMap(*map(lambda listener: dict([(channel, listener) for channel in listener.channels]),
+                                                                     [clazz() for clazz in ChannelHandler.__subclasses__()])))
 
     thread = threading.Thread(target=run_schedule, args=())
     thread.daemon = True

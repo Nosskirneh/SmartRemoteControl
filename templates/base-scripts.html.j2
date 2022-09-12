@@ -48,8 +48,8 @@
     );
   }
 
-  function sendActivity(index) {
-    sendUrl('/activity/' + index);
+  function sendActivity(group, index) {
+    sendUrl('/activity/' + group + '/' + index);
   }
 
   function sendTradfriDimmer(groupID, value) {
