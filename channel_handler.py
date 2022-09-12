@@ -9,36 +9,28 @@ class ChannelHandler:
     def __init__(self, channels):
         self.channels = channels
 
-    def handle_simple_code(self, channel: str, data: str) -> Union[None, tuple[str, int]]:
+    def handle_simple_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
         raise NotImplementedError
 
 class WakeOnLanHandler(ChannelHandler):
     def __init__(self):
         super().__init__(["WOL"])
 
-    def handle_simple_code(self, channel: str, data: str) -> Union[None, tuple[str, int]]:
+    def handle_simple_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
         wol.send_magic_packet(data)
         return True
 
 class HyperionWebHandler(ChannelHandler):
-    REQ_ADDR = "http://192.168.0.20:1234"
+    REQ_ADDR = "http://localhost:1234"
 
     def __init__(self):
         super().__init__(["LED"])
 
-    def handle_simple_code(self, _, data) -> Union[None, tuple[str, int]]:
-        if data == "CLEAR":
-            try:
-                requests.post(self.REQ_ADDR + "/do_clear", data={"clear":"clear"})
-                requests.post(self.REQ_ADDR + "/set_value_gain", data={"valueGain":"20"})
-            except requests.ConnectionError:
-                return "Service Unavailable", 503
-        if data == "BLACK":
-            try:
-                requests.post(self.REQ_ADDR + "/set_color_name", data={"colorName":"black"})
-                requests.post(self.REQ_ADDR + "/set_value_gain", data={"valueGain":"100"})
-            except requests.ConnectionError:
-                return "Service Unavailable", 503
+    def handle_simple_code(self, _, data: dict) -> Union[None, tuple[str, int]]:
+        try:
+            requests.post(self.REQ_ADDR + "/" + data["endpoint"], data=data["data"])
+        except requests.ConnectionError:
+            return "Service Unavailable", 503
 
 class ArduinoHandler(ChannelHandler):
     def __init__(self):
