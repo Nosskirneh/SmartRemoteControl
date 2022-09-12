@@ -33,8 +33,8 @@ datetime.now() in all_holidays
 
 # Create flask application.
 app = Flask(__name__)
-tradfri_handler = TradfriHandler(ikea_gateway_ip, ikea_gateway_key)
-weather_manager = WeatherManager(open_weather_map_key, open_weather_map_lat, open_weather_map_lon)
+tradfri_handler = TradfriHandler(IKEA_GATEWAY_IP, IKEA_GATEWAY_KEY)
+weather_manager = WeatherManager(OPEN_WEATHER_MAP_KEY, OPEN_WEATHER_MAP_LAT, OPEN_WEATHER_MAP_LON)
 
 def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -336,7 +336,7 @@ def is_auth_ok(auth = None):
             return False
 
     user, pw = base64.b64decode(auth).decode('utf-8').split(":")
-    return (user == username and pw == password)
+    return (user == USERNAME and pw == PASSWORD)
 
 
 def run_event(event):

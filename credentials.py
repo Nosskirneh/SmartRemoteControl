@@ -1,4 +1,7 @@
-username = "USER"
-password = "PASSWORD"
-ikea_gateway_ip = "192.168.0.x"
-ikea_gateway_key = "deadbeefdeadbeef"
+USERNAME = "USER"
+PASSWORD = "PASSWORD"
+IKEA_GATEWAY_IP = "192.168.0.x"
+IKEA_GATEWAY_KEY = "deadbeefdeadbeef"
+OPEN_WEATHER_MAP_KEY = ""
+OPEN_WEATHER_MAP_LAT = 60
+OPEN_WEATHER_MAP_LON = 10
