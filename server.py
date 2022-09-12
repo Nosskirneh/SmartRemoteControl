@@ -326,7 +326,7 @@ def is_auth_ok(auth = None):
     if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
         return True
 
-    if request.remote_addr in config.WHITELISTED_IPS:
+    if request.remote_addr in WHITELISTED_IPS:
         return True
 
     if auth == None:
