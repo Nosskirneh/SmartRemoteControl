@@ -84,22 +84,20 @@ class TradfriHandler:
         return self.api(self.gateway.get_group(group_id))
 
     def set_state(self, group_id, new_state):
-        light_group = self.get_group(group_id)
-        if not light_group:
-            return False
-        self.api(light_group.set_state(new_state))
-        return True
+        return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
+                                              group_id)
 
     def set_dimmer(self, group_id, value):
-        light_group = self.get_group(group_id)
-        if not light_group:
-            return False
-        self.api(light_group.set_dimmer(value, transition_time=1))
-        return True
+        return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=1),
+                                              group_id)
 
     def set_hex_color(self, group_id, value):
+        return self.run_api_command_for_group(lambda lg: lg.set_hex_color(value, transition_time=1),
+                                              group_id)
+
+    def run_api_command_for_group(self, command_function, group_id):
         light_group = self.get_group(group_id)
         if not light_group:
             return False
-        self.api(light_group.set_hex_color(value, transition_time=1))
+        self.api(command_function(light_group))
         return True
