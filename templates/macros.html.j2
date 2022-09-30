@@ -27,7 +27,7 @@
         {% endif %}
       </div>
       <div class="dimmer-container">
-        <input class="slider" key="dimmer" type="range" style="background: linear-gradient(90deg, {{ group.color }}10 0%, {{ group.color }}80 100%);" min="0" max="255" value="{{ group.dimmer if controllable else '0' }}">
+        <input class="slider" key="dimmer" type="range" ignore-on-value="0" style="background: linear-gradient(90deg, {{ group.color }}10 0%, {{ group.color }}80 100%);" min="0" max="255" value="{{ group.dimmer if controllable else '0' }}">
       </div>
       {% if controllable %}
         <div class="hex-container">
