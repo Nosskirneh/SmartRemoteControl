@@ -2,7 +2,9 @@ import json
 import uuid
 from pytradfri import Gateway
 from pytradfri.api.libcoap_api import APIFactory
-from time import sleep
+from pytradfri.group import Group
+from pytradfri.command import Command
+from typing import Any, Callable, Iterable
 
 import numpy
 
@@ -10,7 +12,7 @@ CONFIG_FILE = "tradfri_psk.conf"
 
 class RGB(numpy.ndarray):
   @classmethod
-  def from_str(cls, hex):
+  def from_str(cls, hex: str):
     return numpy.array([int(hex[i:i+2], 16) for i in (0, 2, 4)]).view(cls)
 
   def __str__(self):
@@ -18,7 +20,7 @@ class RGB(numpy.ndarray):
     return ''.join(format(n, 'x') for n in self)
 
 class TradfriHandler:
-    def __init__(self, gateway_hostname, key):
+    def __init__(self, gateway_hostname: str, key: str):
         conf = self.load_psk(CONFIG_FILE)
 
         try:
@@ -37,7 +39,7 @@ class TradfriHandler:
         self.gateway = Gateway()
 
     @staticmethod
-    def load_psk(filename):
+    def load_psk(filename: str) -> dict:
         try:
             with open(filename, encoding="utf-8") as fdesc:
                 return json.loads(fdesc.read())
@@ -45,20 +47,20 @@ class TradfriHandler:
             return {}
 
     @staticmethod
-    def save_psk(filename, config):
+    def save_psk(filename: str, config: dict):
         data = json.dumps(config, sort_keys=True, indent=4)
         with open(filename, "w", encoding="utf-8") as fdesc:
             fdesc.write(data)
 
     @staticmethod
-    def average_hex_color(colors):
+    def average_hex_color(colors: list[str]):
         if len(colors) == 1:
             return colors[0]
         rgb_colors = [RGB.from_str(hex) for hex in colors]
         return (numpy.sum(rgb_colors, axis=0) // len(rgb_colors)).view(RGB)
 
 
-    def export_group(self, group):
+    def export_group(self, group: Group) -> dict[str, Any]:
         # These properties exists on the group as well, but they are incorrect for some reason
         hex_colors, states = zip(*map(lambda light: (light.light_control.lights[0].hex_color,
                                                      light.light_control.lights[0].state),
@@ -73,29 +75,31 @@ class TradfriHandler:
             "color": '#' + str(self.average_hex_color(list(hex_colors)))
         }
 
-    def export_groups(self):
+    def export_groups(self) -> list[str]:
         return list(map(self.export_group, self.get_groups()))
 
-    def get_groups(self):
+    def get_groups(self) -> Iterable[Group]:
         devices_commands = self.api(self.gateway.get_groups())
         return self.api(devices_commands)
 
-    def get_group(self, group_id):
+    def get_group(self, group_id: str) -> Group:
         return self.api(self.gateway.get_group(group_id))
 
-    def set_state(self, group_id, new_state):
+    def set_state(self, group_id: int, new_state: bool) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
                                               group_id)
 
-    def set_dimmer(self, group_id, value):
+    def set_dimmer(self, group_id: int, value: int) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=1),
                                               group_id)
 
-    def set_hex_color(self, group_id, value):
+    def set_hex_color(self, group_id: int, value: str) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_hex_color(value, transition_time=1),
                                               group_id)
 
-    def run_api_command_for_group(self, command_function, group_id):
+    def run_api_command_for_group(self,
+                                  command_function: Callable[[Group], Command],
+                                  group_id: int) -> bool:
         light_group = self.get_group(group_id)
         if not light_group:
             return False
