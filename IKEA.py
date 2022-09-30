@@ -37,6 +37,7 @@ class TradfriHandler:
         self.save_psk(CONFIG_FILE, conf)
         self.api = api_factory.request
         self.gateway = Gateway()
+        self.groups = {group.id:group for group in self.get_groups()}
 
     @staticmethod
     def load_psk(filename: str) -> dict:
@@ -76,14 +77,18 @@ class TradfriHandler:
         }
 
     def export_groups(self) -> list[str]:
-        return list(map(self.export_group, self.get_groups()))
+        return list(map(self.export_group, self.groups.values()))
 
     def get_groups(self) -> Iterable[Group]:
         devices_commands = self.api(self.gateway.get_groups())
         return self.api(devices_commands)
 
     def get_group(self, group_id: str) -> Group:
-        return self.api(self.gateway.get_group(group_id))
+        if group_id in self.groups:
+            return self.groups[group_id]
+        group = self.api(self.gateway.get_group(group_id))
+        self.groups[group_id] = group
+        return group
 
     def set_state(self, group_id: int, new_state: bool) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
