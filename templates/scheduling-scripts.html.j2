@@ -107,7 +107,7 @@
 
       initTradfriInModal($groupContainer);
 
-      // Group checkbox – add/remove disabled attributes
+      // Group checkbox - add/remove disabled attributes
       if ("tradfri" in commands && commands["tradfri"][groupID]) {
         $groupCheckbox.prop('checked', true);
         $groupContainer.removeClass('inactive');
@@ -126,6 +126,11 @@
           $pickedColorInput.next('.checkmark').show();
 
           $groupContainer.find('input[key=dimmer]').prop('value', groupActions.dimmer);
+        } else {
+          let $lightState = $groupContainer.find('.light-state');
+          $lightState.removeClass('on');
+          $lightState.next('input.hidden').prop('checked', false);
+          $groupContainer.find('input[key=dimmer]').prop('value', 0);
         }
       }
       // TODO: Add checkmark for chosen dim value (in thumb possibly?)
