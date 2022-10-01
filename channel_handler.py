@@ -4,13 +4,15 @@ import serial
 import requests
 import wakeonlan as wol
 from typing import Union
+from abc import ABC, abstractmethod
 
-class ChannelHandler:
+class ChannelHandler(ABC):
     def __init__(self, channels):
         self.channels = channels
 
+    @abstractmethod
     def handle_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
-        raise NotImplementedError
+        pass
 
 class WakeOnLanHandler(ChannelHandler):
     def __init__(self):
@@ -47,7 +49,7 @@ class ArduinoHandler(ChannelHandler):
         elif channel == "MHZ433" or channel == "NEXA":
             self.ser_write(channel + ": " + data + ";")
 
-    def ser_write(self, data):
+    def ser_write(self, data: str):
         if os.environ.get("DEBUG") is None:
             self.ser.write(data.encode())
 
