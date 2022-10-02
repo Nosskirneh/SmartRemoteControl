@@ -5,3 +5,4 @@ sftp-config*.json
 credentials.py
 *psk.conf
 log*.txt
+.vscode/
