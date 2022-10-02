@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
 import json
 import uuid
 from pytradfri import Gateway
 from pytradfri.api.libcoap_api import APIFactory
 from pytradfri.group import Group
 from pytradfri.command import Command
+from pytradfri.error import RequestTimeout
 from typing import Any, Callable, Iterable
 
 import numpy
@@ -37,7 +39,7 @@ class TradfriHandler:
         self.save_psk(CONFIG_FILE, conf)
         self.api = api_factory.request
         self.gateway = Gateway()
-        self.groups = {group.id:group for group in self.get_groups()}
+        self.load_groups()
 
     @staticmethod
     def load_psk(filename: str) -> dict:
@@ -77,11 +79,24 @@ class TradfriHandler:
         }
 
     def export_groups(self) -> list[str]:
-        return list(map(self.export_group, self.groups.values()))
+        return list(map(self.export_group, self.get_groups()))
+
+    def load_groups(self):
+        try:
+            devices_commands = self.api(self.gateway.get_groups())
+            groups = self.api(devices_commands)
+            self.groups = {group.id:group for group in groups}
+            self.groups_last_updated = datetime.now()
+        except RequestTimeout:
+            self.groups = {}
+            self.groups_last_updated = None
 
     def get_groups(self) -> Iterable[Group]:
-        devices_commands = self.api(self.gateway.get_groups())
-        return self.api(devices_commands)
+        # Only update every 5 minutes at most
+        if (len(self.groups) == 0 or not self.groups_last_updated or
+            datetime.now() > self.groups_last_updated + timedelta(minutes=5)):
+            self.load_groups()
+        return self.groups.values()
 
     def get_group(self, group_id: str) -> Group:
         if group_id in self.groups:
