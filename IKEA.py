@@ -63,14 +63,18 @@ class TradfriHandler:
             return colors[0]
         rgb_colors = [RGB.from_str(hex) for hex in colors]
         return (numpy.sum(rgb_colors, axis=0) // len(rgb_colors)).view(RGB)
+    
+    @staticmethod
+    def get_hex_color_state_light_control(group_members):
+        # These properties exists on the group as well, but they are incorrect for some reason
+        return zip(*map(lambda light: (light.light_control.lights[0].hex_color,
+                                       light.light_control.lights[0].state),
+                        filter(lambda device: device.has_light_control,
+                                group_members)
+                        ))
 
     def export_group(self, group: Group) -> dict[str, Union[str, int]]:
-        # These properties exists on the group as well, but they are incorrect for some reason
-        hex_colors, states = zip(*map(lambda light: (light.light_control.lights[0].hex_color,
-                                                     light.light_control.lights[0].state),
-                                      filter(lambda device: device.has_light_control,
-                                             self.group_members[group.id])
-                                      ))
+        hex_colors, states = self.get_hex_color_state_light_control(self.group_members[group.id])
         return {
             "name": group.name,
             "id": group.id,
@@ -102,6 +106,25 @@ class TradfriHandler:
             self.logger.error("Trådfri timed out!")
             self.groups_last_updated = None
 
+    def load_group(self, group_id: int):
+        try:
+            group = self.api(self.gateway.get_group(group_id))
+            self.groups[group.id] = group
+            self.load_group_members(group)
+        except RequestTimeout:
+            self.logger.error("Trådfri timed out!")
+
+    def get_state(self, group_id: int, refresh_data=True) -> int:
+        if refresh_data:
+            self.load_group(group_id)
+        _, states = self.get_hex_color_state_light_control(self.group_members[group_id])
+        return any(states)
+
+    def get_dimmer(self, group_id: int, refresh_data=True) -> int:
+        if refresh_data:
+            self.load_group(group_id)
+        return self.groups[group_id].dimmer
+
     def get_groups(self) -> Iterable[Group]:
         # Only update every 5 minutes at most
         if (len(self.groups) == 0 or not self.groups_last_updated or
@@ -115,7 +138,7 @@ class TradfriHandler:
                                               group_id)
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
-        return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=1),
+        return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=3),
                                               lambda lg: self.update_group(lg, 'dimmer', value),
                                               group_id)
 

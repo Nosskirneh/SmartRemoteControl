@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import operator
 import sys
 import os
 from time import sleep
+from typing import Callable, Tuple
 from flask import *
 import config
 from credentials import *
@@ -86,7 +88,7 @@ def get_commands():
     commands["tradfri_groups"] = tradfri_handler.export_groups()
     return jsonify(commands)
 
-
+## Scheduling
 @app.route("/schedule/run/<string:identifier>", methods=["POST"])
 def manually_run_event(identifier):
     if not is_auth_ok():
@@ -266,7 +268,7 @@ def activity(group, index):
     run_activity(group, index)
     return "OK", 200
 
-
+## Trådfri
 @app.route("/tradfri/<int:group_id>/dimmer/<int:value>", methods=["POST"])
 def tradfri_dimmer(group_id, value):
     # Check authorization
@@ -274,7 +276,7 @@ def tradfri_dimmer(group_id, value):
        return "Unauthorized", 401
 
     if not tradfri_handler.set_dimmer(group_id, value):
-        return "Device not found", 403
+        return "Device not found", 404
     return "OK", 200
 
 
@@ -288,9 +290,8 @@ def tradfri_color(group_id, value):
         value = value.lstrip('#')
 
     if not tradfri_handler.set_hex_color(group_id, value):
-        return "Device not found", 403
+        return "Device not found", 404
     return "OK", 200
-
 
 
 @app.route("/tradfri/<int:group_id>/<string:on_off>", methods=["POST"])
@@ -303,9 +304,59 @@ def tradfri_on_off(group_id, on_off):
         return "Use the on/off endpoint", 405
 
     if not tradfri_handler.set_state(group_id, on_off == "on"):
-        return "Device not found", 403
+        return "Device not found", 404
     return "OK", 200
 
+
+## Webhooks
+@app.route("/webhook/invoke/<string:webhook_id>", methods=["POST"])
+def webhooks_exec(webhook_id):
+    # Check authorization
+    if not is_auth_ok():
+       return "Unauthorized", 401
+   
+    webhooks = activities["webhooks"]
+    if webhook_id not in webhooks:
+        return "No such webhook configured", 404
+    
+    # Verify that we should run this now
+    def parse_operator_value(input: str) -> Tuple[Callable, int]:
+        ops = {
+            '=' : operator.eq,
+            '!=' : operator.ne,
+            '>=' : operator.ge,
+            '<=' : operator.le,
+            '>' : operator.gt,
+            '<' : operator.lt,
+        }
+        head = input.rstrip('0123456789')
+        tail = input[len(head):]
+        return ops[head], int(tail)
+
+    webhook = webhooks[webhook_id]
+    if "conditional" in webhook:
+        for device, conditions in webhook["conditional"]["tradfri"].items():
+            has_updated = False
+            if "light-state" in conditions:
+                light_state_cond = conditions["light-state"]
+                has_updated = True
+                if tradfri_handler.get_state(int(device)) != light_state_cond:
+                    return "Condition was not met", 200
+
+            if "dimmer" in conditions:
+                current_value = tradfri_handler.get_dimmer(int(device), not has_updated)
+                op, cond_value = parse_operator_value(conditions["dimmer"])
+                if not op(current_value, cond_value):
+                    return "Condition was not met", 200
+
+    # If we got here, all conditions were met
+    actions = webhook["actions"]
+    if "tradfri" in actions:
+        run_tradfri(actions["tradfri"])
+                
+    if "plain" in actions:
+        run_plain(actions["plain"])
+    return "OK", 200
 
 
 ### METHODS ###
@@ -325,26 +376,31 @@ def is_auth_ok(auth = None):
     user, pw = base64.b64decode(auth).decode('utf-8').split(":")
     return (user == USERNAME and pw == PASSWORD)
 
+def run_plain(commands):
+    for (data, group) in commands:
+        index = return_index(data, group)
+        if index != -1:
+            run_activity(group, index)
+            
+def run_tradfri(device_config):
+    for device_id_str in device_config:
+        device_commands = device_config[device_id_str]
+        device_id = int(device_id_str)
+        if "light-state" in device_commands:
+            tradfri_handler.set_state(device_id, device_commands["light-state"])
+        if "color" in device_commands:
+            tradfri_handler.set_hex_color(device_id, device_commands["color"])
+        if "dimmer" in device_commands:
+            tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
 
 def run_event(event):
     if "commands" in event:
         all_commands = event["commands"]
         if "plain" in all_commands:
-            for (data, group) in all_commands["plain"]:
-                index = return_index(data, group)
-                if index != -1:
-                    run_activity(group, index)
+            run_plain(all_commands["plain"])
 
         if "tradfri" in all_commands:
-            for device_id_str in all_commands["tradfri"]:
-                device_commands = all_commands["tradfri"][device_id_str]
-                device_id = int(device_id_str)
-                if "light-state" in device_commands:
-                    tradfri_handler.set_state(device_id, device_commands["light-state"])
-                if "color" in device_commands:
-                    tradfri_handler.set_hex_color(device_id, device_commands["color"])
-                if "dimmer" in device_commands:
-                    tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
+            run_tradfri(all_commands["tradfri"])
 
     if "fireOnce" in event and event["fireOnce"]:
         event["disabled"] = True
