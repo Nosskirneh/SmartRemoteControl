@@ -415,7 +415,7 @@ def run_schedule():
         cloudy_offset = timedelta(minutes=cloudy_settings["minutes_offset"])
         cloudy_threshold = cloudy_settings["threshold"]
 
-        time_str = (now + time_until - cloudy_offset).strftime("%H:%M")
+        time_str = max(now, now + time_until - cloudy_offset).strftime("%H:%M")
         logger.debug("Schedule cloud check for {}".format(time_str))
         schedule.every().day.at(time_str).do(execute_cloud_check_once, event=event, cloudy_offset=cloudy_offset,
                                                                        cloudy_threshold=cloudy_threshold, timezone=timezone)
