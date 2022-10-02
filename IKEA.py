@@ -7,11 +7,6 @@ from pytradfri.api.libcoap_api import APIFactory
 from pytradfri.group import Group
 from pytradfri.command import Command
 from pytradfri.error import RequestTimeout
-from pytradfri.const import (
-    ATTR_DEVICE_STATE,
-    ATTR_LIGHT_COLOR_HEX,
-    ATTR_LIGHT_DIMMER
-)
 from typing import Callable, Iterable, Union
 
 import numpy
@@ -116,17 +111,17 @@ class TradfriHandler:
 
     def set_state(self, group_id: int, new_state: bool) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
-                                              lambda lg: self.update_group(lg, ATTR_DEVICE_STATE, int(new_state)),
+                                              lambda lg: self.update_group(lg, 'state', int(new_state)),
                                               group_id)
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=1),
-                                              lambda lg: self.update_group(lg, ATTR_LIGHT_DIMMER, value),
+                                              lambda lg: self.update_group(lg, 'dimmer', value),
                                               group_id)
 
     def set_hex_color(self, group_id: int, value: str) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_hex_color(value, transition_time=1),
-                                              lambda lg: self.update_group(lg, ATTR_LIGHT_COLOR_HEX, value),
+                                              lambda lg: self.update_group(lg, 'color_hex', value),
                                               group_id)
 
     def run_api_command_for_group(self,
@@ -144,10 +139,10 @@ class TradfriHandler:
     # This is a bit hacky, but allows to update the state of the device without
     # refetching it through the gateway
     def update_group(self, group: Group, key: str, new_value: Union[int, str]):
-        group.raw[key] = new_value
+        setattr(group.raw, key, new_value)
 
         for member in self.group_members[group.id]:
             if not member.has_light_control:
                 continue
             for light in member.light_control.lights:
-                light.raw[key] = new_value
+                setattr(light.raw, key, new_value)
