@@ -12,7 +12,7 @@ from pytradfri.const import (
     ATTR_LIGHT_COLOR_HEX,
     ATTR_LIGHT_DIMMER
 )
-from typing import Any, Callable, Iterable, Union
+from typing import Callable, Iterable, Union
 
 import numpy
 
@@ -69,7 +69,7 @@ class TradfriHandler:
         rgb_colors = [RGB.from_str(hex) for hex in colors]
         return (numpy.sum(rgb_colors, axis=0) // len(rgb_colors)).view(RGB)
 
-    def export_group(self, group: Group) -> dict[str, Any]:
+    def export_group(self, group: Group) -> dict[str, Union[str, int]]:
         # These properties exists on the group as well, but they are incorrect for some reason
         hex_colors, states = zip(*map(lambda light: (light.light_control.lights[0].hex_color,
                                                      light.light_control.lights[0].state),
