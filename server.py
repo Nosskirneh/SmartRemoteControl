@@ -23,18 +23,8 @@ import pytz
 import logging
 from logging.handlers import RotatingFileHandler
 
-
-# Since the holiday object cannot be created with a years parameter if the CountryHoliday is used,
-# we have to do a simple check just to populate the years property. The other solution would be to
-# use the language constructor, for example .SE(years=yyyy)
-all_holidays = holidays.CountryHoliday(config.HOLIDAY_COUNTRY)
-datetime.now() in all_holidays
-
-
 # Create flask application.
 app = Flask(__name__)
-tradfri_handler = TradfriHandler(IKEA_GATEWAY_IP, IKEA_GATEWAY_KEY)
-weather_manager = WeatherManager(OPEN_WEATHER_MAP_KEY, OPEN_WEATHER_MAP_LAT, OPEN_WEATHER_MAP_LON)
 
 def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
@@ -560,8 +550,17 @@ def init_logger():
 
 
 if __name__ == "__main__":
+    # Since the holiday object cannot be created with a years parameter if the CountryHoliday is used,
+    # we have to do a simple check just to populate the years property. The other solution would be to
+    # use the language constructor, for example .SE(years=yyyy)
+    all_holidays = holidays.CountryHoliday(config.HOLIDAY_COUNTRY)
+    datetime.now() in all_holidays
+
     # Setup logging to file
     logger = init_logger()
+
+    tradfri_handler = TradfriHandler(IKEA_GATEWAY_IP, IKEA_GATEWAY_KEY, logger)
+    weather_manager = WeatherManager(OPEN_WEATHER_MAP_KEY, OPEN_WEATHER_MAP_LAT, OPEN_WEATHER_MAP_LON)
 
     # Load variables
     activities = config.get_activities() # Parse activity configuration.

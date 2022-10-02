@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+from logging import Logger
 import uuid
 from pytradfri import Gateway
 from pytradfri.api.libcoap_api import APIFactory
@@ -22,7 +23,8 @@ class RGB(numpy.ndarray):
     return ''.join(format(n, 'x') for n in self)
 
 class TradfriHandler:
-    def __init__(self, gateway_hostname: str, key: str):
+    def __init__(self, gateway_hostname: str, key: str, logger: Logger):
+        self.logger = logger
         conf = self.load_psk(CONFIG_FILE)
 
         try:
@@ -88,6 +90,7 @@ class TradfriHandler:
             self.groups = {group.id:group for group in groups}
             self.groups_last_updated = datetime.now()
         except RequestTimeout:
+            self.logger.error("Trådfri timed out!")
             self.groups = {}
             self.groups_last_updated = None
 
