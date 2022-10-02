@@ -7,7 +7,12 @@ from pytradfri.api.libcoap_api import APIFactory
 from pytradfri.group import Group
 from pytradfri.command import Command
 from pytradfri.error import RequestTimeout
-from typing import Any, Callable, Iterable
+from pytradfri.const import (
+    ATTR_DEVICE_STATE,
+    ATTR_LIGHT_COLOR_HEX,
+    ATTR_LIGHT_DIMMER
+)
+from typing import Any, Callable, Iterable, Union
 
 import numpy
 
@@ -64,7 +69,6 @@ class TradfriHandler:
         rgb_colors = [RGB.from_str(hex) for hex in colors]
         return (numpy.sum(rgb_colors, axis=0) // len(rgb_colors)).view(RGB)
 
-
     def export_group(self, group: Group) -> dict[str, Any]:
         # These properties exists on the group as well, but they are incorrect for some reason
         hex_colors, states = zip(*map(lambda light: (light.light_control.lights[0].hex_color,
@@ -90,8 +94,8 @@ class TradfriHandler:
             self.logger.error("Trådfri timed out!")
 
     def load_groups(self):
-        self.groups = {}
-        self.group_members = {}
+        self.groups: dict[int, Group] = {}
+        self.group_members: dict[int, Iterable] = {}
         try:
             devices_commands = self.api(self.gateway.get_groups())
             groups = self.api(devices_commands)
@@ -112,24 +116,38 @@ class TradfriHandler:
 
     def set_state(self, group_id: int, new_state: bool) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
+                                              lambda lg: self.update_group(lg, ATTR_DEVICE_STATE, int(new_state)),
                                               group_id)
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=1),
+                                              lambda lg: self.update_group(lg, ATTR_LIGHT_DIMMER, value),
                                               group_id)
 
     def set_hex_color(self, group_id: int, value: str) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_hex_color(value, transition_time=1),
+                                              lambda lg: self.update_group(lg, ATTR_LIGHT_COLOR_HEX, value),
                                               group_id)
 
     def run_api_command_for_group(self,
                                   command_function: Callable[[Group], Command],
+                                  update_function: Callable[[Group], None],
                                   group_id: int) -> bool:
         light_group = self.groups[group_id]
-        if not light_group:
-            return False
         try:
             self.api(command_function(light_group))
         except RequestTimeout:
             return False
+        update_function(light_group)
         return True
+
+    # This is a bit hacky, but allows to update the state of the device without
+    # refetching it through the gateway
+    def update_group(self, group: Group, key: str, new_value: Union[int, str]):
+        group.raw[key] = new_value
+
+        for member in self.group_members[group.id]:
+            if not member.has_light_control:
+                continue
+            for light in member.light_control.lights:
+                light.raw[key] = new_value
