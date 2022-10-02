@@ -70,7 +70,7 @@ class TradfriHandler:
         hex_colors, states = zip(*map(lambda light: (light.light_control.lights[0].hex_color,
                                                      light.light_control.lights[0].state),
                                       filter(lambda device: device.has_light_control,
-                                             self.api(group.members()))
+                                             self.group_members[group.id])
                                       ))
         return {
             "name": group.name,
@@ -82,16 +82,25 @@ class TradfriHandler:
 
     def export_groups(self) -> list[str]:
         return list(map(self.export_group, self.get_groups()))
+    
+    def load_group_members(self, group: Group):
+        try:
+            self.group_members[group.id] = self.api(group.members())
+        except RequestTimeout:
+            self.logger.error("Trådfri timed out!")
 
     def load_groups(self):
+        self.groups = {}
+        self.group_members = {}
         try:
             devices_commands = self.api(self.gateway.get_groups())
             groups = self.api(devices_commands)
-            self.groups = {group.id:group for group in groups}
+            for group in groups:
+                self.groups[group.id] = group
+                self.load_group_members(group)
             self.groups_last_updated = datetime.now()
         except RequestTimeout:
             self.logger.error("Trådfri timed out!")
-            self.groups = {}
             self.groups_last_updated = None
 
     def get_groups(self) -> Iterable[Group]:
@@ -100,13 +109,6 @@ class TradfriHandler:
             datetime.now() > self.groups_last_updated + timedelta(minutes=5)):
             self.load_groups()
         return self.groups.values()
-
-    def get_group(self, group_id: str) -> Group:
-        if group_id in self.groups:
-            return self.groups[group_id]
-        group = self.api(self.gateway.get_group(group_id))
-        self.groups[group_id] = group
-        return group
 
     def set_state(self, group_id: int, new_state: bool) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
@@ -123,8 +125,11 @@ class TradfriHandler:
     def run_api_command_for_group(self,
                                   command_function: Callable[[Group], Command],
                                   group_id: int) -> bool:
-        light_group = self.get_group(group_id)
+        light_group = self.groups[group_id]
         if not light_group:
             return False
-        self.api(command_function(light_group))
+        try:
+            self.api(command_function(light_group))
+        except RequestTimeout:
+            return False
         return True
