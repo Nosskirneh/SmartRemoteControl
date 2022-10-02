@@ -8,16 +8,13 @@ from credentials import *
 import base64
 from collections import ChainMap
 from IKEA import TradfriHandler
+from scheduler import Scheduler
 from weather import WeatherManager
 from channel_handler import ChannelHandler
 
-import threading
-from datetime import datetime, date, timedelta
-import schedule
+from datetime import datetime
 import holidays
 from collections import OrderedDict
-from astral.geocoder import lookup, database
-from astral.location import Location
 import pytz
 
 import logging
@@ -376,151 +373,6 @@ def return_index(cmd, grp):
     return -1
 
 
-executed_scheduled_events = {}
-
-### Scheduling ###
-def run_schedule():
-    events = activities["scheduled"]
-    all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    timezone = pytz.timezone(config.TIMEZONE)
-
-    def is_valid_time_and_day():
-        # If today is a holiday and all holidays should be excluded
-        if "excludeAllHolidays" in event and event["excludeAllHolidays"] and now.date() in all_holidays:
-            return False
-
-        if "excludedHolidays" in event:
-            # If today is a holiday and this holiday should be excluded
-            if now.date() in all_holidays and dict(all_holidays.items())[now.date()] in event["excludedHolidays"]:
-                return False
-
-        return now.hour == hour and now.minute == minute and \
-               ("days" not in event or currentDay in event["days"])
-
-    def reschedule_event():
-        time_str = (now + time_until).strftime("%H:%M")
-        logger.debug("Reschedule for {}".format(time_str))
-        schedule.every().day.at(time_str).do(execute_once, event=event)
-
-    def run_scheduled_event():
-        executed_scheduled_events[event['id']] = True
-        logger.debug("Executing scheduled event {}".format(event['id']))
-        run_event(event)
-
-    def try_reschedule_for_cloud_check():
-        if "preponeWhenCloudy" not in event:
-            return False
-        
-        cloudy_settings = event["preponeWhenCloudy"]
-        cloudy_offset = timedelta(minutes=cloudy_settings["minutes_offset"])
-        cloudy_threshold = cloudy_settings["threshold"]
-
-        time_str = max(now, now + time_until - cloudy_offset).strftime("%H:%M")
-        logger.debug("Schedule cloud check for {}".format(time_str))
-        schedule.every().day.at(time_str).do(execute_cloud_check_once, event=event, cloudy_offset=cloudy_offset,
-                                                                       cloudy_threshold=cloudy_threshold, timezone=timezone)
-        return True
-
-    while True:
-        now = datetime.now(timezone)
-        dayIndex = datetime.today().weekday()
-        currentDay = all_days[dayIndex]
-
-        for event in events:
-            [hour, minute] = [int(x) for x in event["time"].split(":")]
-
-            # Is event disabled?
-            if ("disabled" in event and event["disabled"]) or ("disabledUntil" in event and
-                                        event["disabledUntil"] >= now.strftime('%Y-%m-%d')):
-                continue
-
-            # Skip event if we already processed it or if the day and time is not matching
-            if event["id"] in executed_scheduled_events or not is_valid_time_and_day():
-                continue
-
-            if "ifExecutedEventID" in event and event["ifExecutedEventID"] not in executed_scheduled_events:
-                continue
-
-            if "onDark" in event:
-                is_dark, _ = get_sun_info()
-                if is_dark:
-                    run_scheduled_event()
-            elif "onSunny" in event:
-                is_dark, _ = get_sun_info()
-                if not is_dark:
-                    run_scheduled_event()
-            elif "waitForSunrise" in event:
-                is_dark, time_until = get_sun_info()
-                if not is_dark:
-                    run_scheduled_event()
-                elif not try_reschedule_for_cloud_check():
-                    reschedule_event()
-            elif "waitForSunset" in event:
-                is_dark, time_until = get_sun_info()
-                if is_dark:
-                    run_scheduled_event()
-                elif not try_reschedule_for_cloud_check():
-                    reschedule_event()
-            else:
-                run_scheduled_event()
-
-        schedule.run_pending()
-
-        # Reset data structures keeping track of which events have run
-        if now.hour == 0 and now.minute == 0:
-            executed_scheduled_events.clear()
-        sleep(60)
-
-
-# There is no other way to schedule only once other than doing this.
-def execute_once(event):
-    logger.debug("Executing rescheduled event {}".format(event['id']))
-    run_event(event)
-
-    executed_scheduled_events[event['id']] = True
-    return schedule.CancelJob
-
-
-def execute_cloud_check_once(event, cloudy_offset, cloudy_threshold, timezone):
-    logger.debug("Executing cloud check for event {}".format(event['id']))
-    if weather_manager.is_cloudy(cloudy_threshold):
-        run_event(event)
-        executed_scheduled_events[event['id']] = True
-    else:
-        now = datetime.now(timezone)
-        time_str = (now + cloudy_offset).strftime("%H:%M")
-        schedule.every().day.at(time_str).do(execute_once, event=event)
-
-    return schedule.CancelJob
-
-
-# Returns if it is dark or light, and the time until the next sunrise/sunset
-# True means it is dark, False means it is sunny
-def get_sun_info() -> tuple[bool, timedelta]:
-    city_name = config.TIMEZONE.split('/')[1]
-    city = Location(lookup(city_name, database()))
-    today = date.today()
-    sun = city.sun(date=today, local=True)
-    timezone = pytz.timezone(config.TIMEZONE)
-    current_time = datetime.now(timezone)
-    # Is it between sunrise and sunset?
-    if sun["sunrise"] <= current_time <= sun["sunset"]:
-        if sun["sunset"] >= current_time:
-            event = "sunset"
-            timediff = sun[event] - current_time
-        if sun["sunset"] <= current_time:
-            event = "sunrise"
-            timediff = current_time - sun[event]
-
-        logger.debug("It's sunny outside, {} in {}".format(event, timediff))
-        return (False, timediff)
-    else:
-        sun_tomorrow = city.sun(date=today + timedelta(days=1), local=True)
-        timediff = sun_tomorrow["sunrise"] - current_time
-        logger.debug("It's dark outside, {} until sunrise".format(timediff))
-        return (True, timediff)
-
-
 def init_logger():
     log_level = logging.DEBUG
     log_filename = 'log.txt'
@@ -556,21 +408,20 @@ if __name__ == "__main__":
     all_holidays = holidays.CountryHoliday(config.HOLIDAY_COUNTRY)
     datetime.now() in all_holidays
 
+    activities = config.get_activities() # Parse activity configuration
+
     # Setup logging to file
     logger = init_logger()
 
     tradfri_handler = TradfriHandler(IKEA_GATEWAY_IP, IKEA_GATEWAY_KEY, logger)
     weather_manager = WeatherManager(OPEN_WEATHER_MAP_KEY, OPEN_WEATHER_MAP_LAT, OPEN_WEATHER_MAP_LON)
-
-    # Load variables
-    activities = config.get_activities() # Parse activity configuration.
+    scheduler = Scheduler(logger, lambda event: run_event(event),
+                          lambda threshold: weather_manager.is_cloudy(threshold),
+                          activities["scheduled"], pytz.timezone(config.TIMEZONE), all_holidays)
+    scheduler.start()
 
     channel_handlers: dict[str, ChannelHandler] = dict(ChainMap(*map(lambda listener: dict([(channel, listener) for channel in listener.channels]),
                                                                      [clazz() for clazz in ChannelHandler.__subclasses__()])))
-
-    thread = threading.Thread(target=run_schedule, args=())
-    thread.daemon = True
-    thread.start()
 
     logger.debug("Server started")
 
