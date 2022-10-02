@@ -6,3 +6,4 @@ credentials.py
 *psk.conf
 log*.txt
 .vscode/
+log.txt*
