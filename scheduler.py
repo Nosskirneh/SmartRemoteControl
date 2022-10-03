@@ -143,7 +143,7 @@ class Scheduler:
     # Returns if it is dark or light, and the time until the next sunrise/sunset
     # True means it is dark, False means it is sunny
     def get_sun_info(self) -> tuple[bool, timedelta]:
-        city_name = self.timezone.split('/')[1]
+        city_name = self.timezone.zone.split('/')[1]
         city = Location(lookup(city_name, database()))
         today = date.today()
         sun = city.sun(date=today, local=True)
