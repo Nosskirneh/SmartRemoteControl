@@ -314,11 +314,11 @@ def webhooks_exec(webhook_id):
     # Check authorization
     if not is_auth_ok():
        return "Unauthorized", 401
-   
+
     webhooks = activities["webhooks"]
     if webhook_id not in webhooks:
         return "No such webhook configured", 404
-    
+
     # Verify that we should run this now
     def parse_operator_value(input: str) -> Tuple[Callable, int]:
         ops = {
@@ -333,29 +333,34 @@ def webhooks_exec(webhook_id):
         tail = input[len(head):]
         return ops[head], int(tail)
 
+    def exec_webhook_part(part: dict) -> bool:
+        if "conditional" in part:
+            for device, conditions in part["conditional"]["tradfri"].items():
+                has_updated = False
+                if "light-state" in conditions:
+                    light_state_cond = conditions["light-state"]
+                    has_updated = True
+                    if tradfri_handler.get_state(int(device)) != light_state_cond:
+                        return False # Condition was not met
+
+                if "dimmer" in conditions:
+                    current_value = tradfri_handler.get_dimmer(int(device), not has_updated)
+                    op, cond_value = parse_operator_value(conditions["dimmer"])
+                    if not op(current_value, cond_value):
+                        return False # Condition was not met
+
+        # If we got here, all conditions were met
+        actions = part["actions"]
+        if "tradfri" in actions:
+            run_tradfri(actions["tradfri"])
+
+        if "plain" in actions:
+            run_plain(actions["plain"])
+        return True
+
     webhook = webhooks[webhook_id]
-    if "conditional" in webhook:
-        for device, conditions in webhook["conditional"]["tradfri"].items():
-            has_updated = False
-            if "light-state" in conditions:
-                light_state_cond = conditions["light-state"]
-                has_updated = True
-                if tradfri_handler.get_state(int(device)) != light_state_cond:
-                    return "Condition was not met", 200
-
-            if "dimmer" in conditions:
-                current_value = tradfri_handler.get_dimmer(int(device), not has_updated)
-                op, cond_value = parse_operator_value(conditions["dimmer"])
-                if not op(current_value, cond_value):
-                    return "Condition was not met", 200
-
-    # If we got here, all conditions were met
-    actions = webhook["actions"]
-    if "tradfri" in actions:
-        run_tradfri(actions["tradfri"])
-                
-    if "plain" in actions:
-        run_plain(actions["plain"])
+    for part in webhook:
+        exec_webhook_part(part)
     return "OK", 200
 
 
@@ -381,7 +386,7 @@ def run_plain(commands):
         index = return_index(data, group)
         if index != -1:
             run_activity(group, index)
-            
+
 def run_tradfri(device_config):
     for device_id_str in device_config:
         device_commands = device_config[device_id_str]
