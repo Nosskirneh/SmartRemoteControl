@@ -17,4 +17,4 @@ class WeatherManager:
         # Only update every 20 minutes at most
         if not self.last_updated or datetime.now() > self.last_updated + timedelta(minutes=20):
             self.load_data()
-        return self.data.current.clouds > threshold
+        return self.data.current.clouds >= threshold
