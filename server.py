@@ -13,8 +13,9 @@ from IKEA import TradfriHandler
 from scheduler import Scheduler
 from weather import WeatherManager
 from channel_handler import ChannelHandler
+import util
 
-from datetime import datetime
+from datetime import datetime, time
 import holidays
 from collections import OrderedDict
 import pytz
@@ -335,19 +336,33 @@ def webhooks_exec(webhook_id):
 
     def exec_webhook_part(part: dict) -> bool:
         if "conditional" in part:
-            for device, conditions in part["conditional"]["tradfri"].items():
-                has_updated = False
-                if "light-state" in conditions:
-                    light_state_cond = conditions["light-state"]
-                    has_updated = True
-                    if tradfri_handler.get_state(int(device)) != light_state_cond:
-                        return False # Condition was not met
+            conditional = part["conditional"]
+            if "within-time" in conditional:
+                within_time = conditional["within-time"]
+                start_hour, start_minute = util.get_hour_minute(within_time["start"])
+                end_hour, end_minute = util.get_hour_minute(within_time["end"])
 
-                if "dimmer" in conditions:
-                    current_value = tradfri_handler.get_dimmer(int(device), not has_updated)
-                    op, cond_value = parse_operator_value(conditions["dimmer"])
-                    if not op(current_value, cond_value):
-                        return False # Condition was not met
+                now = datetime.now(pytz.timezone(config.TIMEZONE))
+                start = time(start_hour, start_minute)
+                end = time(end_hour, end_minute)
+
+                if not util.time_in_range(start, end, now.time()):
+                    return False # Condition was not met
+
+            if "tradfri" in conditional:
+                for device, conditions in conditional["tradfri"].items():
+                    has_updated = False
+                    if "light-state" in conditions:
+                        light_state_cond = conditions["light-state"]
+                        has_updated = True
+                        if tradfri_handler.get_state(int(device)) != light_state_cond:
+                            return False # Condition was not met
+
+                    if "dimmer" in conditions:
+                        current_value = tradfri_handler.get_dimmer(int(device), not has_updated)
+                        op, cond_value = parse_operator_value(conditions["dimmer"])
+                        if not op(current_value, cond_value):
+                            return False # Condition was not met
 
         # If we got here, all conditions were met
         actions = part["actions"]

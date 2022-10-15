@@ -7,6 +7,7 @@ from astral.geocoder import lookup, database
 from astral.location import Location
 from time import sleep
 import threading
+import util
 
 class Scheduler:
     def __init__(self,
@@ -76,7 +77,7 @@ class Scheduler:
             currentDay = all_days[dayIndex]
 
             for event in self.scheduled_events:
-                [hour, minute] = [int(x) for x in event["time"].split(":")]
+                hour, minute = util.get_hour_minute(event["time"])
 
                 # Is event disabled?
                 if ("disabled" in event and event["disabled"]) or ("disabledUntil" in event and
