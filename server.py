@@ -5,6 +5,7 @@ import os
 from time import sleep
 from typing import Callable, List, Tuple
 from flask import *
+from http import HTTPStatus
 import config
 from credentials import *
 import base64
@@ -28,6 +29,9 @@ app = Flask(__name__)
 
 def get_current_date_string():
     return datetime.now().strftime('%Y-%m-%dT%H:%M')
+
+def respond(http_status: HTTPStatus, content: str = None) -> Tuple[str, int]:
+    return http_status.phrase if content == None else content, http_status.value
 
 ### APP ROUTES ###
 @app.route("/")
@@ -67,24 +71,23 @@ def command():
     group = request.form.get("group")
     return activity(group, return_activity_index(name, group))
 
-
 @app.route("/checkAuth", methods=["GET"])
 def check_auth():
     if is_auth_ok():
-        return "OK", 200
-    return "Unauthorized", 401
+        return respond(HTTPStatus.OK)
+    return respond(HTTPStatus.UNAUTHORIZED)
 
 
 @app.route("/status", methods=["GET"])
 def return_online():
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 
 @app.route("/commands", methods=["GET"])
 def get_commands():
     # Check authorization
     if not is_auth_ok():
-        return "Unauthorized", 401
+        return respond(HTTPStatus.UNAUTHORIZED)
     commands = activities.copy()
     commands["tradfri_groups"] = tradfri_handler.export_groups()
     return jsonify(commands)
@@ -93,23 +96,23 @@ def get_commands():
 @app.route("/schedule/run/<string:identifier>", methods=["POST"])
 def manually_run_event(identifier):
     if not is_auth_ok():
-        return "Unauthorized", 401
+        return respond(HTTPStatus.UNAUTHORIZED)
 
     _, event = return_schedule_index(identifier)
     run_event(event)
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 
 @app.route("/schedule/enable/<string:identifier>", methods=["POST"])
 def set_enabled(identifier):
     if not is_auth_ok():
-        return "Unauthorized", 401
+        return respond(HTTPStatus.UNAUTHORIZED)
 
     _, event = return_schedule_index(identifier)
     event["disabled"] = request.form.get('enabled') != "true"
 
     config.save_activities(activities)
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 
 @app.route("/schedule/new", methods=["POST"])
@@ -122,7 +125,7 @@ def configure_existing(identifier):
 
 def configure_schedule(identifier: str) -> Tuple[str, int]:
     if not is_auth_ok():
-        return "Unauthorized", 401
+        return respond(HTTPStatus.UNAUTHORIZED)
 
     form = request.form
 
@@ -132,14 +135,14 @@ def configure_schedule(identifier: str) -> Tuple[str, int]:
     groups = form.get('groups')
 
     if not id or not time or time == '' or not groups:
-        return "You need to provide name, time and commands.", 400
+        return respond(HTTPStatus.BAD_REQUEST, "You need to provide name, time and commands.")
 
     groups = json.loads(groups)
     if len(groups) == 0:
-        return "You need to provide commands.", 400
+        return respond(HTTPStatus.BAD_REQUEST, "You need to provide commands.")
 
     if identifier == None and any(event["id"] == id for event in activities["scheduled"]):
-        return "An event with that name does already exist.", 400
+        return respond(HTTPStatus.BAD_REQUEST, "An event with that name does already exist.")
 
     enabled = form.get('enabled')
     fire_once = form.get('fireOnce')
@@ -217,23 +220,23 @@ def configure_schedule(identifier: str) -> Tuple[str, int]:
         result["data"] = event
 
     config.save_activities(activities)
-    return jsonify(result), 200
+    return respond(HTTPStatus.OK, jsonify(result))
 
 
 @app.route("/schedule/delete/<string:identifier>", methods=["POST"])
 def delete(identifier):
     if not is_auth_ok():
-        return "Unauthorized", 401
+        return respond(HTTPStatus.UNAUTHORIZED)
 
     index = return_schedule_index(identifier)
 
     if index == -1:
-        return "Event does not exist.", 400
+        return respond(HTTPStatus.NOT_FOUND, "Event does not exist: {}".format(identifier))
 
     activities["scheduled"].pop(index)
 
     config.save_activities(activities)
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 
 def run_activity(group: dict, index: int):
@@ -257,52 +260,52 @@ def run_activity(group: dict, index: int):
 def activity(group, index):
     # Check authorization
     if not is_auth_ok():
-       return "Unauthorized", 401
+       return respond(HTTPStatus.UNAUTHORIZED)
 
     if index == -1:
-        return "Not Implemented", 501
+        return respond(HTTPStatus.NOT_IMPLEMENTED)
 
     run_activity(group, index)
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 ## Trådfri
 @app.route("/tradfri/<int:group_id>/dimmer/<int:value>", methods=["POST"])
 def tradfri_dimmer(group_id, value):
     # Check authorization
     if not is_auth_ok():
-       return "Unauthorized", 401
+       return respond(HTTPStatus.UNAUTHORIZED)
 
     if not tradfri_handler.set_dimmer(group_id, value):
-        return "Device not found", 404
-    return "OK", 200
+        return respond(HTTPStatus.NOT_FOUND)
+    return respond(HTTPStatus.OK)
 
 
 @app.route("/tradfri/<int:group_id>/color/<string:value>", methods=["POST"])
 def tradfri_color(group_id, value):
     # Check authorization
     if not is_auth_ok():
-       return "Unauthorized", 401
+       return respond(HTTPStatus.UNAUTHORIZED)
 
     if value.startswith('#'):
         value = value.lstrip('#')
 
     if not tradfri_handler.set_hex_color(group_id, value):
-        return "Device not found", 404
-    return "OK", 200
+        return respond(HTTPStatus.NOT_FOUND)
+    return respond(HTTPStatus.OK)
 
 
 @app.route("/tradfri/<int:group_id>/<string:on_off>", methods=["POST"])
 def tradfri_on_off(group_id, on_off):
     # Check authorization
     if not is_auth_ok():
-       return "Unauthorized", 401
+       return respond(HTTPStatus.UNAUTHORIZED)
 
     if on_off not in ("on", "off"):
-        return "Use the on/off endpoint", 405
+        return respond(HTTPStatus.METHOD_NOT_ALLOWED, "Use the on/off endpoint")
 
     if not tradfri_handler.set_state(group_id, on_off == "on"):
-        return "Device not found", 404
-    return "OK", 200
+        return respond(HTTPStatus.NOT_FOUND, "Device not found")
+    return respond(HTTPStatus.OK)
 
 
 ## Webhooks
@@ -310,11 +313,11 @@ def tradfri_on_off(group_id, on_off):
 def webhooks_exec(webhook_id):
     # Check authorization
     if not is_auth_ok():
-       return "Unauthorized", 401
+       return respond(HTTPStatus.UNAUTHORIZED)
 
     webhooks = activities["webhooks"]
     if webhook_id not in webhooks:
-        return "No such webhook configured", 404
+        return respond(HTTPStatus.NOT_FOUND, "No such webhook configured: {}".format(webhook_id))
 
     # Verify that we should run this now
     def parse_operator_value(input: str) -> Tuple[Callable, int]:
@@ -372,7 +375,7 @@ def webhooks_exec(webhook_id):
     webhook = webhooks[webhook_id]
     for part in webhook:
         exec_webhook_part(part)
-    return "OK", 200
+    return respond(HTTPStatus.OK)
 
 
 ### METHODS ###
