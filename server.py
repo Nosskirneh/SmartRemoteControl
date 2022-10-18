@@ -95,8 +95,7 @@ def manually_run_event(identifier):
     if not is_auth_ok():
         return "Unauthorized", 401
 
-    index = return_schedule_index(identifier)
-    event = activities["scheduled"][index]
+    _, event = return_schedule_index(identifier)
     run_event(event)
     return "OK", 200
 
@@ -106,8 +105,7 @@ def set_enabled(identifier):
     if not is_auth_ok():
         return "Unauthorized", 401
 
-    index = return_schedule_index(identifier)
-    event = activities["scheduled"][index]
+    _, event = return_schedule_index(identifier)
     event["disabled"] = request.form.get('enabled') != "true"
 
     config.save_activities(activities)
@@ -214,8 +212,7 @@ def configure_schedule(identifier):
                                          index=len(activities["scheduled"]) - 1,
                                          now=get_current_date_string)
     else: # Existing event
-        index = return_schedule_index(identifier)
-        event = activities["scheduled"][index]
+        _, event = return_schedule_index(identifier)
         fill_event()
         result["data"] = event
 
@@ -427,13 +424,13 @@ def run_event(event):
         config.save_activities(activities)
 
 
-def return_schedule_index(identifier):
+def return_schedule_index(identifier) -> Tuple[int, dict]:
     count = 0
     for event in activities["scheduled"]:
         if event["id"] == identifier:
-            return count
+            return count, event
         count += 1
-    return -1
+    return -1, None
 
 def return_index(cmd, grp):
     count = 0
