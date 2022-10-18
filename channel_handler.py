@@ -1,48 +1,50 @@
+import logging
 import os
 import fnmatch
 import serial
 import requests
 import wakeonlan as wol
-from typing import Union
+from typing import Union, List
 from abc import ABC, abstractmethod
 
 class ChannelHandler(ABC):
-    def __init__(self, channels):
+    def __init__(self, channels: List[str], logger: logging.Logger):
         self.channels = channels
+        self.logger = logger
 
     @abstractmethod
-    def handle_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
+    def handle_code(self, channel: str, data: Union[str, dict]):
         pass
 
 class WakeOnLanHandler(ChannelHandler):
-    def __init__(self):
-        super().__init__(["WOL"])
+    def __init__(self, **kwargs):
+        super().__init__(["WOL"], kwargs)
 
-    def handle_code(self, channel: str, data: Union[str, dict]) -> Union[None, tuple[str, int]]:
+    def handle_code(self, _: str, data: Union[str, dict]):
         wol.send_magic_packet(data)
-        return True
 
 class HyperionWebHandler(ChannelHandler):
     REQ_ADDR = "http://localhost:1234"
 
-    def __init__(self):
-        super().__init__(["LED"])
+    def __init__(self, **kwargs):
+        super().__init__(["LED"], kwargs)
 
-    def handle_code(self, _, data: dict) -> Union[None, tuple[str, int]]:
+    def handle_code(self, _, data: dict):
         try:
             requests.post(self.REQ_ADDR + "/" + data["endpoint"], data=data["data"])
         except requests.ConnectionError:
-            return "Service Unavailable", 503
+            self.logger.error("HyperionWeb unavailable (503)")
+            pass
 
 class ArduinoHandler(ChannelHandler):
-    def __init__(self):
-        super().__init__(["MHZ433", "NEXA", "IR"])
+    def __init__(self, **kwargs):
+        super().__init__(["MHZ433", "NEXA", "IR"], kwargs)
 
         if os.environ.get("DEBUG") is None:
             # Initialize COM-port
             self.ser = self.init_comport()
 
-    def handle_code(self, channel, data) -> Union[None, tuple[str, int]]:
+    def handle_code(self, channel, data):
         if channel == "IR":
             self.ser_write(data + ";") # Send IR code to Arduino
 

@@ -3,7 +3,7 @@ import operator
 import sys
 import os
 from time import sleep
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple
 from flask import *
 import config
 from credentials import *
@@ -65,7 +65,7 @@ def login():
 def command():
     name  = request.form.get("name")
     group = request.form.get("group")
-    return activity(group, return_index(name, group))
+    return activity(group, return_activity_index(name, group))
 
 
 @app.route("/checkAuth", methods=["GET"])
@@ -120,7 +120,7 @@ def configure_new():
 def configure_existing(identifier):
     return configure_schedule(identifier)
 
-def configure_schedule(identifier):
+def configure_schedule(identifier: str) -> Tuple[str, int]:
     if not is_auth_ok():
         return "Unauthorized", 401
 
@@ -236,7 +236,7 @@ def delete(identifier):
     return "OK", 200
 
 
-def run_activity(group, index):
+def run_activity(group: dict, index: int):
     for activity_group in activities["groups"]:
         if activity_group["name"] != group:
             continue
@@ -245,10 +245,9 @@ def run_activity(group, index):
         for code_configuration in activity["codes"]:
             channel = code_configuration["channel"]
             if channel not in channel_handlers:
-                return "Channel not found", 404
-            result = channel_handlers[channel].handle_code(channel, code_configuration["data"])
-            if result != None:
-                return result
+                logger.error("Channel {} not found!".format(channel))
+                continue
+            channel_handlers[channel].handle_code(channel, code_configuration["data"])
 
             if code_configuration != activity["codes"][-1]: # Don't delay after last item
                 sleep(0.2)       # Wait ~200 milliseconds between codes.
@@ -377,7 +376,7 @@ def webhooks_exec(webhook_id):
 
 
 ### METHODS ###
-def is_auth_ok(auth = None):
+def is_auth_ok(auth: str = None) -> bool:
     if "FLASK_ENV" in os.environ and os.environ["FLASK_ENV"] == "development":
         return True
 
@@ -393,13 +392,13 @@ def is_auth_ok(auth = None):
     user, pw = base64.b64decode(auth).decode('utf-8').split(":")
     return (user == USERNAME and pw == PASSWORD)
 
-def run_plain(commands):
+def run_plain(commands: List):
     for (data, group) in commands:
-        index = return_index(data, group)
+        index = return_activity_index(data, group)
         if index != -1:
             run_activity(group, index)
 
-def run_tradfri(device_config):
+def run_tradfri(device_config: dict):
     for device_id_str in device_config:
         device_commands = device_config[device_id_str]
         device_id = int(device_id_str)
@@ -410,7 +409,7 @@ def run_tradfri(device_config):
         if "dimmer" in device_commands:
             tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
 
-def run_event(event):
+def run_event(event: dict):
     if "commands" in event:
         all_commands = event["commands"]
         if "plain" in all_commands:
@@ -424,7 +423,7 @@ def run_event(event):
         config.save_activities(activities)
 
 
-def return_schedule_index(identifier) -> Tuple[int, dict]:
+def return_schedule_index(identifier: str) -> Tuple[int, dict]:
     count = 0
     for event in activities["scheduled"]:
         if event["id"] == identifier:
@@ -432,28 +431,28 @@ def return_schedule_index(identifier) -> Tuple[int, dict]:
         count += 1
     return -1, None
 
-def return_index(cmd, grp):
+def return_activity_index(command: str, group: str) -> int:
     count = 0
     for activity in activities["groups"]:
         g = activity["name"]
-        if g != grp:
+        if g != group:
             continue
         for act in activity["activities"]:
             n = act["name"]
-            if n == cmd:
+            if n == command:
                 return count
             count += 1
     return -1
 
 
-def init_logger():
+def init_logger() -> logging.Logger:
     log_level = logging.DEBUG
     log_filename = 'log.txt'
     logger = logging.getLogger('root')
     logger.setLevel(log_level)
     formatter = logging.Formatter('%(asctime)s %(message)s')
 
-    def customTime(*args):
+    def customTime(*_):
         timezone = pytz.timezone(config.TIMEZONE)
         now = datetime.now(timezone)
         return now.timetuple()
@@ -494,7 +493,7 @@ if __name__ == "__main__":
     scheduler.start()
 
     channel_handlers: dict[str, ChannelHandler] = dict(ChainMap(*map(lambda listener: dict([(channel, listener) for channel in listener.channels]),
-                                                                     [clazz() for clazz in ChannelHandler.__subclasses__()])))
+                                                                     [clazz(logger=logger) for clazz in ChannelHandler.__subclasses__()])))
 
     logger.debug("Server started")
 

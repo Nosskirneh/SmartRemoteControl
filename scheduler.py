@@ -33,7 +33,7 @@ class Scheduler:
     def run_schedule(self):
         all_days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-        def is_valid_time_and_day():
+        def is_valid_time_and_day() -> bool:
             # If today is a holiday and all holidays should be excluded
             if "excludeAllHolidays" in event and event["excludeAllHolidays"] and now.date() in self.all_holidays:
                 return False
@@ -56,7 +56,7 @@ class Scheduler:
             self.logger.debug("Executing scheduled event {}".format(event['id']))
             self.execute_callback(event)
 
-        def try_reschedule_for_cloud_check():
+        def try_reschedule_for_cloud_check() -> bool:
             if "preponeWhenCloudy" not in event:
                 return False
 
