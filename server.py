@@ -393,10 +393,10 @@ def is_auth_ok(auth: str = None) -> bool:
             return False
 
     user, pw = base64.b64decode(auth).decode('utf-8').split(":")
-    return (user == USERNAME and pw == PASSWORD)
+    return user == USERNAME and pw == PASSWORD
 
 def run_plain(commands: List):
-    for (data, group) in commands:
+    for data, group in commands:
         index = return_activity_index(data, group)
         if index != -1:
             run_activity(group, index)
