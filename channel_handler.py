@@ -32,7 +32,7 @@ class HyperionWebHandler(ChannelHandler):
     def handle_code(self, _, data: dict):
         try:
             requests.post(self.REQ_ADDR + "/" + data["endpoint"], data=data["data"])
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout):
             self.logger.error("HyperionWeb unavailable (503)")
             pass
 
