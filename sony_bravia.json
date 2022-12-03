@@ -1,0 +1,402 @@
+{
+    "Confirm": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAABlAw=="
+    },
+    "Up": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAB0Aw=="
+    },
+    "Down": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAB1Aw=="
+    },
+    "Right": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAzAw=="
+    },
+    "Left": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAA0Aw=="
+    },
+    "Home": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAABgAw=="
+    },
+    "Options": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAA2Aw=="
+    },
+    "Return": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAjAw=="
+    },
+    "Num1": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAAAw=="
+    },
+    "Num2": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAABAw=="
+    },
+    "Num3": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAACAw=="
+    },
+    "Num4": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAADAw=="
+    },
+    "Num5": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAEAw=="
+    },
+    "Num6": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAFAw=="
+    },
+    "Num7": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAGAw=="
+    },
+    "Num8": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAHAw=="
+    },
+    "Num9": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAIAw=="
+    },
+    "Num0": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAJAw=="
+    },
+    "Num11": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAKAw=="
+    },
+    "Num12": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAALAw=="
+    },
+    "Power": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAVAw=="
+    },
+    "Display": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAA6Aw=="
+    },
+    "VolumeUp": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAASAw=="
+    },
+    "VolumeDown": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAATAw=="
+    },
+    "Mute": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAUAw=="
+    },
+    "Audio": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAXAw=="
+    },
+    "SubTitle": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAoAw=="
+    },
+    "Yellow": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAnAw=="
+    },
+    "Blue": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAkAw=="
+    },
+    "Red": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAlAw=="
+    },
+    "Green": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAmAw=="
+    },
+    "Play": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAaAw=="
+    },
+    "Stop": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAYAw=="
+    },
+    "Pause": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAZAw=="
+    },
+    "Rewind": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAbAw=="
+    },
+    "Forward": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAcAw=="
+    },
+    "Prev": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAA8Aw=="
+    },
+    "Next": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAA9Aw=="
+    },
+    "Replay": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAB5Aw=="
+    },
+    "Advance": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAB4Aw=="
+    },
+    "TopMenu": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABgAw=="
+    },
+    "PopUpMenu": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABhAw=="
+    },
+    "Eject": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAABIAw=="
+    },
+    "Rec": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAgAw=="
+    },
+    "SyncMenu": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABYAw=="
+    },
+    "ClosedCaption": {
+        "type": "ircc",
+        "value": "AAAAAgAAAKQAAAAQAw=="
+    },
+    "Teletext": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAA/Aw=="
+    },
+    "ChannelUp": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAQAw=="
+    },
+    "ChannelDown": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAARAw=="
+    },
+    "Input": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAlAw=="
+    },
+    "GGuide": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAOAw=="
+    },
+    "EPG": {
+        "type": "ircc",
+        "value": "AAAAAgAAAKQAAABbAw=="
+    },
+    "Enter": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAALAw=="
+    },
+    "DOT": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAdAw=="
+    },
+    "Analog": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAAANAw=="
+    },
+    "Exit": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAABjAw=="
+    },
+    "*AD": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAA7Aw=="
+    },
+    "Digital": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAyAw=="
+    },
+    "Analog?": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAuAw=="
+    },
+    "BS": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAsAw=="
+    },
+    "CS": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAArAw=="
+    },
+    "BSCS": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAQAw=="
+    },
+    "Ddata": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAVAw=="
+    },
+    "SEN": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB9Aw=="
+    },
+    "Netflix": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB8Aw=="
+    },
+    "InternetWidgets": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB6Aw=="
+    },
+    "InternetVideo": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB5Aw=="
+    },
+    "SceneSelect": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB4Aw=="
+    },
+    "Mode3D": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAABNAw=="
+    },
+    "iManual": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB7Aw=="
+    },
+    "Wide": {
+        "type": "ircc",
+        "value": "AAAAAgAAAKQAAAA9Aw=="
+    },
+    "Jump": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAA7Aw=="
+    },
+    "PAP": {
+        "type": "ircc",
+        "value": "AAAAAgAAAKQAAAB3Aw=="
+    },
+    "MyEPG": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAABrAw=="
+    },
+    "ProgramDescription": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAWAw=="
+    },
+    "WriteChapter": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAABsAw=="
+    },
+    "TrackID": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAB+Aw=="
+    },
+    "TenKey": {
+        "type": "ircc",
+        "value": "AAAAAgAAAJcAAAAMAw=="
+    },
+    "AppliCast": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABvAw=="
+    },
+    "acTVila": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAAByAw=="
+    },
+    "DeleteVideo": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAAAfAw=="
+    },
+    "EasyStartUp": {
+        "type": "ircc",
+        "value": "AAAAAgAAAHcAAABqAw=="
+    },
+    "OneTouchTimeRec": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABkAw=="
+    },
+    "OneTouchView": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABlAw=="
+    },
+    "OneTouchRec": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABiAw=="
+    },
+    "OneTouchRecStop": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABjAw=="
+    },
+    "Analog2": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAA4Aw=="
+    },
+    "Tv_Radio": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABXAw=="
+    },
+    "PhotoFrame": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABVAw=="
+    },
+    "TvPause": {
+        "type": "ircc",
+        "value": "AAAAAgAAABoAAABnAw=="
+    },
+    "MuteOn": {
+        "type": "url",
+        "value": "/cers/command/MuteOn"
+    },
+    "MuteOff": {
+        "type": "url",
+        "value": "/cers/command/MuteOff"
+    },
+    "PowerOff": {
+        "type": "ircc",
+        "value": "AAAAAQAAAAEAAAAvAw=="
+    },
+    "ZoomIn": {
+        "type": "url",
+        "value": "/cers/command/ZoomIn"
+    },
+    "ZoomOut": {
+        "type": "url",
+        "value": "/cers/command/ZoomOut"
+    },
+    "BrowserBack": {
+        "type": "url",
+        "value": "/cers/command/BrowserBack"
+    },
+    "BrowserForward": {
+        "type": "url",
+        "value": "/cers/command/BrowserForward"
+    },
+    "BrowserReload": {
+        "type": "url",
+        "value": "/cers/command/BrowserReload"
+    },
+    "BrowserStop": {
+        "type": "url",
+        "value": "/cers/command/BrowserStop"
+    },
+    "BrowserBookmarkList": {
+        "type": "url",
+        "value": "/cers/command/BrowserBookmarkList"
+    }
+}

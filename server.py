@@ -13,7 +13,7 @@ from collections import ChainMap
 from IKEA import TradfriHandler
 from scheduler import Scheduler
 from weather import WeatherManager
-from channel_handler import ChannelHandler
+from channel_handler import ChannelHandler, SonyTVAPIHandler
 import util
 
 from datetime import datetime, time
@@ -362,6 +362,12 @@ def webhooks_exec(webhook_id):
                         op, cond_value = parse_operator_value(conditions["dimmer"])
                         if not op(current_value, cond_value):
                             return False # Condition was not met
+
+            if "sony-bravia-tv" in conditional and "is-on" in conditional["sony-bravia-tv"]:
+                required = conditional["sony-bravia-tv"]["is-on"]
+                is_on = SonyTVAPIHandler.is_on()
+                if required != is_on:
+                    return False
 
         # If we got here, all conditions were met
         actions = part["actions"]

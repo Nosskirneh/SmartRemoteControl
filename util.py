@@ -1,5 +1,6 @@
 import datetime
-from typing import Tuple
+from typing import Tuple, Union
+import json
 
 def get_hour_minute(time: str) -> Tuple[str, str]:
     return [int(x) for x in time.split(":")]
@@ -10,3 +11,7 @@ def time_in_range(start: datetime.time, end: datetime.time, time: datetime.time)
         return start <= time <= end
     else:
         return start <= time or time <= end
+
+def load_json_file(filename: str) -> Union[dict, list]:
+    with open(filename) as file:
+        return json.load(file)
