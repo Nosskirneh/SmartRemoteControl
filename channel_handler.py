@@ -19,7 +19,7 @@ class ChannelHandler(ABC):
 
 class WakeOnLanHandler(ChannelHandler):
     def __init__(self, **kwargs):
-        super().__init__(["WOL"], kwargs)
+        super().__init__(["WOL"], **kwargs)
 
     def handle_code(self, _: str, data: Union[str, dict]):
         wol.send_magic_packet(data)
@@ -28,7 +28,7 @@ class HyperionWebHandler(ChannelHandler):
     REQ_ADDR = "http://localhost:1234"
 
     def __init__(self, **kwargs):
-        super().__init__(["LED"], kwargs)
+        super().__init__(["LED"], **kwargs)
 
     def handle_code(self, _, data: dict):
         try:
@@ -45,7 +45,7 @@ class SonyTVAPIHandler(ChannelHandler):
     HEADERS = {"X-CERS-DEVICE-ID": "rpi", "X-CERS-DEVICE-INFO": "Linux/Python", 'Content-Type': 'application/xml'}
 
     def __init__(self, **kwargs):
-        super().__init__(["SONY"], kwargs)
+        super().__init__(["SONY"], **kwargs)
 
     def handle_code(self, _, command: str):
         if command not in self.COMMANDS:
@@ -84,7 +84,7 @@ class SonyTVAPIHandler(ChannelHandler):
 
 class ArduinoHandler(ChannelHandler):
     def __init__(self, **kwargs):
-        super().__init__(["MHZ433", "NEXA", "IR"], kwargs)
+        super().__init__(["MHZ433", "NEXA", "IR"], **kwargs)
 
         if os.environ.get("DEBUG") is None:
             # Initialize COM-port
