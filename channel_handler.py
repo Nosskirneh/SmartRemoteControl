@@ -3,6 +3,7 @@ import os
 import fnmatch
 import serial
 import requests
+from requests.exceptions import ConnectionError
 import wakeonlan as wol
 from typing import Union, List
 from abc import ABC, abstractmethod
@@ -33,7 +34,7 @@ class HyperionWebHandler(ChannelHandler):
     def handle_code(self, _, data: dict):
         try:
             requests.post(self.REQ_ADDR + "/" + data["endpoint"], data=data["data"])
-        except (requests.ConnectionError, requests.Timeout):
+        except (ConnectionError, requests.Timeout):
             self.logger.error("HyperionWeb unavailable (503)")
             pass
 
@@ -64,7 +65,7 @@ class SonyTVAPIHandler(ChannelHandler):
                 requests.post(self.REQ_ADDR + "/IRCC", data=data, headers=self.HEADERS)
             elif command_info["type"] == "url":
                 requests.get(self.REQ_ADDR + command_info["value"], headers=self.HEADERS)
-        except (requests.ConnectionError, requests.Timeout):
+        except (ConnectionError, requests.Timeout):
             self.logger.error("Sony TV unavailable (503)")
             pass
 
@@ -75,7 +76,7 @@ class SonyTVAPIHandler(ChannelHandler):
             # it is no longer responding, hence the short timeout
             response = requests.get(self.REQ_ADDR + "/cers/api/getStatus",
                                     headers=self.HEADERS, timeout=1)
-        except (requests.ConnectionError, requests.Timeout)
+        except (ConnectionError, requests.Timeout):
             pass
             return False
 
