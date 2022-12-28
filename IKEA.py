@@ -7,7 +7,7 @@ from pytradfri.api.libcoap_api import APIFactory
 from pytradfri.group import Group
 from pytradfri.command import Command
 from pytradfri.error import RequestTimeout
-from typing import Callable, Iterable, Union
+from typing import Callable, Iterable, Tuple, Union
 
 import numpy
 
@@ -65,21 +65,22 @@ class TradfriHandler:
         return (numpy.sum(rgb_colors, axis=0) // len(rgb_colors)).view(RGB)
     
     @staticmethod
-    def get_hex_color_state_light_control(group_members):
+    def get_hex_color_dimmer_state_light_control(group_members) -> Tuple[Iterable, Iterable, Iterable]:
         # These properties exists on the group as well, but they are incorrect for some reason
         return zip(*map(lambda light: (light.light_control.lights[0].hex_color,
-                                       light.light_control.lights[0].state),
+                                       light.light_control.lights[0].state,
+                                       light.light_control.lights[0].dimmer),
                         filter(lambda device: device.has_light_control,
                                 group_members)
                         ))
 
     def export_group(self, group: Group) -> dict[str, Union[str, int]]:
-        hex_colors, states = self.get_hex_color_state_light_control(self.group_members[group.id])
+        hex_colors, states, dimmers = self.get_hex_color_dimmer_state_light_control(self.group_members[group.id])
         return {
             "name": group.name,
             "id": group.id,
             "state": any(states),
-            "dimmer": group.dimmer,
+            "dimmer": dimmers[0],
             "color": '#' + str(self.average_hex_color(list(hex_colors)))
         }
 
@@ -95,6 +96,7 @@ class TradfriHandler:
     def load_groups(self):
         self.groups: dict[int, Group] = {}
         self.group_members: dict[int, Iterable] = {}
+        self.dirty_group_ids: set[int] = set()
         try:
             devices_commands = self.api(self.gateway.get_groups())
             groups = self.api(devices_commands)
@@ -117,13 +119,23 @@ class TradfriHandler:
     def get_state(self, group_id: int, refresh_data=True) -> int:
         if refresh_data:
             self.load_group(group_id)
-        _, states = self.get_hex_color_state_light_control(self.group_members[group_id])
+        _, states, _ = self.get_hex_color_dimmer_state_light_control(self.group_members[group_id])
         return any(states)
 
     def get_dimmer(self, group_id: int, refresh_data=True) -> int:
         if refresh_data:
             self.load_group(group_id)
-        return self.groups[group_id].dimmer
+        g_dim_value = self.groups[group_id].dimmer
+        _, _, dim_values = self.get_hex_color_dimmer_state_light_control(self.group_members[group_id])
+        if (dim_values[0] != g_dim_value):
+            # Someone used the normal remote, and something is broken (either IKEAs gateway or pytradfri),
+            # and the lights in the group does not have the dim value of the group itself. This results
+            # in that we cannot use set with the group's value, because it already believes it has set it.
+            # To solve this, we simply set a dirty flag and use that later to modify the value.
+            self.dirty_group_ids.add(group_id)
+        elif group_id in self.dirty_group_ids:
+            self.dirty_group_ids.remove(group_id)
+        return dim_values[0]
 
     def get_groups(self) -> Iterable[Group]:
         # Only update every 5 minutes at most
@@ -138,6 +150,8 @@ class TradfriHandler:
                                               group_id)
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
+        if group_id in self.dirty_group_ids:
+            value -= 1
         return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=3),
                                               lambda lg: self.update_group(lg, 'dimmer', value),
                                               group_id)
