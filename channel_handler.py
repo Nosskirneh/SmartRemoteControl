@@ -8,6 +8,8 @@ import wakeonlan as wol
 from typing import Union, List
 from abc import ABC, abstractmethod
 from util import load_json_file
+import atexit
+from rpi_rf import RFDevice
 
 class ChannelHandler(ABC):
     def __init__(self, channels: List[str], logger: logging.Logger):
@@ -83,20 +85,89 @@ class SonyTVAPIHandler(ChannelHandler):
         # When the TV is off, the value is Others
         return "ExtInput" in response.content.decode("utf-8")
 
+
+class MHZ433Base(ABC):
+    GPIO_PIN = 26
+    PROTOCOL = 0
+    REPEAT = 3
+    PULSE_LENGTH = 350
+
+    GPIO_DEVICE = RFDevice(GPIO_PIN)
+    GPIO_DEVICE.enable_tx()
+    GPIO_DEVICE.tx_repeat = REPEAT
+
+    atexit.register(lambda: MHZ433Base.GPIO_DEVICE.cleanup())
+
+    @staticmethod
+    def split_data(data: str) -> Union[int, bool]:
+        new_state, device = data.split(' ')
+        return int(device) - 1, new_state == "OFF"
+
+    def send_code(self, code: int):
+        self.GPIO_DEVICE.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
+
+
+class RC5Handler(ChannelHandler, MHZ433Base):
+    PROTOCOL = 1
+    PULSE_LENGTH = 350
+    REPEAT = 10
+
+    def __init__(self, **kwargs):
+        super().__init__(["MHZ433"], **kwargs)
+        self.codes = [
+            (1381717, 1381716), # 1-1
+            (1394005, 1394004), # 1-2
+            (1397077, 1397076), # 1-3
+            (1397845, 1397844), # 1-4
+            (4527445, 4527444), # 2-1
+            (4539733, 4539732), # 2-2
+            (4542805, 4542804), # 2-3
+            (4543573, 4543572), # 2-4
+            (5313877, 5313876), # 3-1
+            (5326165, 5326164), # 3-2
+            (5329237, 5329236), # 3-3
+            (5330005, 5330004), # 3-4
+            (5510485, 5510484), # 4-1
+            (5522773, 5522772), # 4-2
+            (5525845, 5525844), # 4-3
+            (5526613, 5526612)  # 4-4
+        ]
+
+    def handle_code(self, _, command: str):
+        device_index, new_state = super().split_data(command)
+        code = self.codes[device_index][new_state]
+        super().send_code(code)
+
+
+class NexaHandler(ChannelHandler, MHZ433Base):
+    PROTOCOL = 6
+    PULSE_LENGTH = 250
+
+    def __init__(self, **kwargs):
+        super().__init__(["NEXA"], **kwargs)
+        self.controller_id = "00110111111100010011011110"
+        self.nexa_channels = ["00", "01", "10", "11"]
+        self.switches = ["00", "01", "10", "11"]
+        self.states = ["0", "1"]
+        self.group = "0"
+
+    def handle_code(self, _, command: str):
+        device_index, new_state = super().split_data(command)
+        code = int(self.controller_id + self.group + self.states[new_state] +
+                   self.nexa_channels[0] + self.switches[device_index], 2)
+        super().send_code(code)
+
+
 class ArduinoHandler(ChannelHandler):
     def __init__(self, **kwargs):
-        super().__init__(["MHZ433", "NEXA", "IR"], **kwargs)
+        super().__init__(["IR"], **kwargs)
 
         if os.environ.get("DEBUG") is None:
             # Initialize COM-port
             self.ser = self.init_comport()
 
-    def handle_code(self, channel, data):
-        if channel == "IR":
-            self.ser_write(data + ";") # Send IR code to Arduino
-
-        elif channel == "MHZ433" or channel == "NEXA":
-            self.ser_write(channel + ": " + data + ";")
+    def handle_code(self, _, data: str):
+        self.ser_write(data + ";") # Send IR code to Arduino
 
     def ser_write(self, data: str):
         if os.environ.get("DEBUG") is None:
@@ -128,4 +199,3 @@ class ArduinoHandler(ChannelHandler):
             except Exception as e:
                 print(" * Error open serial port: " + str(e))
         return ser
-
