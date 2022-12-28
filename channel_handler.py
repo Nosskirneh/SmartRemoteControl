@@ -7,9 +7,7 @@ from requests.exceptions import ConnectionError
 import wakeonlan as wol
 from typing import Union, List
 from abc import ABC, abstractmethod
-from util import load_json_file
-import atexit
-from rpi_rf import RFDevice
+from util import load_json_file, is_debug
 
 class ChannelHandler(ABC):
     def __init__(self, channels: List[str], logger: logging.Logger):
@@ -92,11 +90,19 @@ class MHZ433Base(ABC):
     REPEAT = 3
     PULSE_LENGTH = 350
 
-    GPIO_DEVICE = RFDevice(GPIO_PIN)
-    GPIO_DEVICE.enable_tx()
-    GPIO_DEVICE.tx_repeat = REPEAT
+    if not is_debug():
+        import atexit
+        from rpi_rf import RFDevice
 
-    atexit.register(lambda: MHZ433Base.GPIO_DEVICE.cleanup())
+        GPIO_DEVICE = RFDevice(GPIO_PIN)
+        GPIO_DEVICE.enable_tx()
+        GPIO_DEVICE.tx_repeat = REPEAT
+        atexit.register(lambda: MHZ433Base.GPIO_DEVICE.cleanup())
+    else:
+        import types
+        GPIO_DEVICE = types.SimpleNamespace(
+            tx_code=lambda *args: print("tx_code: {}".format(args))
+        )
 
     @staticmethod
     def split_data(data: str) -> Union[int, bool]:
@@ -162,7 +168,7 @@ class ArduinoHandler(ChannelHandler):
     def __init__(self, **kwargs):
         super().__init__(["IR"], **kwargs)
 
-        if os.environ.get("DEBUG") is None:
+        if not is_debug():
             # Initialize COM-port
             self.ser = self.init_comport()
 
@@ -170,7 +176,7 @@ class ArduinoHandler(ChannelHandler):
         self.ser_write(data + ";") # Send IR code to Arduino
 
     def ser_write(self, data: str):
-        if os.environ.get("DEBUG") is None:
+        if not is_debug():
             self.ser.write(data.encode())
 
     @staticmethod
