@@ -1,13 +1,15 @@
 import logging
-import os
-import fnmatch
-import serial
 import requests
 from requests.exceptions import ConnectionError
 import wakeonlan as wol
 from typing import Union, List
 from abc import ABC, abstractmethod
 from util import load_json_file, is_debug
+
+if not is_debug():
+    import atexit
+    from rpi_rf import RFDevice
+    import lirc
 
 class ChannelHandler(ABC):
     def __init__(self, channels: List[str], logger: logging.Logger):
@@ -91,9 +93,6 @@ class MHZ433Base(ABC):
     PULSE_LENGTH = 350
 
     if not is_debug():
-        import atexit
-        from rpi_rf import RFDevice
-
         GPIO_DEVICE = RFDevice(GPIO_PIN)
         GPIO_DEVICE.enable_tx()
         GPIO_DEVICE.tx_repeat = REPEAT
@@ -101,7 +100,7 @@ class MHZ433Base(ABC):
     else:
         import types
         GPIO_DEVICE = types.SimpleNamespace(
-            tx_code=lambda *args: print("tx_code: {}".format(args))
+            tx_code=lambda *args: print("rf tx_code: {}".format(args))
         )
 
     @staticmethod
@@ -164,44 +163,20 @@ class NexaHandler(ChannelHandler, MHZ433Base):
         super().send_code(code)
 
 
-class ArduinoHandler(ChannelHandler):
+class LIRCHandler(ChannelHandler):
     def __init__(self, **kwargs):
         super().__init__(["IR"], **kwargs)
-
         if not is_debug():
-            # Initialize COM-port
-            self.ser = self.init_comport()
-
-    def handle_code(self, _, data: str):
-        self.ser_write(data + ";") # Send IR code to Arduino
-
-    def ser_write(self, data: str):
-        if not is_debug():
-            self.ser.write(data.encode())
-
-    @staticmethod
-    def init_comport():
-        # Find the right USB port
-        matches = []
-
-        for root, _, filenames in os.walk("/dev"):
-            for filename in fnmatch.filter(filenames, "ttyUSB*"):
-                matches.append(os.path.join(root, filename))
-
-        ser          = serial.Serial()
-        ser.port     = matches[-1]
-        ser.baudrate = 9600
-        ser.timeout  = 0
-        ser.xonxoff  = False       # Disable software flow control
-        ser.rtscts   = False       # Disable hardware (RTS/CTS) flow control
-        ser.dsrdtr   = False       # Disable hardware (DSR/DTR) flow control
-
-        if ser.isOpen():
-            print("### Serial conenction already open!")
+            self.client = lirc.Client()
         else:
-            try:
-                ser.open()
-                print(" * Serial connection open!")
-            except Exception as e:
-                print(" * Error open serial port: " + str(e))
-        return ser
+            import types
+            self.client = types.SimpleNamespace(
+                send_once=lambda *args: print("lirc send_once: {}".format(args))
+            )
+
+    def handle_code(self, _: str, data: dict):
+        try:
+            self.client.send_once(data["remote"], data["key"])
+        except lirc.exceptions.LircdCommandFailureError as error:
+            self.logger.error('Unable to request LIRC: {}'.format(error))
+            pass
