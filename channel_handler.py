@@ -87,20 +87,19 @@ class SonyTVAPIHandler(ChannelHandler):
 
 
 class MHZ433Base(ABC):
-    GPIO_PIN = 26
+    GPIO_PIN = 2
     PROTOCOL = 0
-    REPEAT = 3
-    PULSE_LENGTH = 350
+    PULSE_LENGTH = 0
 
     if not is_debug():
         GPIO_DEVICE = RFDevice(GPIO_PIN)
         GPIO_DEVICE.enable_tx()
-        GPIO_DEVICE.tx_repeat = REPEAT
         atexit.register(lambda: MHZ433Base.GPIO_DEVICE.cleanup())
     else:
         import types
         GPIO_DEVICE = types.SimpleNamespace(
-            tx_code=lambda *args: print("rf tx_code: {}".format(args))
+            tx_code=lambda *args: print("rf tx_code: {}".format(args)),
+            tx_repeat = 0
         )
 
     @staticmethod
@@ -108,13 +107,15 @@ class MHZ433Base(ABC):
         new_state, device = data.split(' ')
         return int(device) - 1, new_state == "OFF"
 
-    def send_code(self, code: int):
+
+    def send_code(self, code: int, repeat: int):
+        self.GPIO_DEVICE.tx_repeat = repeat
         self.GPIO_DEVICE.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
 
 
 class RC5Handler(ChannelHandler, MHZ433Base):
     PROTOCOL = 1
-    PULSE_LENGTH = 350
+    PULSE_LENGTH = 420
     REPEAT = 10
 
     def __init__(self, **kwargs):
@@ -141,12 +142,13 @@ class RC5Handler(ChannelHandler, MHZ433Base):
     def handle_code(self, _, command: str):
         device_index, new_state = super().split_data(command)
         code = self.codes[device_index][new_state]
-        super().send_code(code)
+        super().send_code(code, self.REPEAT)
 
 
 class NexaHandler(ChannelHandler, MHZ433Base):
     PROTOCOL = 6
     PULSE_LENGTH = 250
+    REPEAT = 3
 
     def __init__(self, **kwargs):
         super().__init__(["NEXA"], **kwargs)
@@ -160,7 +162,7 @@ class NexaHandler(ChannelHandler, MHZ433Base):
         device_index, new_state = super().split_data(command)
         code = int(self.controller_id + self.group + self.states[new_state] +
                    self.nexa_channels[0] + self.switches[device_index], 2)
-        super().send_code(code)
+        super().send_code(code, self.REPEAT)
 
 
 class LIRCHandler(ChannelHandler):
