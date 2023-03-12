@@ -253,6 +253,7 @@ def run_activity(group: dict, index: int):
                 continue
 
             channel_handlers[channel].handle_code(channel, code_configuration["data"])
+        return
 
 
 @app.route("/activity/<group>/<int:index>", methods=["POST"])

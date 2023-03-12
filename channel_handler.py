@@ -6,7 +6,6 @@ from typing import Union, List
 from abc import ABC, abstractmethod
 from util import load_json_file, is_debug
 from threading import Semaphore
-from time import sleep
 
 if not is_debug():
     import atexit
@@ -115,14 +114,13 @@ class MHZ433Base(ABC):
         self.semaphore.acquire()
         self.GPIO_DEVICE.tx_repeat = repeat
         self.GPIO_DEVICE.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
-        sleep(0.2) # Wait ~200 milliseconds between codes.
         self.semaphore.release()
 
 
 class RC5Handler(ChannelHandler, MHZ433Base):
     PROTOCOL = 1
     PULSE_LENGTH = 420
-    REPEAT = 10
+    REPEAT = 8
 
     def __init__(self, **kwargs):
         super().__init__(["MHZ433"], **kwargs)
