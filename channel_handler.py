@@ -5,6 +5,8 @@ import wakeonlan as wol
 from typing import Union, List
 from abc import ABC, abstractmethod
 from util import load_json_file, is_debug
+from threading import Semaphore
+from time import sleep
 
 if not is_debug():
     import atexit
@@ -91,6 +93,8 @@ class MHZ433Base(ABC):
     PROTOCOL = 0
     PULSE_LENGTH = 0
 
+    semaphore = Semaphore(1)
+
     if not is_debug():
         GPIO_DEVICE = RFDevice(GPIO_PIN)
         GPIO_DEVICE.enable_tx()
@@ -107,10 +111,12 @@ class MHZ433Base(ABC):
         new_state, device = data.split(' ')
         return int(device) - 1, new_state == "OFF"
 
-
     def send_code(self, code: int, repeat: int):
+        self.semaphore.acquire()
         self.GPIO_DEVICE.tx_repeat = repeat
         self.GPIO_DEVICE.tx_code(code, self.PROTOCOL, self.PULSE_LENGTH)
+        sleep(0.2) # Wait ~200 milliseconds between codes.
+        self.semaphore.release()
 
 
 class RC5Handler(ChannelHandler, MHZ433Base):

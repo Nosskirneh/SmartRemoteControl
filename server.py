@@ -2,6 +2,7 @@
 import operator
 import sys
 import os
+from threading import Thread
 from time import sleep
 from typing import Callable, List, Tuple
 from flask import *
@@ -250,10 +251,8 @@ def run_activity(group: dict, index: int):
             if channel not in channel_handlers:
                 logger.error("Channel {} not found!".format(channel))
                 continue
-            channel_handlers[channel].handle_code(channel, code_configuration["data"])
 
-            if code_configuration != activity["codes"][-1]: # Don't delay after last item
-                sleep(0.2)       # Wait ~200 milliseconds between codes.
+            channel_handlers[channel].handle_code(channel, code_configuration["data"])
 
 
 @app.route("/activity/<group>/<int:index>", methods=["POST"])
@@ -370,12 +369,7 @@ def webhooks_exec(webhook_id):
                     return False
 
         # If we got here, all conditions were met
-        actions = part["actions"]
-        if "tradfri" in actions:
-            run_tradfri(actions["tradfri"])
-
-        if "plain" in actions:
-            run_plain(actions["plain"])
+        run_plain_and_tradfri(part["actions"])
         return True
 
     webhook = webhooks[webhook_id]
@@ -405,7 +399,9 @@ def run_plain(commands: List):
     for data, group in commands:
         index = return_activity_index(data, group)
         if index != -1:
-            run_activity(group, index)
+            thread = Thread(target=run_activity, args=(group, index))
+            thread.start()
+            yield thread
 
 def run_tradfri(device_config: dict):
     for device_id_str in device_config:
@@ -418,14 +414,20 @@ def run_tradfri(device_config: dict):
         if "dimmer" in device_commands:
             tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
 
+def run_plain_and_tradfri(container: dict):
+    if "plain" in container:
+        threads = run_plain(container["plain"])
+
+    if "tradfri" in container:
+        run_tradfri(container["tradfri"])
+
+    if threads:
+        for thread in threads:
+            thread.join()
+
 def run_event(event: dict):
     if "commands" in event:
-        all_commands = event["commands"]
-        if "plain" in all_commands:
-            run_plain(all_commands["plain"])
-
-        if "tradfri" in all_commands:
-            run_tradfri(all_commands["tradfri"])
+        run_plain_and_tradfri(event["commands"])
 
     if "fireOnce" in event and event["fireOnce"]:
         event["disabled"] = True
