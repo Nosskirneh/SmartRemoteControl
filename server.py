@@ -348,6 +348,18 @@ def webhooks_exec(webhook_id):
                 if not util.time_in_range(start, end, now.time()):
                     return False # Condition was not met
 
+            if "within-months" in conditional:
+                within_months = conditional["within-months"]
+                start = within_months["start"]
+                end = within_months["end"]
+                now = datetime.now(pytz.timezone(config.TIMEZONE))
+                current_month = now.month
+                if start > end: # for example start: 8, end: 4
+                    if not (current_month >= start or current_month <= end):
+                        return False
+                elif not (start <= current_month <= end): # for example start: 1, end: 4
+                    return False
+
             if "tradfri" in conditional:
                 for device, conditions in conditional["tradfri"].items():
                     has_updated = False
