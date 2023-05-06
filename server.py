@@ -365,6 +365,9 @@ def webhooks_exec(webhook_id):
 
             if "sony-bravia-tv" in conditional and "is-on" in conditional["sony-bravia-tv"]:
                 required = conditional["sony-bravia-tv"]["is-on"]
+                if "delay" in conditional["sony-bravia-tv"]:
+                    # Since the TV takes some time to update its API, let's sleep for some time
+                    sleep(conditional["sony-bravia-tv"]["delay"] / 1000)
                 is_on = SonyTVAPIHandler.is_on()
                 if required != is_on:
                     return False
