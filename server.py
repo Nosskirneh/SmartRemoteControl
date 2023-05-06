@@ -313,7 +313,7 @@ def tradfri_on_off(group_id, on_off):
 def webhooks_exec(webhook_id):
     # Check authorization
     if not is_auth_ok():
-       return respond(HTTPStatus.UNAUTHORIZED)
+        return respond(HTTPStatus.UNAUTHORIZED)
 
     webhooks = activities["webhooks"]
     if webhook_id not in webhooks:
