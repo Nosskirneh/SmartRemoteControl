@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import time
 import json
 from logging import Logger
 import uuid
@@ -96,7 +97,6 @@ class TradfriHandler:
     def load_groups(self):
         self.groups: dict[int, Group] = {}
         self.group_members: dict[int, Iterable] = {}
-        self.dirty_group_ids: set[int] = set()
         try:
             devices_commands = self.api(self.gateway.get_groups())
             groups = self.api(devices_commands)
@@ -123,19 +123,18 @@ class TradfriHandler:
         return any(states)
 
     def get_dimmer(self, group_id: int, refresh_data=True) -> int:
+        current_value, _ = self.get_dimmer_internal(group_id, refresh_data)
+        return current_value
+
+    def get_dimmer_internal(self, group_id: int, refresh_data=True) -> Union[int, int]:
         if refresh_data:
             self.load_group(group_id)
         g_dim_value = self.groups[group_id].dimmer
         _, _, dim_values = self.get_hex_color_dimmer_state_light_control(self.group_members[group_id])
-        if (dim_values[0] != g_dim_value):
-            # Someone used the normal remote, and something is broken (either IKEAs gateway or pytradfri),
-            # and the lights in the group does not have the dim value of the group itself. This results
-            # in that we cannot use set with the group's value, because it already believes it has set it.
-            # To solve this, we simply set a dirty flag and use that later to modify the value.
-            self.dirty_group_ids.add(group_id)
-        elif group_id in self.dirty_group_ids:
-            self.dirty_group_ids.remove(group_id)
-        return dim_values[0]
+        # If someone used the normal remote, the dim values of the group and the lights within the
+        # group will have different values. This results in that we cannot use set with the group's
+        # value, because it already believes it has set it.
+        return dim_values[0], g_dim_value
 
     def get_groups(self) -> Iterable[Group]:
         # Only update every 5 minutes at most
@@ -150,11 +149,23 @@ class TradfriHandler:
                                               group_id)
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
-        if group_id in self.dirty_group_ids:
-            value -= 1
-        return self.run_api_command_for_group(lambda lg: lg.set_dimmer(value, transition_time=3),
-                                              lambda lg: self.update_group(lg, 'dimmer', value),
-                                              group_id)
+        # Thanks IKEA!
+        try_value = value
+        while True:
+            self.run_api_command_for_group(lambda lg: lg.set_dimmer(try_value, transition_time=1),
+                                           lambda lg: self.update_group(lg, 'dimmer', try_value),
+                                           group_id)
+            time.sleep(0.1)
+            get_val, g_get_val = self.get_dimmer_internal(group_id, True)
+            if get_val == g_get_val:
+                break
+
+            if try_value == g_get_val:
+                if try_value == value:
+                    try_value -= 1
+                else:
+                    try_value = value
+        return True
 
     def set_hex_color(self, group_id: int, value: str) -> bool:
         return self.run_api_command_for_group(lambda lg: lg.set_hex_color(value, transition_time=1),
