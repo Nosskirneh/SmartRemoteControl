@@ -116,11 +116,16 @@ class TradfriHandler:
         except RequestTimeout:
             self.logger.error("Trådfri timed out!")
 
-    def get_state(self, group_id: int, refresh_data=True) -> int:
+    def get_state(self, group_id: int, refresh_data=True) -> bool:
+        current_value, _ = self.get_state_internal(group_id, refresh_data)
+        return current_value
+
+    def get_state_internal(self, group_id: int, refresh_data=True) -> Union[bool, bool]:
         if refresh_data:
             self.load_group(group_id)
+        g_state = self.groups[group_id].state
         _, states, _ = self.get_hex_color_dimmer_state_light_control(self.group_members[group_id])
-        return any(states)
+        return any(states), g_state
 
     def get_dimmer(self, group_id: int, refresh_data=True) -> int:
         current_value, _ = self.get_dimmer_internal(group_id, refresh_data)
@@ -144,9 +149,16 @@ class TradfriHandler:
         return self.groups.values()
 
     def set_state(self, group_id: int, new_state: bool) -> bool:
-        return self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
-                                              lambda lg: self.update_group(lg, 'state', int(new_state)),
-                                              group_id)
+        # Thanks IKEA!
+        while True:
+            self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
+                                           lambda lg: self.update_group(lg, 'state', int(new_state)),
+                                           group_id)
+            time.sleep(0.1)
+            current_state, g_state = self.get_state_internal(group_id, True)
+            if current_state == g_state:
+                break
+        return True
 
     def set_dimmer(self, group_id: int, value: int) -> bool:
         # Thanks IKEA!
