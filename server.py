@@ -431,6 +431,7 @@ def run_tradfri(device_config: dict):
             tradfri_handler.set_dimmer(device_id, int(device_commands["dimmer"]))
 
 def run_plain_and_tradfri(container: dict):
+    threads = None
     if "plain" in container:
         threads = run_plain(container["plain"])
 
