@@ -1,0 +1,13 @@
+pyserial
+wakeonlan
+pytradfri
+aiocoap
+schedule
+holidays
+astral
+flask
+numpy
+waitress
+pyowm
+pytz
+pydantic<2

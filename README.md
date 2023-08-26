@@ -7,7 +7,8 @@ Use a Raspberry Pi to control 433 MHz relay switches (NEXA and others), IKEA Tr√
 
 
 ## Installation
-`pip3 install pyserial wakeonlan pytradfri aiocoap schedule holidays astral flask numpy waitress lirc rpi-rf`
+Create a virtual env and install all the required packages:
+`python3 -m venv .venv && pip3 install -r requirements.txt`
 
 coap-client is required to be built:
 https://raspberry-valley.azurewebsites.net/CoAP-Getting-Started/
