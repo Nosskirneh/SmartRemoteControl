@@ -87,7 +87,7 @@ class TradfriHandler:
 
     def export_groups(self) -> list[str]:
         return list(map(self.export_group, self.get_groups()))
-    
+
     def load_group_members(self, group: Group):
         try:
             self.group_members[group.id] = self.api(group.members())
@@ -151,9 +151,11 @@ class TradfriHandler:
     def set_state(self, group_id: int, new_state: bool) -> bool:
         # Thanks IKEA!
         while True:
-            self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
-                                           lambda lg: self.update_group(lg, 'state', int(new_state)),
-                                           group_id)
+            success = self.run_api_command_for_group(lambda lg: lg.set_state(new_state),
+                                                     lambda lg: self.update_group(lg, 'state', int(new_state)),
+                                                     group_id)
+            if not success:
+                return False
             time.sleep(0.1)
             current_state, g_state = self.get_state_internal(group_id, True)
             if current_state == g_state:
@@ -164,9 +166,11 @@ class TradfriHandler:
         # Thanks IKEA!
         try_value = value
         while True:
-            self.run_api_command_for_group(lambda lg: lg.set_dimmer(try_value, transition_time=1),
-                                           lambda lg: self.update_group(lg, 'dimmer', try_value),
-                                           group_id)
+            success = self.run_api_command_for_group(lambda lg: lg.set_dimmer(try_value, transition_time=1),
+                                                     lambda lg: self.update_group(lg, 'dimmer', try_value),
+                                                     group_id)
+            if not success:
+                return False
             time.sleep(0.1)
             get_val, g_get_val = self.get_dimmer_internal(group_id, True)
             if get_val == g_get_val:
@@ -188,6 +192,8 @@ class TradfriHandler:
                                   command_function: Callable[[Group], Command],
                                   update_function: Callable[[Group], None],
                                   group_id: int) -> bool:
+        if group_id not in self.groups:
+            return False
         light_group = self.groups[group_id]
         try:
             self.api(command_function(light_group))
