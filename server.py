@@ -474,7 +474,7 @@ def return_activity_index(command: str, group: str) -> int:
 
 
 def init_logger() -> logging.Logger:
-    log_level = logging.DEBUG
+    log_level = logging.INFO
     log_filename = 'log.txt'
     logger = logging.getLogger('root')
     logger.setLevel(log_level)
