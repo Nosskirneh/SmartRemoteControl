@@ -48,12 +48,12 @@ class Scheduler:
 
         def reschedule_event():
             time_str = (now + time_until).strftime("%H:%M")
-            self.logger.debug("Reschedule for {}".format(time_str))
+            self.logger.info("Reschedule for {}".format(time_str))
             schedule.every().day.at(time_str).do(self.execute_once, event=event)
 
         def run_scheduled_event():
             self.executed_scheduled_events[event['id']] = True
-            self.logger.debug("Executing scheduled event {}".format(event['id']))
+            self.logger.info("Executing scheduled event {}".format(event['id']))
             self.execute_callback(event)
 
         def try_reschedule_for_cloud_check() -> bool:
@@ -65,7 +65,7 @@ class Scheduler:
             cloudy_threshold = cloudy_settings["threshold"]
 
             time_str = max(now, now + time_until - cloudy_offset).strftime("%H:%M")
-            self.logger.debug("Schedule cloud check for {}".format(time_str))
+            self.logger.info("Schedule cloud check for {}".format(time_str))
             schedule.every().day.at(time_str).do(self.execute_cloud_check_once,
                                                  event=event, cloudy_offset=cloudy_offset,
                                                  cloudy_threshold=cloudy_threshold)
@@ -123,14 +123,14 @@ class Scheduler:
 
     # There is no other way to schedule only once other than doing this.
     def execute_once(self, event: dict):
-        self.logger.debug("Executing rescheduled event {}".format(event['id']))
+        self.logger.info("Executing rescheduled event {}".format(event['id']))
         self.execute_callback(event)
 
         self.executed_scheduled_events[event['id']] = True
         return schedule.CancelJob
 
     def execute_cloud_check_once(self, event: dict, cloudy_offset: int, cloudy_threshold: int):
-        self.logger.debug("Executing cloud check for event {}".format(event['id']))
+        self.logger.info("Executing cloud check for event {}".format(event['id']))
         if self.cloud_check(cloudy_threshold):
             self.execute_callback(event)
             self.executed_scheduled_events[event['id']] = True
@@ -158,10 +158,10 @@ class Scheduler:
                 event = "sunrise"
                 timediff = current_time - sun[event]
 
-            self.logger.debug("It's sunny outside, {} in {}".format(event, timediff))
+            self.logger.info("It's sunny outside, {} in {}".format(event, timediff))
             return (False, timediff)
         else:
             sun_tomorrow = city.sun(date=today + timedelta(days=1), local=True)
             timediff = sun_tomorrow["sunrise"] - current_time
-            self.logger.debug("It's dark outside, {} until sunrise".format(timediff))
+            self.logger.info("It's dark outside, {} until sunrise".format(timediff))
             return (True, timediff)

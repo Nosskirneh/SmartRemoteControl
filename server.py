@@ -523,7 +523,7 @@ if __name__ == "__main__":
     channel_handlers: dict[str, ChannelHandler] = dict(ChainMap(*map(lambda listener: dict([(channel, listener) for channel in listener.channels]),
                                                                      [clazz(logger=logger) for clazz in ChannelHandler.__subclasses__()])))
 
-    logger.debug("Server started")
+    logger.info("Server started")
 
     from waitress import serve
     # Most common browsers send 6 requests at once. We don't really care
